@@ -19,8 +19,6 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=license)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=security)
 
-## Typescript rewrite of the [Homebridge Philips Hue Sync Box Plugin](https://github.com/lukasroegner/homebridge-philips-hue-sync-box) by [lukasroegner](https://github.com/lukasroegner).
-
 Homebridge plugin for the Philips Hue Sync Box.
 
 The Sync Box can be exposed as a lightbulb. The following features are supported:
