@@ -1,5 +1,5 @@
 {
-  "name": "@jabrown93/homebridge-philips-hue-sync-box",
+  "name": "homebridge-philips-hue-sync-box",
   "displayName": "Philips Hue Sync Box",
   "version": "2.1.0",
   "description": "Homebridge plugin for the Philips Hue Sync Box.",

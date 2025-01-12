@@ -6,4 +6,4 @@ export const PLATFORM_NAME = 'PhilipsHueSyncBoxPlatform';
 /**
  * This must match the name of your plugin as defined the package.json `name` property
  */
-export const PLUGIN_NAME = '@jabrown93/homebridge-philips-hue-sync-box';
+export const PLUGIN_NAME = 'homebridge-philips-hue-sync-box';
