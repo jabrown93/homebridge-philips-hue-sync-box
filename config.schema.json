@@ -1,168 +1,185 @@
 {
-    "pluginAlias": "PhilipsHueSyncBoxPlatform",
-    "pluginType": "platform",
-    "headerDisplay": "Homebridge plugin for the Philips Hue Sync Box. Important: TV accessories must be added to HomeKit manually, the logs show the pin for adding them (should be the same pin as for the plugin).",
-    "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-philips-hue-sync-box).",
-    "schema": {
-        "type": "object",
-        "properties": {
-            "syncBoxIpAddress": {
-                "title": "IP Address",
-                "type": "string",
-                "required": true,
-                "placeholder": "XXX.XXX.XXX.XXX",
-                "description": "The IP address of your Philips Hue Sync Box."
-            },
-            "syncBoxApiAccessToken": {
-                "title": "Access Token",
-                "type": "string",
-                "required": true,
-                "description": "The access token that you get while registration."
-            },
-            "defaultOnMode": {
-                "title": "Default ON mode",
-                "type": "string",
-                "required": false,
-                "placeholder": "video",
-                "description": "The mode that is used when switching the Sync Box on via HomeKit. Possible values are 'video', 'music', 'game' or 'lastSyncMode'."
-            },
-            "defaultOffMode": {
-                "title": "Default OFF mode",
-                "type": "string",
-                "required": false,
-                "placeholder": "passthrough",
-                "description": "The mode that is used when switching the Sync Box off via HomeKit. Possible values are 'powersave' or 'passthrough'."
-            },
-            "baseAccessory": {
-                "title": "Base Accessory Type",
-                "type": "string",
-                "default": "Lightbulb",
-                "oneOf": [
-                    { "title": "Lightbulb", "enum": ["lightbulb"] },
-                    { "title": "Switch", "enum": ["switch"] },
-                    { "title": "None", "enum": ["none"] }
-                ]
-            },
-            "tvAccessory": {
-                "title": "Enable HDMI TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables a TV Accessory for switching the inputs of the Sync Box."
-            },
-            "tvAccessoryType": {
-                "title": "HDMI TV HomeKit Type",
-                "type": "string",
-                "default": "TV",
-                "oneOf": [
-                    { "title": "TV", "enum": ["tv"] },
-                    { "title": "Set Top Box", "enum": ["settopbox"] },
-                    { "title": "TV Stick", "enum": ["tvstick"] },
-                    { "title": "Audio Receiver", "enum": ["audioreceiver"] }
-                ]
-            },
-            "tvAccessoryLightbulb": {
-                "title": "Enable lightbulb for HDMI TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables an integrated lightbulb for the TV Accessory."
-            },
-            "modeTvAccessory": {
-                "title": "Enable Mode TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables a TV Accessory for switching the modes of the Sync Box."
-            },
-            "modeTvAccessoryType": {
-                "title": "Mode TV HomeKit Type",
-                "type": "string",
-                "default": "TV",
-                "oneOf": [
-                    { "title": "TV", "enum": ["tv"] },
-                    { "title": "Set Top Box", "enum": ["settopbox"] },
-                    { "title": "TV Stick", "enum": ["tvstick"] },
-                    { "title": "Audio Receiver", "enum": ["audioreceiver"] }
-                ]
-            },
-            "modeTvAccessoryLightbulb": {
-                "title": "Enable lightbulb for Mode TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables an integrated lightbulb for the TV Accessory."
-            },
-            "intensityTvAccessory": {
-                "title": "Enable Intensity TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables a TV Accessory for switching the intensity of the Sync Box."
-            },
-            "intensityTvAccessoryType": {
-                "title": "Intensity TV HomeKit Type",
-                "type": "string",
-                "default": "TV",
-                "oneOf": [
-                    { "title": "TV", "enum": ["tv"] },
-                    { "title": "Set Top Box", "enum": ["settopbox"] },
-                    { "title": "TV Stick", "enum": ["tvstick"] },
-                    { "title": "Audio Receiver", "enum": ["audioreceiver"] }
-                ]
-            },
-            "intensityTvAccessoryLightbulb": {
-                "title": "Enable lightbulb for Intensity TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables an integrated lightbulb for the TV Accessory."
-            },
-            "entertainmentTvAccessory": {
-                "title": "Enable Entertainment Area TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables a TV Accessory for switching the entertainment area of the Sync Box."
-            },
-            "entertainmentTvAccessoryType": {
-                "title": "Entertainment Area TV HomeKit Type",
-                "type": "string",
-                "default": "TV",
-                "oneOf": [
-                    { "title": "TV", "enum": ["tv"] },
-                    { "title": "Set Top Box", "enum": ["settopbox"] },
-                    { "title": "TV Stick", "enum": ["tvstick"] },
-                    { "title": "Audio Receiver", "enum": ["audioreceiver"] }
-                ]
-            },
-            "entertainmentTvAccessoryLightbulb": {
-                "title": "Enable lightbulb for Entertainment Area TV",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables an integrated lightbulb for the TV Accessory."
-            },
-            "isApiEnabled": {
-                "title": "Enable API",
-                "type": "boolean",
-                "default": false,
-                "required": false,
-                "description": "Enables an HTTP API for controlling the Sync Box."
-            },
-            "apiPort": {
-                "title": "API Port",
-                "type": "integer",
-                "placeholder": "40220",
-                "required": false,
-                "description": "The port that the API (if enabled) runs on"
-            },
-            "apiToken": {
-                "title": "API Token",
-                "type": "string",
-                "required": false,
-                "description": " The token that has to be included in each request of the API. Is required if the API is enabled and has no default value."
-            }
-        }
+  "pluginAlias": "PhilipsHueSyncBoxPlatform",
+  "pluginType": "platform",
+  "headerDisplay": "Homebridge plugin for the Philips Hue Sync Box. Important: TV accessories must be added to HomeKit manually, the logs show the pin for adding them (should be the same pin as for the plugin).",
+  "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-philips-hue-sync-box).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "syncBoxIpAddress": {
+        "title": "IP Address",
+        "type": "string",
+        "required": true,
+        "placeholder": "XXX.XXX.XXX.XXX",
+        "description": "The IP address of your Philips Hue Sync Box."
+      },
+      "syncBoxApiAccessToken": {
+        "title": "Access Token",
+        "type": "string",
+        "required": true,
+        "description": "The access token that you get while registration."
+      },
+      "defaultOnMode": {
+        "title": "Default ON mode",
+        "type": "string",
+        "required": false,
+        "default": "video",
+        "description": "The mode that is used when switching the Sync Box on via HomeKit. Possible values are 'video', 'music', 'game' or 'lastSyncMode'.",
+        "oneOf": [
+          { "title": "Video", "enum": ["video"] },
+          { "title": "Music", "enum": ["music"] },
+          { "title": "Game", "enum": ["game"] },
+          { "title": "Last Sync Mode", "enum": ["lastSyncMode"] }
+        ]
+      },
+      "defaultOffMode": {
+        "title": "Default OFF mode",
+        "type": "string",
+        "required": false,
+        "default": "passthrough",
+        "description": "The mode that is used when switching the Sync Box off via HomeKit. Possible values are 'powersave' or 'passthrough'.",
+        "oneOf": [
+          { "title": "Passthrough", "enum": ["passthrough"] },
+          { "title": "Power Save", "enum": ["powersave"] }
+        ]
+      },
+      "baseAccessory": {
+        "title": "Base Accessory Type",
+        "type": "string",
+        "default": "Lightbulb",
+        "oneOf": [
+          { "title": "Lightbulb", "enum": ["lightbulb"] },
+          { "title": "Switch", "enum": ["switch"] },
+          { "title": "None", "enum": ["none"] }
+        ]
+      },
+      "tvAccessory": {
+        "title": "Enable HDMI TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the inputs of the Sync Box."
+      },
+      "tvAccessoryType": {
+        "title": "HDMI TV HomeKit Type",
+        "type": "string",
+        "default": "TV",
+        "oneOf": [
+          { "title": "TV", "enum": ["tv"] },
+          { "title": "Set Top Box", "enum": ["settopbox"] },
+          { "title": "TV Stick", "enum": ["tvstick"] },
+          { "title": "Audio Receiver", "enum": ["audioreceiver"] }
+        ]
+      },
+      "tvAccessoryLightbulb": {
+        "title": "Enable lightbulb for HDMI TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "modeTvAccessory": {
+        "title": "Enable Mode TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the modes of the Sync Box."
+      },
+      "modeTvAccessoryType": {
+        "title": "Mode TV HomeKit Type",
+        "type": "string",
+        "default": "TV",
+        "oneOf": [
+          { "title": "TV", "enum": ["tv"] },
+          { "title": "Set Top Box", "enum": ["settopbox"] },
+          { "title": "TV Stick", "enum": ["tvstick"] },
+          { "title": "Audio Receiver", "enum": ["audioreceiver"] }
+        ]
+      },
+      "modeTvAccessoryLightbulb": {
+        "title": "Enable lightbulb for Mode TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "intensityTvAccessory": {
+        "title": "Enable Intensity TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the intensity of the Sync Box."
+      },
+      "intensityTvAccessoryType": {
+        "title": "Intensity TV HomeKit Type",
+        "type": "string",
+        "default": "TV",
+        "oneOf": [
+          { "title": "TV", "enum": ["tv"] },
+          { "title": "Set Top Box", "enum": ["settopbox"] },
+          { "title": "TV Stick", "enum": ["tvstick"] },
+          { "title": "Audio Receiver", "enum": ["audioreceiver"] }
+        ]
+      },
+      "intensityTvAccessoryLightbulb": {
+        "title": "Enable lightbulb for Intensity TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "entertainmentTvAccessory": {
+        "title": "Enable Entertainment Area TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the entertainment area of the Sync Box."
+      },
+      "entertainmentTvAccessoryType": {
+        "title": "Entertainment Area TV HomeKit Type",
+        "type": "string",
+        "default": "TV",
+        "oneOf": [
+          { "title": "TV", "enum": ["tv"] },
+          { "title": "Set Top Box", "enum": ["settopbox"] },
+          { "title": "TV Stick", "enum": ["tvstick"] },
+          { "title": "Audio Receiver", "enum": ["audioreceiver"] }
+        ]
+      },
+      "entertainmentTvAccessoryLightbulb": {
+        "title": "Enable lightbulb for Entertainment Area TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "updateIntervalInSeconds": {
+        "title": "Update Interval",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "description": "The interval in seconds in which the plugin checks for updates."
+      },
+      "apiServerEnabled": {
+        "title": "Enable API",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an HTTP API for controlling the Sync Box."
+      },
+      "apiServerPort": {
+        "title": "API Port",
+        "type": "integer",
+        "default": "40220",
+        "required": false,
+        "description": "The port that the API (if enabled) runs on"
+      },
+      "apiServerToken": {
+        "title": "API Token",
+        "type": "string",
+        "required": false,
+        "description": " The token that has to be included in each request of the API. Is required if the API is enabled and has no default value."
+      }
     }
+  }
 }

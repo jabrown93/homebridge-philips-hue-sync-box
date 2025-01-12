@@ -1,8 +1,22 @@
-# Ignore compiled code
-dist
+# Ignore source code
+src
 
 # ------------- Defaults ------------- #
-.DS_Store
+
+# gitHub actions
+.github
+
+# eslint
+eslint.config.js
+
+# typescript
+tsconfig.json
+
+# vscode
+.vscode
+
+# nodemon
+nodemon.json
 
 # Logs
 logs
@@ -119,8 +133,4 @@ web_modules/
 .yarn/build-state.yml
 .pnp.*
 
-# Webstorm
-.idea
-
-/test/hbConfig
-homebridge.log
+test/
