@@ -2,10 +2,10 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - beta
 
 permissions:
-  contents: write # for checkout
+  contents: write
 
 jobs:
   release:

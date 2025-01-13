@@ -1,5 +1,5 @@
 {
-  "branch": ["main", "next"],
+  "branch": ["main", "next", {"name": "beta", "prerelease": true}, {"name": "alpha", "prerelease": true}],
   "preset": "conventionalcommits",
   "plugins": [
     [

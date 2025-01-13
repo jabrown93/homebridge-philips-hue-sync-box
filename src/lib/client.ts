@@ -35,7 +35,7 @@ export class SyncBoxClient {
       },
       method,
       body: body ? JSON.stringify(body) : null,
-      agent: new https.Agent({ rejectUnauthorized: false }),
+      agent: new https.Agent({ rejectUnauthorized: false, keepAlive: true }),
     };
 
     this.log.debug('Request to Sync Box:', url, JSON.stringify(options));
