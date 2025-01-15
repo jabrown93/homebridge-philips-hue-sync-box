@@ -168,6 +168,8 @@ Defaults to `false`.
 **entertainmentTvAccessoryLightbulb** (optional): Enables an integrated lightbulb for the TV Accessory for switching the
 entertainment areas. Defaults to `false`.
 
+**publishExternalAccessories** (optional): Publishes the accessories of the Sync Box as external accessories. Defaults to `true` for compatibility reasons.
+
 **updateIntervalInSeconds** (optional): The interval in seconds in which the plugin polls the Sync Box for updates. Defaults to
 `5`.
 

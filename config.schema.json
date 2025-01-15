@@ -153,6 +153,13 @@
         "required": false,
         "description": "Enables an integrated lightbulb for the TV Accessory."
       },
+      "publishExternalAccessories": {
+        "title": "Publish External Accessories",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "description": "Publishes the TV accessories to the Homebridge API as external accessories."
+      },
       "updateIntervalInSeconds": {
         "title": "Update Interval",
         "type": "integer",

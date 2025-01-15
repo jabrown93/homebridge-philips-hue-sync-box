@@ -159,7 +159,12 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       }
     });
 
-    this.api.publishExternalAccessories(PLUGIN_NAME, this.externalAccessories);
+    if (this.config.publishExternalAccessories) {
+      this.api.publishExternalAccessories(
+        PLUGIN_NAME,
+        this.externalAccessories
+      );
+    }
 
     this.log.debug('Discovered devices:', this.devices);
 
