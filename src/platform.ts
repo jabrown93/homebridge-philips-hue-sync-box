@@ -109,6 +109,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       this.config.entertainmentTvAccessoryType ?? 'tv';
     this.config.entertainmentTvAccessoryLightbulb =
       this.config.entertainmentTvAccessoryLightbulb ?? false;
+    this.config.publishExternalAccessories =
+      this.config.publishExternalAccessories ?? true;
   }
 
   configureAccessory(accessory: PlatformAccessory) {
