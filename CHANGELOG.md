@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.0.2...v1.1.0-beta.1) (2025-01-15)
+
+### Features
+
+* option to disable external accessory publishing ([4e06b50](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/4e06b50eb169f9fe050544d86d440867c88ae946))
+
 ## [1.0.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.0.1...v1.0.2) (2025-01-14)
 
 ### Bug Fixes
