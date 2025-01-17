@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "lib": ["DOM", "ES2018"],
+    "lib": ["ES2022"],
+    "module": "ES2022",
+    "target": "ES2022",
     "rootDir": "src",
     "moduleResolution": "node",
     "strict": true,

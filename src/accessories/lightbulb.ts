@@ -1,4 +1,4 @@
-import { SyncBoxDevice } from './base';
+import { SyncBoxDevice } from './base.js';
 import type { PlatformAccessory } from 'homebridge';
 import { State } from '../state';
 import { HueSyncBoxPlatform } from '../platform';

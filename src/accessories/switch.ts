@@ -2,7 +2,7 @@ import type { PlatformAccessory } from 'homebridge';
 
 import { HueSyncBoxPlatform } from '../platform';
 import { State } from '../state';
-import { SyncBoxDevice } from './base';
+import { SyncBoxDevice } from './base.js';
 
 export class SwitchDevice extends SyncBoxDevice {
   constructor(

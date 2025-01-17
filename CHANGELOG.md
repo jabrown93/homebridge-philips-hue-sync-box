@@ -9,6 +9,12 @@ All notable changes to this project will be documented in this file. See
 
 * option to disable external accessory publishing ([4e06b50](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/4e06b50eb169f9fe050544d86d440867c88ae946))
 
+## [1.0.3](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.0.2...v1.0.3) (2025-01-17)
+
+### Bug Fixes
+
+* use ES2022 module instead of commonjs to work with Node 18 and 20 ([#89](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/89)) ([d29bee6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/d29bee65b08ad83c784d41e1460ecbc4dac057d0))
+
 ## [1.0.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.0.1...v1.0.2) (2025-01-14)
 
 ### Bug Fixes

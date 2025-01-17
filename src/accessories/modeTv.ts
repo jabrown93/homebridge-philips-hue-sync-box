@@ -5,7 +5,7 @@ import type {
 } from 'homebridge';
 import { HueSyncBoxPlatform } from '../platform';
 import { State } from '../state';
-import { BaseTvDevice } from './baseTv';
+import { BaseTvDevice } from './baseTv.js';
 
 export class ModeTvDevice extends BaseTvDevice {
   constructor(

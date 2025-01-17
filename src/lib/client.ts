@@ -1,10 +1,10 @@
 import originalFetch from 'node-fetch';
 import fetch_retry from 'fetch-retry';
 
-import { Execution, Hue, State } from '../state';
+import { Execution, Hue, State } from '../state.js';
 import * as https from 'node:https';
 import { Logger } from 'homebridge';
-import { HueSyncBoxPlatformConfig } from '../config';
+import { HueSyncBoxPlatformConfig } from '../config.js';
 
 const fetch = fetch_retry(originalFetch, {
   retries: 3,
