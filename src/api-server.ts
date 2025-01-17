@@ -1,6 +1,6 @@
 import http from 'http';
-import { HueSyncBoxPlatform } from './platform';
-import { State } from './state';
+import { HueSyncBoxPlatform } from './platform.js';
+import { State } from './state.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;

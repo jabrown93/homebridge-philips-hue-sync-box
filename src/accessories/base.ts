@@ -1,4 +1,4 @@
-import { Execution, State } from '../state';
+import { Execution, State } from '../state.js';
 import {
   Characteristic,
   type CharacteristicValue,
@@ -6,8 +6,8 @@ import {
   Service,
   WithUUID,
 } from 'homebridge';
-import { HueSyncBoxPlatform } from '../platform';
-import { PASSTHROUGH, POWER_SAVE } from '../lib/constants';
+import { HueSyncBoxPlatform } from '../platform.js';
+import { PASSTHROUGH, POWER_SAVE } from '../lib/constants.js';
 
 export abstract class SyncBoxDevice {
   protected readonly platform: HueSyncBoxPlatform;

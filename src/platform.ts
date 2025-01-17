@@ -11,10 +11,10 @@ import {
 } from 'homebridge';
 
 import { HueSyncBoxPlatformConfig } from './config';
-import { SyncBoxClient } from './lib/client';
-import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { State } from './state';
-import { SyncBoxDevice } from './accessories/base';
+import { SyncBoxClient } from './lib/client.js';
+import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
+import { State } from './state.js';
+import { SyncBoxDevice } from './accessories/base.js';
 import {
   ENTERTAINMENT_TV_ACCESSORY,
   INTENSITY_TV_ACCESSORY,
@@ -23,14 +23,14 @@ import {
   SWITCH_ACCESSORY,
   TV_ACCESSORY,
   TV_ACCESSORY_TYPES_TO_CATEGORY,
-} from './lib/constants';
-import { SwitchDevice } from './accessories/switch';
-import { LightbulbDevice } from './accessories/lightbulb';
-import { TvDevice } from './accessories/tv';
-import { ModeTvDevice } from './accessories/modeTv';
-import { IntensityTvDevice } from './accessories/intensityTv';
-import { EntertainmentTvDevice } from './accessories/entertainmentTv';
-import { ApiServer } from './api-server';
+} from './lib/constants.js';
+import { SwitchDevice } from './accessories/switch.js';
+import { LightbulbDevice } from './accessories/lightbulb.js';
+import { TvDevice } from './accessories/tv.js';
+import { ModeTvDevice } from './accessories/modeTv.js';
+import { IntensityTvDevice } from './accessories/intensityTv.js';
+import { EntertainmentTvDevice } from './accessories/entertainmentTv.js';
+import { ApiServer } from './api-server.js';
 
 export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service;

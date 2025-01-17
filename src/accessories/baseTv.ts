@@ -1,4 +1,4 @@
-import { SyncBoxDevice } from './base';
+import { SyncBoxDevice } from './base.js';
 import {
   type CharacteristicValue,
   PlatformAccessory,
@@ -6,7 +6,7 @@ import {
 } from 'homebridge';
 import { HueSyncBoxPlatform } from '../platform';
 import { State } from '../state';
-import { PASSTHROUGH, POWER_SAVE } from '../lib/constants';
+import { PASSTHROUGH, POWER_SAVE } from '../lib/constants.js';
 
 export abstract class BaseTvDevice extends SyncBoxDevice {
   protected lightbulbService?: Service;
