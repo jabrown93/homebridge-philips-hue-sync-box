@@ -74,6 +74,10 @@ export class EntertainmentTvDevice extends BaseTvDevice {
     return 'Entertainment Area';
   }
 
+  protected getConfiguredNamePropertyName(): string {
+    return 'entertainmentTvAccessoryConfiguredName';
+  }
+
   protected isLightbulbEnabled(): boolean {
     return this.platform.config.intensityTvAccessoryLightbulb;
   }

@@ -51,6 +51,10 @@ export class ModeTvDevice extends BaseTvDevice {
     return 'Mode';
   }
 
+  protected getConfiguredNamePropertyName(): string {
+    return 'modeTvAccessoryConfiguredName';
+  }
+
   protected isLightbulbEnabled(): boolean {
     return this.platform.config.modeTvAccessoryLightbulb;
   }

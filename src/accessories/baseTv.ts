@@ -61,7 +61,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       .onSet(this.handleRemoteButton.bind(this));
 
     const name: string =
-      this.mainAccessory?.context[this.getServiceName() as string] ??
+      this.mainAccessory?.context[this.getConfiguredNamePropertyName()] ??
       state.device.name;
     this.service
       .getCharacteristic(this.platform.Characteristic.ConfiguredName)
@@ -73,9 +73,11 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   }
 
   protected handleConfiguredNameChange(value: CharacteristicValue) {
-    this.platform.log.debug('Configured name changed to ' + value);
+    this.platform.log.debug(
+      this.getConfiguredNamePropertyName() + ' name changed to ' + value
+    );
     if (this.mainAccessory) {
-      this.mainAccessory.context.modeTvAccessoryConfiguredName = value;
+      this.mainAccessory.context[this.getConfiguredNamePropertyName()] = value;
     }
   }
 
@@ -325,4 +327,6 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     }
     return mode;
   }
+
+  protected abstract getConfiguredNamePropertyName(): string;
 }

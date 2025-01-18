@@ -42,6 +42,10 @@ export class TvDevice extends BaseTvDevice {
     return 'TV';
   }
 
+  protected getConfiguredNamePropertyName(): string {
+    return 'tvAccessoryConfiguredName';
+  }
+
   protected isLightbulbEnabled(): boolean {
     return this.platform.config.tvAccessoryLightbulb;
   }

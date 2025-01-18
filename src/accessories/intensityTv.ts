@@ -77,6 +77,10 @@ export class IntensityTvDevice extends BaseTvDevice {
     return 'Intensity';
   }
 
+  protected getConfiguredNamePropertyName(): string {
+    return 'intensityTvAccessoryConfiguredName';
+  }
+
   protected isLightbulbEnabled(): boolean {
     return this.platform.config.intensityTvAccessoryLightbulb;
   }
