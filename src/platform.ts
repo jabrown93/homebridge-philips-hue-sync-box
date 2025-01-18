@@ -43,6 +43,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   public readonly log: Logging | Console;
   public readonly client: SyncBoxClient;
   public readonly api: API;
+  private mainAccessory?: PlatformAccessory;
 
   constructor(
     public readonly logger: Logging,
@@ -236,8 +237,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       this.api.hap.uuid.generate(kind)
     );
     if (kind === LIGHTBULB_ACCESSORY) {
+      this.mainAccessory = accessory;
       accessory.category = this.api.hap.Categories.LIGHTBULB;
     } else if (kind === SWITCH_ACCESSORY) {
+      this.mainAccessory = accessory;
       accessory.category = this.api.hap.Categories.SWITCH;
     }
     accessory.context.kind = kind;
@@ -276,13 +279,23 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       case LIGHTBULB_ACCESSORY:
         return new LightbulbDevice(this, accessory, state);
       case TV_ACCESSORY:
-        return new TvDevice(this, accessory, state);
+        return new TvDevice(this, accessory, state, this.mainAccessory);
       case MODE_TV_ACCESSORY:
-        return new ModeTvDevice(this, accessory, state);
+        return new ModeTvDevice(this, accessory, state, this.mainAccessory);
       case INTENSITY_TV_ACCESSORY:
-        return new IntensityTvDevice(this, accessory, state);
+        return new IntensityTvDevice(
+          this,
+          accessory,
+          state,
+          this.mainAccessory
+        );
       case ENTERTAINMENT_TV_ACCESSORY:
-        return new EntertainmentTvDevice(this, accessory, state);
+        return new EntertainmentTvDevice(
+          this,
+          accessory,
+          state,
+          this.mainAccessory
+        );
       default:
         throw new Error('Unknown accessory type: ' + type);
     }
