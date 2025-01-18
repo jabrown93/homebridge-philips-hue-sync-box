@@ -7,7 +7,8 @@
   },
   "description": "HomeBridge HTTP Status Control",
   "plugins": [
-    "homebridge-config-ui-x"
+    "homebridge-config-ui-x",
+    "homebridge-philips-hue-sync-box"
   ],
   "log": {
     "method": "file",
