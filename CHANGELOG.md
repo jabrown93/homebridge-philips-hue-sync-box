@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0-beta.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2025-01-18)
+
+### Bug Fixes
+
+* use ES2022 module instead of commonjs to work with Node 18 and 20 ([#89](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/89)) ([d29bee6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/d29bee65b08ad83c784d41e1460ecbc4dac057d0))
+
 ## [1.1.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.0.2...v1.1.0-beta.1) (2025-01-15)
 
 ### Features
