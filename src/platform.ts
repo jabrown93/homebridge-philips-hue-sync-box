@@ -37,9 +37,12 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   public readonly Characteristic: typeof Characteristic;
   public readonly config: HueSyncBoxPlatformConfig;
   public readonly HAP: HAP;
+  public readonly existingAccessories: Map<string, PlatformAccessory> =
+    new Map();
   public readonly accessories: Map<string, PlatformAccessory> = new Map();
   public readonly devices: Array<SyncBoxDevice> = [];
-  public readonly externalAccessories: Array<PlatformAccessory> = [];
+  public readonly externalAccessories: Map<string, PlatformAccessory> =
+    new Map();
   public readonly log: Logging | Console;
   public readonly client: SyncBoxClient;
   public readonly api: API;
@@ -113,56 +116,64 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   }
 
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
-    this.accessories.set(accessory.UUID, accessory);
+    this.log.info('Loading accessory from cache:', accessory.context.kind);
+    this.existingAccessories.set(accessory.UUID, accessory);
   }
 
   async discoverDevices() {
     const state = await this.client.getState();
     const accessories = this.discoverAccessories(state);
-    // loop over the discovered devices and register each one if it has not already been registered
     const uuids = accessories.map(accessory => {
-      // generate a unique id for the accessory this should be generated from
-      // something globally unique, but constant, for example, the device serial
-      // number or MAC address
       const uuid = accessory.UUID; // see if an accessory with the same uuid has already been registered and restored from
-      // the cached devices we stored in the `configureAccessory` method above
-      const existingAccessory = this.accessories.get(uuid);
+      const existingAccessory = this.existingAccessories.get(uuid);
+      const isMainAccessory = accessory.UUID === this.mainAccessory?.UUID;
       if (existingAccessory) {
         this.log.debug(
           'Restoring existing accessory from cache: ',
-          existingAccessory.displayName,
+          existingAccessory.context.kind,
           existingAccessory
         );
         const device = this.createDevice(existingAccessory, state);
+        this.accessories.set(accessory.UUID, existingAccessory);
         this.devices.push(device);
-        this.api.updatePlatformAccessories([existingAccessory]);
+        if (isMainAccessory) {
+          this.api.updatePlatformAccessories([existingAccessory]);
+        }
       } else {
         this.log.info('Registering new accessory:', accessory.context.kind);
         const device = this.createDevice(accessory, state);
         this.devices.push(device);
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
-          accessory,
-        ]);
+        this.accessories.set(accessory.UUID, accessory);
+        if (isMainAccessory) {
+          this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
+            accessory,
+          ]);
+        }
       }
       return uuid;
     });
 
-    this.accessories.forEach(existingAccessory => {
+    this.existingAccessories.forEach(existingAccessory => {
       if (!uuids.includes(existingAccessory.UUID)) {
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
           existingAccessory,
         ]);
         this.log.info(
           'Removing existing accessory from cache:',
-          existingAccessory.displayName
+          existingAccessory.context.kind
         );
       }
     });
 
-    this.api.publishExternalAccessories(PLUGIN_NAME, this.externalAccessories);
+    this.log.debug(
+      `Publishing external ${Array.from(this.externalAccessories.values()).length} accessories`
+    );
+    this.api.publishExternalAccessories(
+      PLUGIN_NAME,
+      Array.from(this.externalAccessories.values())
+    );
 
-    this.log.debug('Discovered devices:', this.devices);
+    this.log.debug(`Discovered ${this.devices.length} devices`);
 
     await this.update(state);
     setInterval(async () => {
@@ -172,7 +183,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   }
 
   async update(state: State) {
-    this.log.debug('Updating state called', state);
+    this.log.debug('Updating state called');
     for (const device of this.devices) {
       this.log.debug('Updating device:', device.accessory.displayName);
       device.update(state);
@@ -180,6 +191,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   }
 
   private discoverAccessories(state: State): PlatformAccessory[] {
+    this.log.debug(
+      'Loaded existing accessories:',
+      this.existingAccessories.size
+    );
     this.log.debug('Discovering accessories');
     const accessories: PlatformAccessory[] = [];
     if (this.config.baseAccessory !== 'none') {
@@ -226,7 +241,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       );
       accessories.push(accessory);
     }
-    this.log.debug('Discovered accessories:', accessories);
+    this.log.debug(`Discovered ${accessories.length} accessories`);
     return accessories;
   }
 
@@ -256,7 +271,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     accessory.category =
       TV_ACCESSORY_TYPES_TO_CATEGORY[accessoryType.toLowerCase()] ??
       Categories.TELEVISION;
-    this.externalAccessories.push(accessory);
+    this.externalAccessories.set(accessory.UUID, accessory);
     this.log.debug(
       'Created TV named ' +
         accessoryName +
