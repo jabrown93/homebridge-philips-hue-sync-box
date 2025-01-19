@@ -28,9 +28,8 @@ export class ModeTvDevice extends BaseTvDevice {
 
   protected createInputServices() {
     const modeInputServices: Service[] = [];
-    for (let i = 1; i <= 4; i++) {
-      const position = 'MODE ' + i;
-      const name = this.numberToMode.get(i);
+    for (const [num, name] of this.numberToIntensity.entries()) {
+      const position = 'MODE ' + num;
       const modeInputService = this.getInputService(name, position);
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(modeInputService);

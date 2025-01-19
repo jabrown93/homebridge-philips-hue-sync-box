@@ -27,12 +27,9 @@ export class IntensityTvDevice extends BaseTvDevice {
   }
 
   protected createInputServices() {
-    for (let i = 1; i < this.numberToIntensity.size; i++) {
-      const position = 'INTENSITY ' + i;
-      const intensityInputService = this.getInputService(
-        this.numberToIntensity.get(i),
-        position
-      );
+    for (const [num, name] of this.numberToIntensity.entries()) {
+      const position = 'INTENSITY ' + num;
+      const intensityInputService = this.getInputService(name, position);
 
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(intensityInputService);

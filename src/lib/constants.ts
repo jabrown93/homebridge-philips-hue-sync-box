@@ -2,7 +2,7 @@ import { Categories } from 'homebridge';
 
 export const PASSTHROUGH: string = 'passthrough';
 export const POWER_SAVE: string = 'powersave';
-export const LIGHTBULB_ACCESSORY: string = 'LightbulbAccessory';
+export const LIGHTBULB_ACCESSORY: string = 'LightBulbAccessory';
 export const SWITCH_ACCESSORY: string = 'SwitchAccessory';
 export const TV_ACCESSORY: string = 'TVAccessory';
 export const MODE_TV_ACCESSORY: string = 'ModeTVAccessory';
