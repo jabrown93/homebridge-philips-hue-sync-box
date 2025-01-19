@@ -1,0 +1,52 @@
+{
+    "bridge": {
+        "name": "Hue Sync Box Dev Homebridge",
+        "username": "AA:BB:CC:DD:EE:FF",
+        "port": 51826,
+        "pin": "123-45-678",
+        "advertiser": "bonjour-hap"
+    },
+    "accessories": [],
+    "plugins": [
+        "homebridge-philips-hue-sync-box",
+        "homebridge-config-ui-x"
+    ],
+    "platforms": [
+        {
+            "name": "Config",
+            "port": 8581,
+            "auth": "none",
+            "theme": "auto",
+            "tempUnits": "c",
+            "lang": "auto",
+            "sudo": false,
+            "platform": "config",
+            "debug": false
+        },
+        {
+            "syncBoxIpAddress": "",
+            "syncBoxApiAccessToken": "",
+            "defaultOnMode": "video",
+            "defaultOffMode": "passthrough",
+            "baseAccessory": "lightbulb",
+            "tvAccessory": true,
+            "tvAccessoryType": "settopbox",
+            "tvAccessoryLightbulb": false,
+            "modeTvAccessory": true,
+            "modeTvAccessoryType": "audioreceiver",
+            "modeTvAccessoryLightbulb": false,
+            "intensityTvAccessory": true,
+            "intensityTvAccessoryType": "audioreceiver",
+            "intensityTvAccessoryLightbulb": false,
+            "entertainmentTvAccessory": true,
+            "entertainmentTvAccessoryType": "settopbox",
+            "entertainmentTvAccessoryLightbulb": false,
+            "updateIntervalInSeconds": 300,
+            "apiServerEnabled": false,
+            "apiServerPort": 40220,
+            "platform": "PhilipsHueSyncBoxPlatform"
+        }
+    ],
+    "disabledPlugins": [
+    ]
+}
