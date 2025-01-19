@@ -39,10 +39,12 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   public readonly HAP: HAP;
   public readonly existingAccessories: Map<string, PlatformAccessory> =
     new Map();
+
   public readonly accessories: Map<string, PlatformAccessory> = new Map();
   public readonly devices: Array<SyncBoxDevice> = [];
   public readonly externalAccessories: Map<string, PlatformAccessory> =
     new Map();
+
   public readonly log: Logging | Console;
   public readonly client: SyncBoxClient;
   public readonly api: API;

@@ -268,6 +268,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       throw new Error('Name is required');
     }
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+    this.platform.log.debug('Creating input service for ' + capitalizedName);
     const inputService =
       this.accessory.getServiceById(
         this.platform.Service.InputSource,
