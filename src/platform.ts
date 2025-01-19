@@ -1,11 +1,8 @@
 import {
   API,
-  Characteristic,
   DynamicPlatformPlugin,
   Logging,
   PlatformAccessory,
-  Service,
-  HAP,
   PlatformConfig,
   Categories,
 } from 'homebridge';
@@ -33,21 +30,19 @@ import { EntertainmentTvDevice } from './accessories/entertainmentTv.js';
 import { ApiServer } from './api-server.js';
 
 export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
-  public readonly Service: typeof Service;
-  public readonly Characteristic: typeof Characteristic;
   public readonly config: HueSyncBoxPlatformConfig;
-  public readonly HAP: HAP;
-  public readonly existingAccessories: Map<string, PlatformAccessory> =
-    new Map();
-
-  public readonly accessories: Map<string, PlatformAccessory> = new Map();
-  public readonly devices: Array<SyncBoxDevice> = [];
-  public readonly externalAccessories: Map<string, PlatformAccessory> =
-    new Map();
-
   public readonly log: Logging | Console;
   public readonly client: SyncBoxClient;
   public readonly api: API;
+
+  private readonly devices: Array<SyncBoxDevice> = [];
+  private readonly accessories: Map<string, PlatformAccessory> = new Map();
+  private readonly existingAccessories: Map<string, PlatformAccessory> =
+    new Map();
+
+  private readonly externalAccessories: Map<string, PlatformAccessory> =
+    new Map();
+
   private mainAccessory?: PlatformAccessory;
 
   constructor(
@@ -69,9 +64,6 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       throw new Error('Missing required configuration parameters');
     }
 
-    this.Service = this.api.hap.Service;
-    this.Characteristic = this.api.hap.Characteristic;
-    this.HAP = this.api.hap;
     this.client = new SyncBoxClient(this.log, this.config);
 
     this.log.info('Finished initializing platform:', this.config.name);
@@ -132,8 +124,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       if (existingAccessory) {
         this.log.debug(
           'Restoring existing accessory from cache: ',
-          existingAccessory.context.kind,
-          existingAccessory
+          existingAccessory.context.kind
         );
         const device = this.createDevice(existingAccessory, state);
         this.accessories.set(accessory.UUID, existingAccessory);

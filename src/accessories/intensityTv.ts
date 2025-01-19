@@ -13,8 +13,8 @@ export class IntensityTvDevice extends BaseTvDevice {
     super(platform, accessory, state, mainAccessory);
 
     this.service
-      .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
-      .onSet(async (value: CharacteristicValue) => {
+      .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
+      .onSet((value: CharacteristicValue) => {
         const mode = this.getMode();
         const intensity = this.numberToIntensity.get(value as number) ?? '';
         this.platform.log.debug('Switch intensity to ' + intensity);
@@ -22,7 +22,7 @@ export class IntensityTvDevice extends BaseTvDevice {
         body[mode] = {
           intensity,
         };
-        return await this.updateExecution(body);
+        this.updateExecution(body);
       });
   }
 
@@ -36,8 +36,9 @@ export class IntensityTvDevice extends BaseTvDevice {
       this.inputServices.push(intensityInputService);
     }
     this.service.setCharacteristic(
-      this.platform.Characteristic.SleepDiscoveryMode,
-      this.platform.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE
+      this.platform.api.hap.Characteristic.SleepDiscoveryMode,
+      this.platform.api.hap.Characteristic.SleepDiscoveryMode
+        .ALWAYS_DISCOVERABLE
     );
 
     this.updateSources(this.inputServices);
@@ -56,7 +57,7 @@ export class IntensityTvDevice extends BaseTvDevice {
     );
     if (brightness) {
       this.service.updateCharacteristic(
-        this.platform.Characteristic.ActiveIdentifier,
+        this.platform.api.hap.Characteristic.ActiveIdentifier,
         brightness
       );
     }

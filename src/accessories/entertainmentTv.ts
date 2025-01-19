@@ -12,8 +12,8 @@ export class EntertainmentTvDevice extends BaseTvDevice {
   ) {
     super(platform, accessory, state, mainAccessory);
     this.service
-      .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
-      .onSet(async value => {
+      .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
+      .onSet(value => {
         // Gets the ID of the group based on the index
         let groupId: string | null = null;
         let i = 1;
@@ -32,16 +32,16 @@ export class EntertainmentTvDevice extends BaseTvDevice {
         }
         // Saves the changes
         this.platform.log.debug('Switch entertainment area to ' + group.name);
-        try {
-          await this.platform.client.updateHue({
+        this.platform.client
+          .updateHue({
             groupId: groupId,
+          })
+          .catch(e => {
+            this.platform.log.error(
+              'Failed to switch entertainment area to ' + group.name,
+              e
+            );
           });
-        } catch (e) {
-          this.platform.log.debug(
-            'Failed to switch entertainment area to ' + group.name,
-            e
-          );
-        }
       });
   }
 
@@ -57,7 +57,7 @@ export class EntertainmentTvDevice extends BaseTvDevice {
 
     // Updates the input characteristic
     this.service.updateCharacteristic(
-      this.platform.Characteristic.ActiveIdentifier,
+      this.platform.api.hap.Characteristic.ActiveIdentifier,
       index
     );
   }

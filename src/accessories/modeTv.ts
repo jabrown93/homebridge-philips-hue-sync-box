@@ -16,11 +16,11 @@ export class ModeTvDevice extends BaseTvDevice {
   ) {
     super(platform, accessory, state, mainAccessory);
     this.service
-      .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
-      .onSet(async (value: CharacteristicValue) => {
+      .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
+      .onSet((value: CharacteristicValue) => {
         const mode = this.numberToMode.get(value as number);
         this.platform.log.debug('Switch mode to ' + mode);
-        return await this.updateExecution({
+        this.updateExecution({
           mode,
         });
       });
@@ -68,7 +68,7 @@ export class ModeTvDevice extends BaseTvDevice {
       return;
     }
     this.service.updateCharacteristic(
-      this.platform.Characteristic.ActiveIdentifier,
+      this.platform.api.hap.Characteristic.ActiveIdentifier,
       number
     );
   }

@@ -14,10 +14,10 @@ export class SwitchDevice extends SyncBoxDevice {
   }
 
   protected getPowerCharacteristic() {
-    return this.platform.Characteristic.On;
+    return this.platform.api.hap.Characteristic.On;
   }
 
   protected getServiceType() {
-    return this.platform.Service.Switch;
+    return this.platform.api.hap.Service.Switch;
   }
 }

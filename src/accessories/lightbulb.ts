@@ -11,15 +11,15 @@ export class LightbulbDevice extends SyncBoxDevice {
   ) {
     super(platform, accessory, state);
     this.service
-      .getCharacteristic(this.platform.Characteristic.Brightness)
+      .getCharacteristic(this.platform.api.hap.Characteristic.Brightness)
       .onSet(this.setBrightness.bind(this));
   }
 
   protected getPowerCharacteristic() {
-    return this.platform.Characteristic.On;
+    return this.platform.api.hap.Characteristic.On;
   }
 
   protected getServiceType() {
-    return this.platform.Service.Lightbulb;
+    return this.platform.api.hap.Service.Lightbulb;
   }
 }

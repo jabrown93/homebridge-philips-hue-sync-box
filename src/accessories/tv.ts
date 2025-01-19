@@ -12,9 +12,9 @@ export class TvDevice extends BaseTvDevice {
   ) {
     super(platform, accessory, state, mainAccessory);
     this.service
-      .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
-      .onSet(async value => {
-        return await this.updateExecution({
+      .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
+      .onSet(value => {
+        return this.updateExecution({
           hdmiSource: 'input' + value,
         });
       });
@@ -25,7 +25,7 @@ export class TvDevice extends BaseTvDevice {
       'Updated HDMI input to ' + this.state.execution.hdmiSource
     );
     this.service.updateCharacteristic(
-      this.platform.Characteristic.ActiveIdentifier,
+      this.platform.api.hap.Characteristic.ActiveIdentifier,
       parseInt(this.state.execution.hdmiSource.replace('input', ''))
     );
   }
@@ -60,7 +60,9 @@ export class TvDevice extends BaseTvDevice {
       const hdmiName = hdmiState.name ?? hdmiPosition;
       const hdmiInputService = this.getInputService(hdmiName, hdmiPosition);
       hdmiInputService
-        .getCharacteristic(this.platform.Characteristic.TargetVisibilityState)
+        .getCharacteristic(
+          this.platform.api.hap.Characteristic.TargetVisibilityState
+        )
         .onSet(this.setVisibility(hdmiInputService));
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(hdmiInputService);

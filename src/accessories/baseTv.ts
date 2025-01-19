@@ -53,21 +53,22 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     this.createInputServices();
     this.createLightbulbService();
     this.service.setCharacteristic(
-      this.platform.Characteristic.SleepDiscoveryMode,
-      this.platform.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE
+      this.platform.api.hap.Characteristic.SleepDiscoveryMode,
+      this.platform.api.hap.Characteristic.SleepDiscoveryMode
+        .ALWAYS_DISCOVERABLE
     );
     this.service
-      .getCharacteristic(this.platform.Characteristic.RemoteKey)
+      .getCharacteristic(this.platform.api.hap.Characteristic.RemoteKey)
       .onSet(this.handleRemoteButton.bind(this));
 
     const name: string =
       this.mainAccessory?.context[this.getConfiguredNamePropertyName()] ??
       state.device.name;
     this.service
-      .getCharacteristic(this.platform.Characteristic.ConfiguredName)
+      .getCharacteristic(this.platform.api.hap.Characteristic.ConfiguredName)
       .onSet(this.handleConfiguredNameChange.bind(this));
     this.service.setCharacteristic(
-      this.platform.Characteristic.ConfiguredName,
+      this.platform.api.hap.Characteristic.ConfiguredName,
       name
     );
   }
@@ -90,19 +91,19 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       return;
     }
     this.lightbulbService =
-      this.accessory.getService(this.platform.Service.Lightbulb) ||
-      this.accessory.addService(this.platform.Service.Lightbulb);
+      this.accessory.getService(this.platform.api.hap.Service.Lightbulb) ||
+      this.accessory.addService(this.platform.api.hap.Service.Lightbulb);
 
     // Stores the light bulb service
 
     // Subscribes for changes of the on characteristic
     this.lightbulbService
-      .getCharacteristic(this.platform.Characteristic.On)
+      .getCharacteristic(this.platform.api.hap.Characteristic.On)
       .onSet(this.setOnLightbulb.bind(this));
 
     // Subscribes for changes of the brightness characteristic
     this.lightbulbService
-      .getCharacteristic(this.platform.Characteristic.Brightness)
+      .getCharacteristic(this.platform.api.hap.Characteristic.Brightness)
       .onSet(this.setBrightness.bind(this));
   }
 
@@ -112,35 +113,35 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     }
     this.platform.log.debug('Set On ->', value);
     const currentVal = this.lightbulbService.getCharacteristic(
-      this.platform.Characteristic.On
+      this.platform.api.hap.Characteristic.On
     ).value;
     return this.updateMode(currentVal, value);
   }
 
   protected getServiceType() {
-    return this.platform.Service.Television;
+    return this.platform.api.hap.Service.Television;
   }
 
-  protected async handleRemoteButton(value: CharacteristicValue) {
+  protected handleRemoteButton(value: CharacteristicValue) {
     this.platform.log.debug('Remote key pressed: ' + value);
 
     let mode: string;
     switch (value) {
-      case this.platform.Characteristic.RemoteKey.ARROW_UP:
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_UP:
         this.platform.log.debug('Increase brightness by 25%');
-        await this.updateExecution({
+        this.updateExecution({
           brightness: Math.min(200, this.state.execution.brightness + 50),
         });
         break;
 
-      case this.platform.Characteristic.RemoteKey.ARROW_DOWN:
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_DOWN:
         this.platform.log.debug('Decrease brightness by 25%');
-        await this.updateExecution({
+        this.updateExecution({
           brightness: Math.max(0, this.state.execution.brightness - 50),
         });
         break;
 
-      case this.platform.Characteristic.RemoteKey.ARROW_LEFT: {
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_LEFT: {
         // Gets the current mode or the last sync mode to set the intensity
         mode = this.getMode();
 
@@ -156,11 +157,11 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
         body[mode] = {
           intensity: nextIntensity,
         };
-        await this.updateExecution(body);
+        this.updateExecution(body);
         break;
       }
 
-      case this.platform.Characteristic.RemoteKey.ARROW_RIGHT: {
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_RIGHT: {
         // Gets the current mode or the last sync mode to set the intensity
         mode = this.getMode();
 
@@ -176,27 +177,27 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
         body[mode] = {
           intensity: nextIntensity,
         };
-        await this.updateExecution(body);
+        this.updateExecution(body);
         break;
       }
 
-      case this.platform.Characteristic.RemoteKey.SELECT: {
+      case this.platform.api.hap.Characteristic.RemoteKey.SELECT: {
         this.platform.log.debug('Toggle mode');
         const currentMode = this.state.execution.mode;
         const nextMode = ((this.modeToNumber.get(currentMode) ?? 4) % 4) + 1;
-        await this.updateExecution({
+        this.updateExecution({
           mode: this.numberToMode.get(nextMode),
         });
         break;
       }
 
-      case this.platform.Characteristic.RemoteKey.PLAY_PAUSE:
+      case this.platform.api.hap.Characteristic.RemoteKey.PLAY_PAUSE:
         this.platform.log.debug('Toggle switch state');
         if (
           this.state.execution.mode !== POWER_SAVE &&
           this.state.execution.mode !== PASSTHROUGH
         ) {
-          await this.updateExecution({
+          this.updateExecution({
             mode: this.platform.config.defaultOffMode,
           });
         } else {
@@ -205,18 +206,18 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
             onMode = this?.state?.execution?.lastSyncMode ?? 'video';
           }
 
-          await this.updateExecution({
+          this.updateExecution({
             mode: onMode,
           });
         }
         break;
 
-      case this.platform.Characteristic.RemoteKey.INFORMATION: {
+      case this.platform.api.hap.Characteristic.RemoteKey.INFORMATION: {
         this.platform.log.debug('Toggle hdmi source');
         const hdmiSource = this.state.execution.hdmiSource;
         const currentSourcePosition = parseInt(hdmiSource.replace('input', ''));
         const nextSourcePosition = (currentSourcePosition % 4) + 1;
-        await this.updateExecution({
+        this.updateExecution({
           hdmiSource: 'input' + nextSourcePosition,
         });
         break;
@@ -228,7 +229,9 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     // Handles showing/hiding of sources
     for (const service of services) {
       service
-        .getCharacteristic(this.platform.Characteristic.TargetVisibilityState)
+        .getCharacteristic(
+          this.platform.api.hap.Characteristic.TargetVisibilityState
+        )
         .onSet(this.setVisibility(service));
     }
   }
@@ -247,7 +250,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     }
     this.platform.log.debug('Updated state to ' + this.state.execution.mode);
     this.lightbulbService.updateCharacteristic(
-      this.platform.Characteristic.On,
+      this.platform.api.hap.Characteristic.On,
       this.state.execution.mode !== POWER_SAVE &&
         this.state.execution.mode !== PASSTHROUGH
     );
@@ -255,7 +258,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       'Updated brightness to ' + this.state.execution.brightness
     );
     this.lightbulbService.updateCharacteristic(
-      this.platform.Characteristic.Brightness,
+      this.platform.api.hap.Characteristic.Brightness,
       Math.round((this.state.execution.brightness / 200.0) * 100)
     );
   }
@@ -271,11 +274,11 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     this.platform.log.debug('Creating input service for ' + capitalizedName);
     const inputService =
       this.accessory.getServiceById(
-        this.platform.Service.InputSource,
+        this.platform.api.hap.Service.InputSource,
         position
       ) ||
       this.accessory.addService(
-        this.platform.Service.InputSource,
+        this.platform.api.hap.Service.InputSource,
         position.toLowerCase().replace(' ', ''),
         position
       );
@@ -283,29 +286,29 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     // Sets the TV name
     inputService
       .setCharacteristic(
-        this.platform.Characteristic.ConfiguredName,
+        this.platform.api.hap.Characteristic.ConfiguredName,
         capitalizedName
       )
       .setCharacteristic(
-        this.platform.Characteristic.IsConfigured,
-        this.platform.Characteristic.IsConfigured.CONFIGURED
+        this.platform.api.hap.Characteristic.IsConfigured,
+        this.platform.api.hap.Characteristic.IsConfigured.CONFIGURED
       )
       .setCharacteristic(
-        this.platform.Characteristic.CurrentVisibilityState,
-        this.platform.Characteristic.CurrentVisibilityState.SHOWN
+        this.platform.api.hap.Characteristic.CurrentVisibilityState,
+        this.platform.api.hap.Characteristic.CurrentVisibilityState.SHOWN
       )
       .setCharacteristic(
-        this.platform.Characteristic.TargetVisibilityState,
-        this.platform.Characteristic.TargetVisibilityState.SHOWN
+        this.platform.api.hap.Characteristic.TargetVisibilityState,
+        this.platform.api.hap.Characteristic.TargetVisibilityState.SHOWN
       );
     inputService
       .setCharacteristic(
-        this.platform.Characteristic.Identifier,
+        this.platform.api.hap.Characteristic.Identifier,
         position[position.length - 1]
       )
       .setCharacteristic(
-        this.platform.Characteristic.InputSourceType,
-        this.platform.Characteristic.InputSourceType.HDMI
+        this.platform.api.hap.Characteristic.InputSourceType,
+        this.platform.api.hap.Characteristic.InputSourceType.HDMI
       );
 
     return inputService;
@@ -314,7 +317,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   protected setVisibility(service: Service) {
     return (value: CharacteristicValue) => {
       service.setCharacteristic(
-        this.platform.Characteristic.CurrentVisibilityState,
+        this.platform.api.hap.Characteristic.CurrentVisibilityState,
         value
       );
     };

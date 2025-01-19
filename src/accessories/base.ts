@@ -41,7 +41,7 @@ export abstract class SyncBoxDevice {
       );
 
     this.service.setCharacteristic(
-      this.platform.Characteristic.Name,
+      this.platform.api.hap.Characteristic.Name,
       accessory.displayName
     );
 
@@ -50,18 +50,25 @@ export abstract class SyncBoxDevice {
       .onSet(this.handlePowerCharacteristicSet.bind(this)); // SET - bind to the `setOn` method below
 
     const accessoryInformationService =
-      this.accessory.getService(this.platform.Service.AccessoryInformation) ||
-      this.accessory.addService(this.platform.Service.AccessoryInformation);
+      this.accessory.getService(
+        this.platform.api.hap.Service.AccessoryInformation
+      ) ||
+      this.accessory.addService(
+        this.platform.api.hap.Service.AccessoryInformation
+      );
 
     accessoryInformationService
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Philips')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Sync Box')
       .setCharacteristic(
-        this.platform.Characteristic.FirmwareRevision,
+        this.platform.api.hap.Characteristic.Manufacturer,
+        'Philips'
+      )
+      .setCharacteristic(this.platform.api.hap.Characteristic.Model, 'Sync Box')
+      .setCharacteristic(
+        this.platform.api.hap.Characteristic.FirmwareRevision,
         this.state.device.firmwareVersion
       )
       .setCharacteristic(
-        this.platform.Characteristic.SerialNumber,
+        this.platform.api.hap.Characteristic.SerialNumber,
         this.state.device.uniqueId + this.getSuffix()
       );
   }
@@ -102,17 +109,15 @@ export abstract class SyncBoxDevice {
     });
   }
 
-  protected async updateExecution(execution: Partial<Execution>) {
-    try {
-      return await this.platform.client.updateExecution(execution);
-    } catch (e) {
-      this.platform.log.debug('Failed to update execution', e);
-    }
+  protected updateExecution(execution: Partial<Execution>) {
+    this.platform.client.updateExecution(execution).catch(e => {
+      this.platform.log.error('Failed to update execution', e);
+    });
   }
 
-  protected async setBrightness(value: CharacteristicValue) {
+  protected setBrightness(value: CharacteristicValue) {
     this.platform.log.debug('Switch brightness to ' + value);
-    await this.updateExecution({
+    this.updateExecution({
       brightness: Math.round(((value as number) / 100.0) * 200),
     });
   }
@@ -133,7 +138,7 @@ export abstract class SyncBoxDevice {
   }
 
   protected getPowerCharacteristic(): WithUUID<new () => Characteristic> {
-    return this.platform.Characteristic.Active;
+    return this.platform.api.hap.Characteristic.Active;
   }
 
   protected handlePowerCharacteristicSet(value: CharacteristicValue) {
