@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.1.4...v1.2.0-beta.1) (2025-01-21)
+
+### Features
+
+* Support multiple instances of the plugin and multiple sync boxes ([#46](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/46)) ([ca7d902](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/ca7d90257e812b4c76c44d95a0d881786a717d07))
+
+### Bug Fixes
+
+* set fault on accessory when sync box unavailable instead of crashing ([079f7cd](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/079f7cda4edd3f431422dd0530714865a8c810db))
+
 ## [1.1.4](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.1.3...v1.1.4) (2025-01-20)
 
 ### Bug Fixes
