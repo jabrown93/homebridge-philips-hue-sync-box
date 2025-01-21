@@ -81,12 +81,6 @@
           }
         ]
       },
-      "baseAccessoryName": {
-        "title": "Set name for Base Accessory",
-        "type": "string",
-        "required": false,
-        "description": "Sets custom name for the Base Accessory. Overwrites names configured HomeKit."
-      },
       "tvAccessory": {
         "title": "Enable HDMI TV",
         "type": "boolean",
