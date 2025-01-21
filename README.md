@@ -91,7 +91,81 @@ Hints:
   due to a certificate error, you can disable certificate verification in Postman. Go to the global settings, open the
   tab "General" and disable the toggle switch for "SSL certificate verification".
 
+## Multiple Sync Boxes
+
+**WARNING: If you currently have a sync box setup, setting a `uuidSeed` will reset them. You may leave this config blank
+on at most 1 Sync Box.**
+
+In order to support multiple Sync Boxes, you have to run multiple instances of this plugin. Each instance has to have a
+unique `uuidSeed` value. This value is used to differentiate the accessories in HomeKit. If you have existing
+accessories, changing this value will cause them to be removed and re-created. HomeKit will consider these as new
+accessories and you will need to setup them up again.
+
+You will need to add multiple platforms to your `config.json` file. This can be found at
+`https://<homebridge_host>/config` in the UI or `<homebridge_config_dir>/config.json`. Each platform has to have a
+a `platform` value of `PhilipsHueSyncBoxPlatform`.
+
+**Important Notes**
+
+- The `uuidSeed` value must be unique for each Sync Box. `''` is a valid value for one Sync Box.
+- Changing the `uuidSeed` value will cause the accessories to be removed and re-created. HomeKit will consider these as new accessories and you will need to setup them up again.
+- The `name` value should be unique for each Sync Box, this improves the logging output.
+
+```json5
+{
+  //rest of config
+  platforms: [
+    {
+      platform: 'PhilipsHueSyncBoxPlatform',
+      name: 'LivingRoomPhilipsHueSyncBoxPlatform',
+      syncBoxIpAddress: '<SYNC-BOX-IP-ADDRESS>',
+      syncBoxApiAccessToken: '<ACCESS-TOKEN>',
+      uuidSeed: 'LivingRoom',
+      // rest of config
+    },
+    {
+      platform: 'PhilipsHueSyncBoxPlatform',
+      name: 'BedroomPhilipsHueSyncBoxPlatform',
+      syncBoxIpAddress: '<SYNC-BOX-IP-ADDRESS>',
+      syncBoxApiAccessToken: '<ACCESS-TOKEN>',
+      uuidSeed: 'Bedroom',
+      // rest of config
+    },
+  ],
+}
+```
+
 ## Configuration
+
+| **Name**                                 | **Description**                                                                                                                                                                                                                                                                            | **Type** | **Default**   | **Required** | **Allowed Values**                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------- | ------------ | --------------------------------------------- |
+| `syncBoxIpAddress`                       | The IP address of your Philips Hue Sync Box.                                                                                                                                                                                                                                               | string   | None          | Yes          |                                               |
+| `syncBoxApiAccessToken`                  | The access token that you get while registration.                                                                                                                                                                                                                                          | string   | None          | Yes          |                                               |
+| `defaultOnMode`                          | The mode that is used when switching the Sync Box on via HomeKit. Possible values are `video`, `music`, `game` or `lastSyncMode`.                                                                                                                                                          | string   | `video`       | No           | `video`, `music`, `game`, `lastSyncMode`      |
+| `defaultOffMode`                         | The mode that is used when switching the Sync Box off via HomeKit. Possible values are `powersave` or `passthrough`.                                                                                                                                                                       | string   | `passthrough` | No           | `powersave`, `passthrough`                    |
+| `baseAccessory`                          | Determines the type of the base accessory for the Sync Box. Possible values are `lightbulb`, `switch` or `none`. If `none` is used, no base accessory is exposed.                                                                                                                          | string   | `lightbulb`   | No           | `lightbulb`, `switch`, `none`                 |
+| `baseAccessoryName`                      | Sets custom name for the Base Accessory. Overwrites names configured HomeKit.                                                                                                                                                                                                              | string   | None          | No           |                                               |
+| `tvAccessory`                            | Enables a TV Accessory for switching the inputs of the Sync Box.                                                                                                                                                                                                                           | boolean  | `false`       | No           |                                               |
+| `tvAccessoryConfiguredName`              | Sets custom name for the HDMI Input TV. Overwrites names configured HomeKit.                                                                                                                                                                                                               | string   | None          | No           |                                               |
+| `tvAccessoryType`                        | Type of icon that the Apple Home app should show. Possible values are `tv`, `settopbox`, `tvstick` or `audioreceiver`.                                                                                                                                                                     | string   | `tv`          | No           | `tv`, `settopbox`, `tvstick`, `audioreceiver` |
+| `tvAccessoryLightbulb`                   | Enables an integrated lightbulb for the TV Accessory for switching the inputs.                                                                                                                                                                                                             | boolean  | `false`       | No           |                                               |
+| `modeTvAccessory`                        | Enables a TV Accessory for switching the modes (`video`, `music`, `game`) of the Sync Box.                                                                                                                                                                                                 | boolean  | `false`       | No           |                                               |
+| `modeTvAccessoryConfiguredName`          | Sets custom name for the Mode TV. Overwrites names configured HomeKit.                                                                                                                                                                                                                     | string   | None          | No           |                                               |
+| `modeTvAccessoryType`                    | Type of icon that the Apple Home app should show. Possible values are `tv`, `settopbox`, `tvstick` or `audioreceiver`.                                                                                                                                                                     | string   | `tv`          | No           | `tv`, `settopbox`, `tvstick`, `audioreceiver` |
+| `modeTvAccessoryLightbulb`               | Enables an integrated lightbulb for the TV Accessory for switching the modes.                                                                                                                                                                                                              | boolean  | `false`       | No           |                                               |
+| `intensityTvAccessory`                   | Enables a TV Accessory for switching the intensity (`subtle`, `moderate`, `high`, `intense`) of the Sync Box.                                                                                                                                                                              | boolean  | `false`       | No           |                                               |
+| `intensityTvAccessoryConfiguredName`     | Sets custom name for the Intensity TV. Overwrites names configured HomeKit.                                                                                                                                                                                                                | string   | None          | No           |                                               |
+| `intensityTvAccessoryType`               | Type of icon that the Apple Home app should show. Possible values are `tv`, `settopbox`, `tvstick` or `audioreceiver`.                                                                                                                                                                     | string   | `tv`          | No           | `tv`, `settopbox`, `tvstick`, `audioreceiver` |
+| `intensityTvAccessoryLightbulb`          | Enables an integrated lightbulb for the TV Accessory for switching the intensity.                                                                                                                                                                                                          | boolean  | `false`       | No           |                                               |
+| `entertainmentTvAccessory`               | Enables a TV Accessory for switching the entertainment area of the Sync Box.                                                                                                                                                                                                               | boolean  | `false`       | No           |                                               |
+| `entertainmentTvAccessoryConfiguredName` | Sets custom name for the Entertainment TV. Overwrites names configured HomeKit.                                                                                                                                                                                                            | string   | None          | No           |                                               |
+| `entertainmentTvAccessoryType`           | Type of icon that the Apple Home app should show. Possible values are `tv`, `settopbox`, `tvstick` or `audioreceiver`.                                                                                                                                                                     | string   | `tv`          | No           | `tv`, `settopbox`, `tvstick`, `audioreceiver` |
+| `entertainmentTvAccessoryLightbulb`      | Enables an integrated lightbulb for the TV Accessory for switching the entertainment areas.                                                                                                                                                                                                | boolean  | `false`       | No           |                                               |
+| `updateIntervalInSeconds`                | The interval in seconds in which the plugin polls the Sync Box for updates.                                                                                                                                                                                                                | integer  | `5`           | No           |                                               |
+| `uuidSeed`                               | Only set this if you're running multiple instances of this plugin to differentiate the accessories. If you have existing accessories, changing this will cause them to be removed and re-created. HomeKit will consider these as new accessories and you will need to setup them up again. | string   | None          | No           |                                               |
+| `apiServerEnabled`                       | Enables an HTTP API for controlling the Sync Box.                                                                                                                                                                                                                                          | boolean  | `false`       | No           |                                               |
+| `apiServerPort`                          | The port that the API (if enabled) runs on. Defaults to `40220`, please change this setting if the port is already in use.                                                                                                                                                                 | integer  | `40220`       | No           |                                               |
+| `apiServerToken`                         | The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.                                                                                                                                                                  | string   | None          | No           |                                               |
 
 ```json
 {
@@ -120,66 +194,12 @@ Hints:
 }
 ```
 
-**syncBoxIpAddress**: The IP address of your Philips Hue Sync Box.
-
-**syncBoxApiAccessToken**: The access token that you get while registration.
-
-**defaultOnMode** (optional): The mode that is used when switching the Sync Box on via HomeKit. Defaults to `video`.
-Possible values are `video`, `music`, `game` or `lastSyncMode`.
-
-**defaultOffMode** (optional): The mode that is used when switching the Sync Box off via HomeKit. Defaults to
-`passthrough`. Possible values are `powersave` or `passthrough`.
-
-**baseAccessory** (optional): Determines the type of the base accessory for the Sync Box. Defaults to `lightbulb`.
-Possible values are `lightbulb`, `switch` or `none`. If `none` is used, no base accessory is exposed.
-
-**tvAccessory** (optional): Enables a TV Accessory for switching the inputs of the Sync Box. Defaults to `false`.
-
-**tvAccessoryType** (optional): Type of icon that the Apple Home app should show. Possible values are `tv`, `settopbox`,
-`tvstick` or `audioreceiver`. Defaults to `tv`.
-
-**tvAccessoryLightbulb** (optional): Enables an integrated lightbulb for the TV Accessory for switching the inputs.
-Defaults to `false`.
-
-**modeTvAccessory** (optional): Enables a TV Accessory for switching the modes (`video`, `music`, `game`) of the Sync
-Box. Defaults to `false`.
-
-**modeTvAccessoryType** (optional): Type of icon that the Apple Home app should show. Possible values are `tv`,
-`settopbox`, `tvstick` or `audioreceiver`. Defaults to `tv`.
-
-**modeTvAccessoryLightbulb** (optional): Enables an integrated lightbulb for the TV Accessory for switching the modes.
-Defaults to `false`.
-
-**intensityTvAccessory** (optional): Enables a TV Accessory for switching the intensity (`subtle`, `moderate`, `high`,
-`intense`) of the Sync Box. Defaults to `false`.
-
-**intensityTvAccessoryType** (optional): Type of icon that the Apple Home app should show. Possible values are `tv`,
-`settopbox`, `tvstick` or `audioreceiver`. Defaults to `tv`.
-
-**intensityTvAccessoryLightbulb** (optional): Enables an integrated lightbulb for the TV Accessory for switching the
-intensity. Defaults to `false`.
-
-**entertainmentTvAccessory** (optional): Enables a TV Accessory for switching the entertainment area of the Sync Box.
-Defaults to `false`.
-
-**entertainmentTvAccessoryType** (optional): Type of icon that the Apple Home app should show. Possible values are `tv`,
-`settopbox`, `tvstick` or `audioreceiver`. Defaults to `tv`.
-
-**entertainmentTvAccessoryLightbulb** (optional): Enables an integrated lightbulb for the TV Accessory for switching the
-entertainment areas. Defaults to `false`.
-
-**updateIntervalInSeconds** (optional): The interval in seconds in which the plugin polls the Sync Box for updates. Defaults to
-`5`.
-
-**apiServerEnabled** (optional): Enables an HTTP API for controlling the Sync Box. Defaults to `false`. See **API** for more information.
-
-**apiServerPort** (optional): The port that the API (if enabled) runs on. Defaults to `40220`, please change this setting of the port is already in use.
-
-**apiServerToken** (optional): The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.
-
 ## API
 
-This plugin also provides an HTTP API to control some features of the Sync Box. It has been created so that you can further automate the system with HomeKit shortcuts. Starting with iOS 13, you can use shortcuts for HomeKit automation. Those automations that are executed on the HomeKit coordinator (i.e. iPad, AppleTV or HomePod) also support HTTP requests, which means you can automate your Sync Box without annoying switches and buttons exposed in HomeKit.
+This plugin also provides an HTTP API to control some features of the Sync Box. It has been created so that you can
+further automate the system with HomeKit shortcuts. Starting with iOS 13, you can use shortcuts for HomeKit automation.
+Those automations that are executed on the HomeKit coordinator (i.e. iPad, AppleTV or HomePod) also support HTTP
+requests, which means you can automate your Sync Box without annoying switches and buttons exposed in HomeKit.
 
 If the API is enabled, it can be reached at the specified port on the host of this plugin.
 
@@ -193,7 +213,7 @@ The token has to be specified as value of the `Authorization` header on each req
 Authorization: <YOUR-TOKEN>
 ```
 
-## API - GET
+### API - GET
 
 Use the `state` endpoint to retrieve the state of the Sync Box. The HTTP method has to be `GET`:
 
@@ -357,7 +377,7 @@ The response is a JSON response, the following properties are included:
 }
 ```
 
-## API - POST
+### API - POST
 
 Use the `state` endpoint to set state of the Sync Box. The HTTP method has to be `POST`:
 

@@ -10,7 +10,7 @@ import AsyncLock, { AsyncLockOptions } from 'async-lock';
 const fetch = fetch_retry(originalFetch, {
   retries: 3,
   retryDelay: attempt => {
-    return Math.pow(2, attempt) * 1000; // 1000, 2000, 4000
+    return Math.pow(2, attempt) * 500; // 500, 1000, 2000
   },
 });
 

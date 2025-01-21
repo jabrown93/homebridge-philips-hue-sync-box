@@ -173,15 +173,30 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
     await this.update(state);
     setInterval(async () => {
-      const state = await this.client.getState();
+      const state = await this.client.getState().catch(e => {
+        this.log.error('Failed to get state', e);
+      });
+      if (!state) {
+        this.setFault();
+        return;
+      }
       await this.update(state);
     }, this.config.updateIntervalInSeconds * 1000);
+  }
+
+  setFault() {
+    for (const device of this.devices) {
+      device.setFault();
+    }
   }
 
   async update(state: State) {
     this.log.debug('Updating state called');
     for (const device of this.devices) {
-      this.log.debug('Updating device:', device.accessory.displayName);
+      this.log.debug(
+        'Updating device:',
+        device.accessory.displayName + ' ' + device.accessory.context.kind
+      );
       device.update(state);
     }
   }
@@ -247,9 +262,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   private createPlatformAccessory(state: State, kind: string) {
     this.log.debug('Creating new accessory with kind ' + kind + '.');
+    const uuidSeed = this.config.uuidSeed ?? '';
     const accessory = new this.api.platformAccessory(
       state.device.name,
-      this.api.hap.uuid.generate(kind)
+      this.api.hap.uuid.generate(kind + uuidSeed)
     );
     if (kind === LIGHTBULB_ACCESSORY) {
       this.mainAccessory = accessory;

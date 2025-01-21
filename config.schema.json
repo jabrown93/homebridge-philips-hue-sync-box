@@ -254,6 +254,12 @@
         "required": true,
         "description": "The interval in seconds in which the plugin checks for updates."
       },
+      "uuidSeed": {
+        "title": "UUID Seed",
+        "type": "string",
+        "required": false,
+        "description": "Only set this if you're running multiple instances of this plugin to differentiate the accessories. If you have existing accessories, changing this will cause them to be removed and re-created. HomeKit will consider these as new accessories and you will need to setup them up again."
+      },
       "apiServerEnabled": {
         "title": "Enable API",
         "type": "boolean",
