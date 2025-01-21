@@ -40,7 +40,7 @@ export abstract class SyncBoxDevice {
         this.getServiceSubType()
       );
 
-    this.service.updateCharacteristic(
+    this.service.setCharacteristic(
       this.platform.api.hap.Characteristic.Name,
       accessory.displayName
     );
