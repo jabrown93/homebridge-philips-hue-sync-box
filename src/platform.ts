@@ -173,21 +173,9 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
     await this.update(state);
     setInterval(async () => {
-      const state = await this.client.getState().catch(e => {
-        this.log.error('Failed to get state', e);
-      });
-      if (!state) {
-        this.setFault();
-        return;
-      }
+      const state = await this.client.getState();
       await this.update(state);
     }, this.config.updateIntervalInSeconds * 1000);
-  }
-
-  setFault() {
-    for (const device of this.devices) {
-      device.setFault();
-    }
   }
 
   async update(state: State) {

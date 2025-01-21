@@ -124,7 +124,6 @@ export abstract class SyncBoxDevice {
 
   public update(state: State): void {
     // Updates the on characteristic
-    this.clearFault();
     this.state = state;
     this.platform.log.debug('Updated state to ' + this.state.execution.mode);
     this.service.updateCharacteristic(
@@ -160,27 +159,5 @@ export abstract class SyncBoxDevice {
       'Current value of ' + this.getPowerCharacteristic() + ': ' + currentVal
     );
     return this.updateMode(currentVal, value);
-  }
-
-  setFault() {
-    this.platform.log.debug(
-      'Switch state to GENERAL_FAULT for:',
-      this.accessory.context.kind
-    );
-    this.service.updateCharacteristic(
-      this.platform.api.hap.Characteristic.StatusFault,
-      this.platform.api.hap.Characteristic.StatusFault.GENERAL_FAULT
-    );
-  }
-
-  protected clearFault() {
-    this.platform.log.debug(
-      'Switch state to NO_FAULT for:',
-      this.accessory.context.kind
-    );
-    this.service.updateCharacteristic(
-      this.platform.api.hap.Characteristic.StatusFault,
-      this.platform.api.hap.Characteristic.StatusFault.NO_FAULT
-    );
   }
 }
