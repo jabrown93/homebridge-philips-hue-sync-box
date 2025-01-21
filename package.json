@@ -2,7 +2,7 @@
   "name": "homebridge-philips-hue-sync-box",
   "type": "module",
   "displayName": "Philips Hue Sync Box",
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0-beta.2",
   "description": "Homebridge plugin for the Philips Hue Sync Box.",
   "author": {
     "name": "Jared Brown",
