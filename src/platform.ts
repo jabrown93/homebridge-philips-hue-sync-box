@@ -262,9 +262,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   private createPlatformAccessory(state: State, kind: string) {
     this.log.debug('Creating new accessory with kind ' + kind + '.');
+    const uuidSeed = this.config.uuidSeed ?? '';
     const accessory = new this.api.platformAccessory(
       state.device.name,
-      this.api.hap.uuid.generate(kind)
+      this.api.hap.uuid.generate(kind + uuidSeed)
     );
     if (kind === LIGHTBULB_ACCESSORY) {
       this.mainAccessory = accessory;
