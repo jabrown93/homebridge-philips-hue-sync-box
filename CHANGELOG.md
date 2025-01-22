@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.1.5...v1.1.6) (2025-01-22)
+
+### Bug Fixes
+
+* only use API object provided categories and make type config case insensitive ([410730b](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/410730b0b274ff3c39e7d9c96c578f16e943c345))
+
 ## [1.1.5](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.1.4...v1.1.5) (2025-01-21)
 
 ### Bug Fixes
