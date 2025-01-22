@@ -4,7 +4,6 @@ import {
   Logging,
   PlatformAccessory,
   PlatformConfig,
-  Categories,
 } from 'homebridge';
 
 import { HueSyncBoxPlatformConfig } from './config';
@@ -21,7 +20,6 @@ import {
   SWITCH,
   SWITCH_ACCESSORY,
   TV_ACCESSORY,
-  TV_ACCESSORY_TYPES_TO_CATEGORY,
 } from './lib/constants.js';
 import { SwitchDevice } from './accessories/switch.js';
 import { LightbulbDevice } from './accessories/lightbulb.js';
@@ -47,6 +45,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   private mainAccessory?: PlatformAccessory;
 
+  private readonly TV_ACCESSORY_TYPES_TO_CATEGORY: Record<string, number>;
+
   constructor(
     public readonly logger: Logging,
     public readonly platformConfig: PlatformConfig,
@@ -60,6 +60,13 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.api = apiInput;
     this.log = logger ?? console;
     this.log.info('Initializing platform:', this.config.name);
+
+    this.TV_ACCESSORY_TYPES_TO_CATEGORY = {
+      settopbox: this.api.hap.Categories.TV_SET_TOP_BOX,
+      tvstick: this.api.hap.Categories.TV_STREAMING_STICK,
+      audioreceiver: this.api.hap.Categories.AUDIO_RECEIVER,
+      tv: this.api.hap.Categories.TELEVISION,
+    };
 
     if (!this.config.syncBoxIpAddress || !this.config.syncBoxApiAccessToken) {
       this.log.error('Missing required configuration parameters');
@@ -284,8 +291,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   ) {
     const accessory = this.createPlatformAccessory(state, accessoryName);
     accessory.category =
-      TV_ACCESSORY_TYPES_TO_CATEGORY[accessoryType.toLowerCase()] ??
-      Categories.TELEVISION;
+      this.TV_ACCESSORY_TYPES_TO_CATEGORY[accessoryType.toLowerCase()] ??
+      this.api.hap.Categories.TELEVISION;
     this.externalAccessories.set(accessory.UUID, accessory);
     this.log.debug(
       'Created TV named ' +

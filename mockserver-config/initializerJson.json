@@ -1,7 +1,7 @@
 [
   {
     "httpRequest": {
-      "path": "/api/v1"
+      "path": "/api/v1/"
     },
     "httpResponse": {
       "body": {
@@ -52,7 +52,7 @@
           "connectionState": "connected"
         },
         "execution": {
-          "mode": "powersave",
+          "mode": "passthrough",
           "syncActive": false,
           "hdmiActive": false,
           "hdmiSource": "input1",
