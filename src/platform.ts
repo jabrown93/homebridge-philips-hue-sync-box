@@ -169,7 +169,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     });
 
     this.log.debug(
-      `Publishing external ${Array.from(this.externalAccessories.values()).length} accessories`
+      `Publishing ${Array.from(this.externalAccessories.values()).length} external accessories`
     );
     this.api.publishExternalAccessories(
       PLUGIN_NAME,
