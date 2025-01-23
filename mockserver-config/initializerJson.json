@@ -1,0 +1,164 @@
+[
+  {
+    "httpRequest": {
+      "path": "/api/v1/"
+    },
+    "httpResponse": {
+      "body": {
+        "device": {
+          "name": "Bedroom Sync Box",
+          "deviceType": "HSB2",
+          "uniqueId": "12345678",
+          "apiLevel": 10,
+          "firmwareVersion": "2.4.2",
+          "buildNumber": 790586690,
+          "termsAgreed": true,
+          "wifiState": "wan",
+          "ipAddress": "192.168.1.100",
+          "wifi": {
+            "ssid": "Wifi",
+            "strength": 3
+          },
+          "lastCheckedUpdate": "2025-01-22T10:07:03Z",
+          "updatableBuildNumber": null,
+          "updatableFirmwareVersion": null,
+          "update": {
+            "autoUpdateEnabled": true,
+            "autoUpdateTime": 10
+          },
+          "ledMode": 1,
+          "action": "none",
+          "pushlink": "idle",
+          "capabilities": {
+            "maxIrCodes": 24,
+            "maxPresets": 16
+          },
+          "beta": false,
+          "overheating": false,
+          "undervolt": false,
+          "bluetooth": false
+        },
+        "hue": {
+          "bridgeUniqueId": "EC",
+          "bridgeIpAddress": "192.168.1.101",
+          "groupId": "56169ef5-be8e-abcd-abcd-ff3800aca897",
+          "groups": {
+            "39779a1c-1234-abcd-abcd-d8cbb78f3902": {
+              "name": "Living Room TV area",
+              "numLights": 1,
+              "active": false
+            }
+          },
+          "connectionState": "connected"
+        },
+        "execution": {
+          "mode": "passthrough",
+          "syncActive": false,
+          "hdmiActive": false,
+          "hdmiSource": "input1",
+          "hueTarget": "56169ef5-be8e-abcd-abcd-ff3800aca897",
+          "brightness": 99,
+          "lastSyncMode": "video",
+          "video": {
+            "intensity": "high",
+            "backgroundLighting": true
+          },
+          "game": {
+            "intensity": "intense",
+            "backgroundLighting": false
+          },
+          "music": {
+            "intensity": "high",
+            "palette": "melancholicEnergetic"
+          },
+          "preset": null
+        },
+        "hdmi": {
+          "input1": {
+            "name": "Nintendo Switch",
+            "type": "generic",
+            "status": "plugged",
+            "lastSyncMode": "video"
+          },
+          "input2": {
+            "name": "HDMI 2",
+            "type": "generic",
+            "status": "unplugged",
+            "lastSyncMode": "video"
+          },
+          "input3": {
+            "name": "HDMI 3",
+            "type": "generic",
+            "status": "unplugged",
+            "lastSyncMode": "video"
+          },
+          "input4": {
+            "name": "Soundbar",
+            "type": "soundbar",
+            "status": "unplugged",
+            "lastSyncMode": "video"
+          },
+          "output": {
+            "name": "HDMI Out",
+            "type": "generic",
+            "status": "plugged",
+            "lastSyncMode": "video"
+          },
+          "contentSpecs": "0 x 0 @ 0 - SDR",
+          "videoSyncSupported": false,
+          "audioSyncSupported": true
+        },
+        "behavior": {
+          "inactivePowersave": 20,
+          "cecPowersave": 1,
+          "usbPowersave": 1,
+          "hpdInputSwitch": 1,
+          "hpdOutputEnableMs": 1500,
+          "arcBypassMode": 0,
+          "input1": {
+            "cecInputSwitch": 1,
+            "hpdInputPortSwitch": 1,
+            "linkAutoSync": 0
+          },
+          "input2": {
+            "cecInputSwitch": 1,
+            "hpdInputPortSwitch": 1,
+            "linkAutoSync": 0
+          },
+          "input3": {
+            "cecInputSwitch": 1,
+            "hpdInputPortSwitch": 1,
+            "linkAutoSync": 0
+          },
+          "input4": {
+            "cecInputSwitch": 1,
+            "hpdInputPortSwitch": 1,
+            "linkAutoSync": 0
+          }
+        },
+        "ir": {
+          "defaultCodes": true,
+          "scan": {
+            "scanning": false,
+            "code": null,
+            "codes": []
+          },
+          "codes": {}
+        },
+        "presets": {}
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/api/v1/execution"
+    },
+    "httpResponse": {}
+  },
+  {
+    "httpRequest": {
+      "path": "/api/v1/hue"
+    },
+    "httpResponse": {}
+  }
+]

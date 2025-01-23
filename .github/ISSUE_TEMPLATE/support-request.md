@@ -3,34 +3,38 @@ name: Support Request
 about: Need help?
 title: ''
 labels: question
-assignees: ''
+assignees: 'jabrown93'
 ---
 
 <!-- You must use the issue template below when submitting a support request -->
 
-**Describe Your Problem:**
+## Describe Your Problem
 
 <!-- A clear and concise description of what problem you are trying to solve. -->
 
-**Logs:**
+## Logs
 
 ```
-Show the Homebridge logs here, remove any sensitive information.
+Show the Homebridge logs here, remove any sensitive information. Debug logs are preferred
 ```
 
-**Plugin Config:**
+## Plugin Config
+
+<!-- This section is required in order to help support you -->
 
 ```json
 {
-  "message": "Show your Homebridge config.json here, remove any sensitive information."
+  "message": "Show your Homebridge config.json here, remove any sensitive information. You only need to provide the plugin's config and not the entire config.json file."
 }
 ```
 
-**Screenshots:**
+## Screenshots
 
 <!-- If applicable, add screenshots to help explain your problem. -->
 
-**Environment:**
+## Environment
+
+<!-- This section is required in order to help support you -->
 
 - **Plugin Version**:
 - **Homebridge Version**: <!-- homebridge -V -->
