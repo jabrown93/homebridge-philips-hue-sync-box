@@ -2,7 +2,7 @@
   "pluginAlias": "PhilipsHueSyncBoxPlatform",
   "pluginType": "platform",
   "headerDisplay": "Homebridge plugin for the Philips Hue Sync Box. Important: TV accessories must be added to HomeKit manually, the logs show the pin for adding them (should be the same pin as for the plugin).",
-  "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-philips-hue-sync-box).",
+  "footerDisplay": "For help please visit the [GitHub repository](https://github.com/jabrown93/homebridge-philips-hue-sync-box).",
   "schema": {
     "type": "object",
     "properties": {
