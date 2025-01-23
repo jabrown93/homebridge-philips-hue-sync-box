@@ -11,6 +11,8 @@
 </span>
 
 [![npm version](https://badgen.net/npm/v/homebridge-philips-hue-sync-box?color=purple&icon=npm&label)](https://www.npmjs.com/package/homebridge-philips-hue-sync-box)
+[![npm version](https://badgen.net/npm/v/homebridge-philips-hue-sync-box/beta?color=purple&icon=npm&label)](https://www.npmjs.com/package/homebridge-philips-hue-sync-box)
+[![npm downloads](https://badgen.net/npm/node/homebridge-philips-hue-sync-box?color=purple&icon=npm&label)](https://www.npmjs.com/package/homebridge-philips-hue-sync-box)
 [![npm downloads](https://badgen.net/npm/dw/homebridge-philips-hue-sync-box?color=purple&icon=npm&label)](https://www.npmjs.com/package/homebridge-philips-hue-sync-box)
 [![GitHub Stars](https://badgen.net/github/stars/jabrown93/homebridge-philips-hue-sync-box?color=cyan&icon=github)](https://github.com/jabrown93/homebridge-philips-hue-sync-box)
 [![GitHub Last Commit](https://badgen.net/github/last-commit/jabrown93/homebridge-philips-hue-sync-box?color=cyan&icon=github)](https://github.com/jabrown93/homebridge-philips-hue-sync-box)
@@ -18,6 +20,24 @@
 [![GitHub issues](https://img.shields.io/github/issues/jabrown93/homebridge-philips-hue-sync-box.svg)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=license)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=security)
+
+<!-- omit in toc -->
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Prepare Sync Box](#prepare-sync-box)
+- [Configuration](#configuration)
+- [API](#api)
+  - [GET](#get)
+  - [POST](#post)
+- [Development](#development)
+  - [Setup Development Environment](#setup-development-environment)
+  - [Install Development Dependencies](#install-development-dependencies)
+  - [Build Plugin](#build-plugin)
+  - [Link To Homebridge](#link-to-homebridge)
+  - [Watch For Changes and Build Automatically](#watch-for-changes-and-build-automatically)
+- [Credit](#credit)
 
 Homebridge plugin for the Philips Hue Sync Box.
 
@@ -193,7 +213,7 @@ The token has to be specified as value of the `Authorization` header on each req
 Authorization: <YOUR-TOKEN>
 ```
 
-## API - GET
+### GET
 
 Use the `state` endpoint to retrieve the state of the Sync Box. The HTTP method has to be `GET`:
 
@@ -357,7 +377,7 @@ The response is a JSON response, the following properties are included:
 }
 ```
 
-## API - POST
+### POST
 
 Use the `state` endpoint to set state of the Sync Box. The HTTP method has to be `POST`:
 
@@ -412,3 +432,67 @@ The body of the request has to be JSON and can contain any/some/all of the follo
 	}
 }
 ```
+
+## Development
+
+### Setup Development Environment
+
+To develop Homebridge SmartRent you must have Node.js 12 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
+
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+
+### Install Development Dependencies
+
+Using a terminal, navigate to the project folder and run this command to install the development dependencies:
+
+```sh
+
+npm install
+
+```
+
+### Build Plugin
+
+TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
+
+```sh
+
+npm run build
+
+```
+
+### Link To Homebridge
+
+Run this command so your global install of Homebridge can discover the plugin in your development environment:
+
+```sh
+
+npm link
+
+```
+
+You can now start Homebridge, use the `-D` flag so you can see debug log messages in your plugin:
+
+```sh
+
+homebridge -D
+
+```
+
+### Watch For Changes and Build Automatically
+
+If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes you can run:
+
+```sh
+
+npm run watch
+
+```
+
+This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
+
+## Credit
+
+This plugin was originally developed by [Lukas Rögner](https://github.com/lukasroegner)
