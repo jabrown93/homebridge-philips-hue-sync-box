@@ -117,7 +117,7 @@ You have to create new credentials to communicate with the Philips Hue Sync Box:
 Hints:
 
 - One way to do this is to enter the following into the Terminal:
-  `curl -H -k "Content-Type: application/json" -X POST -d '{"appName": "homebridge", "appSecret":"MDAwMTExMDAwMTExMDAwMTExMDAwMTExMDAwMTExMDA=", "instanceName": "homebridge"}' https://<SYNC-BOX-IP>/api/v1/registrations`,
+  `curl -k -H "Content-Type: application/json" -X POST -d '{"appName": "homebridge", "appSecret":"MDAwMTExMDAwMTExMDAwMTExMDAwMTExMDAwMTExMDA=", "instanceName": "homebridge"}' https://<SYNC-BOX-IP>/api/v1/registrations`,
   replacing `<SYNC-BOX-IP>` with the IP address of your Sync Box.
 - Another way may be to use tools like **Postman**. Set the request method to `POST` and enter
   `https://<SYNC-BOX-IP>/api/v1/registrations` as the request URL (replace `<SYNC-BOX-IP>` with the IP address of your
