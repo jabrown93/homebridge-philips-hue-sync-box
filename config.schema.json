@@ -100,10 +100,22 @@
         "type": "string",
         "default": "tv",
         "oneOf": [
-          { "title": "TV", "enum": ["tv"] },
-          { "title": "Set Top Box", "enum": ["settopbox"] },
-          { "title": "TV Stick", "enum": ["tvstick"] },
-          { "title": "Audio Receiver", "enum": ["audioreceiver"] }
+          {
+            "title": "TV",
+            "enum": ["tv", "TV"]
+          },
+          {
+            "title": "Set Top Box",
+            "enum": ["settopbox"]
+          },
+          {
+            "title": "TV Stick",
+            "enum": ["tvstick"]
+          },
+          {
+            "title": "Audio Receiver",
+            "enum": ["audioreceiver"]
+          }
         ]
       },
       "tvAccessoryLightbulb": {
@@ -133,7 +145,7 @@
         "oneOf": [
           {
             "title": "TV",
-            "enum": ["tv"]
+            "enum": ["tv", "TV"]
           },
           {
             "title": "Set Top Box",
@@ -176,7 +188,7 @@
         "oneOf": [
           {
             "title": "TV",
-            "enum": ["tv"]
+            "enum": ["tv", "TV"]
           },
           {
             "title": "Set Top Box",
@@ -219,7 +231,7 @@
         "oneOf": [
           {
             "title": "TV",
-            "enum": ["tv"]
+            "enum": ["tv", "TV"]
           },
           {
             "title": "Set Top Box",
