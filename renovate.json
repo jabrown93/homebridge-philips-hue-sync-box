@@ -26,6 +26,20 @@
   },
   "packageRules": [
     {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions (minor/patch)",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions (major)",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
       "matchManagers": ["npm"],
       "groupName": "npm minor/patch",
       "matchUpdateTypes": ["minor", "patch"],
