@@ -6,9 +6,15 @@
     "helpers:pinGitHubActionDigests"
   ],
   "timezone": "America/Los_Angeles",
-  "dependencyDashboard": false,
-  "rebaseWhen": "conflicted",
+  "dependencyDashboard": true,
+  "rebaseWhen": "behind-base-branch",
   "rangeStrategy": "replace",
+  "prCreation": "immediate",
+  "automerge": false,
+  "commitBodyTable": true,
+  "prHourlyLimit": 10,
+  "configMigration": true,
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
