@@ -75,22 +75,5 @@
       "automerge": false,
       "labels": ["renovate-major", "compose", "needs-review"]
     }
-  ],
-  "regexManagers": [
-    {
-      "fileMatch": ["^package.json$"],
-      "matchStrings": [
-        "\"engines\"\\s*:\\s*\\{[^\\}]*\"node\"\\s*:\\s*\"(?<currentValue>[^\"]+)\"[^\\}]*\\}"
-      ],
-      "depNameTemplate": "node",
-      "datasourceTemplate": "node",
-      "versioningTemplate": "node",
-      "extractVersionTemplate": "{{#if currentValue}}{{ currentValue }}{{/if}}",
-      "autoReplaceStringTemplate": "\"engines\": { \"node\": \"{{newValue}}\" }",
-      "commitMessageTopic": "Node engine in package.json",
-      "commitMessageExtra": "to {{newValue}}",
-      "groupName": "node engine",
-      "labels": ["node-runtime"]
-    }
   ]
 }
