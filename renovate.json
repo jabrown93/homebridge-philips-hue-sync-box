@@ -15,7 +15,8 @@
     "enabled": true,
     "automerge": true,
     "automergeType": "pr",
-    "automergeStrategy": "squash"
+    "automergeStrategy": "squash",
+    "schedule": ["before 12pm on monday"]
   },
   "npm": {
     "postUpdateOptions": ["npmDedupe"]
