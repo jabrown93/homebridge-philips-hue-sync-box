@@ -1,0 +1,90 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":semanticCommits",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "America/Los_Angeles",
+  "dependencyDashboard": false,
+  "rebaseWhen": "conflicted",
+  "rangeStrategy": "replace",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "automergeType": "pr",
+    "automergeStrategy": "squash"
+  },
+  "npm": {
+    "postUpdateOptions": ["npmDedupe"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm minor/patch",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm major",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["renovate-major", "needs-review"]
+    },
+    {
+      "description": "Update Node in .nvmrc / .node-version",
+      "matchManagers": ["nvm", "node-version"],
+      "groupName": "Node runtime (minor/patch)",
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "labels": ["node-runtime"],
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "description": "Update Node in .nvmrc / .node-version",
+      "matchManagers": ["nvm", "node-version"],
+      "groupName": "Node runtime (major)",
+      "automerge": false,
+      "labels": ["node-runtime", "renovate-major", "needs-review"],
+      "matchUpdateTypes": ["major"]
+    },
+    {
+      "description": "Docker Compose - minor/patch automerge",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "compose images (minor/patch)",
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "Docker Compose - major PRs",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "compose images (major)",
+      "automerge": false,
+      "labels": ["renovate-major", "compose", "needs-review"]
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^package.json$"],
+      "matchStrings": [
+        "\"engines\"\\s*:\\s*\\{[^\\}]*\"node\"\\s*:\\s*\"(?<currentValue>[^\"]+)\"[^\\}]*\\}"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node",
+      "versioningTemplate": "node",
+      "extractVersionTemplate": "{{#if currentValue}}{{ currentValue }}{{/if}}",
+      "autoReplaceStringTemplate": "\"engines\": { \"node\": \"{{newValue}}\" }",
+      "commitMessageTopic": "Node engine in package.json",
+      "commitMessageExtra": "to {{newValue}}",
+      "groupName": "node engine",
+      "labels": ["node-runtime"]
+    }
+  ]
+}
