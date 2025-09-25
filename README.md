@@ -129,7 +129,14 @@ Hints:
 
 The official Hue documentation for retrieving the Sync Box access token can be
 found [here](https://developers.meethue.com/develop/hue-entertainment/hue-hdmi-sync-box-api/#Getting%20Started) (free
-account required). 
+account required).
+
+A token can be validated using the following curl command (replace `<SYNC-BOX-IP>` and `<ACCESS-TOKEN>` with your
+values):
+
+```shell
+curl -k -H "Authorization: Bearer <ACCESS-TOKEN>" https://<SYNC-BOX-IP>/api/v1/
+```
 
 **Please do not open issues regarding the access token or "Invalid Token" errors in plugin logs, the
 plugin has no control over the access token. The issues will be immediately closed**
