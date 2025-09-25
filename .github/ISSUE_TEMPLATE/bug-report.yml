@@ -1,0 +1,96 @@
+name: Bug Report
+description: Create a report to help us improve
+labels: ['bug']
+assignees: ['jabrown93']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form to help us diagnose and fix the issue.
+  - type: checkbox
+    id: not_401_issue
+    attributes:
+      label: This is not a 401 Unauthorized / Invalid Token issue.
+      required: true
+  - type: textarea
+    id: problem_description
+    attributes:
+      label: Describe The Bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the problem...
+      required: true
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: List the steps to reproduce the issue...
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: Describe what you expected to happen...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Show the Homebridge logs here, remove any sensitive information. Debug logs are preferred.
+      placeholder: Copy and paste logs here...
+      required: true
+  - type: code
+    id: plugin_config
+    attributes:
+      label: Plugin Config
+      description: Show your Homebridge plugin config here, remove any sensitive information. You only need to provide the plugin's config and not the entire config.json file.
+      language: json
+      placeholder: '{ "plugin": { "option": "value" } }'
+      required: true
+  - type: group
+    id: environment
+    attributes:
+      label: Environment
+      description: This section is required in order to help reproduce your issues.
+    repeats: false
+    body:
+      - type: input
+        id: plugin_version
+        attributes:
+          label: Plugin Version
+          placeholder: e.g. 1.0.0
+          required: true
+      - type: input
+        id: homebridge_version
+        attributes:
+          label: Homebridge Version
+          description: Run `homebridge -V`
+          placeholder: e.g. 1.4.0
+          required: true
+      - type: input
+        id: node_version
+        attributes:
+          label: Node.js Version
+          description: Run `node -v`
+          placeholder: e.g. 18.12.1
+          required: true
+      - type: input
+        id: npm_version
+        attributes:
+          label: NPM Version
+          description: Run `npm -v`
+          placeholder: e.g. 9.1.2
+          required: true
+      - type: input
+        id: operating_system
+        attributes:
+          label: Operating System
+          description: e.g. Raspbian / Ubuntu / Debian / Windows / macOS / Docker / hb-service
+          placeholder: e.g. Raspbian
+          required: true
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context / Screenshots
+      description: If applicable, add screenshots or any other context to help explain your problem.
+      placeholder: Add any other context or screenshots here...

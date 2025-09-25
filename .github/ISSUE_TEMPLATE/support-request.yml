@@ -1,0 +1,114 @@
+name: Support Request
+description: Need help using the plugin?
+labels: ['question']
+assignees: ['jabrown93']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Read first:**
+        - Errors such as `401 Unauthorized` / `{"code":2,"message":"Invalid Token"}` are returned by the Sync Box itself. The plugin has no control over this and these issues will be immediately closed
+        - If your problem is token/authorization related, please regenerate a full token (three dot‑separated parts) and verify it with `curl`.
+
+  - type: checkboxes
+    id: prechecks
+    attributes:
+      label: Pre‑checks
+      options:
+        - label: I confirm this is **not** a 401 Unauthorized / "Invalid Token" issue. I validated my token via `curl` and it is accepted by the Sync Box.
+          required: true
+        - label: I have read the README and FAQ and searched existing issues.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe Your Problem
+      description: A clear and concise description of what you are trying to do and what happens instead.
+      placeholder: |
+        Example: When turning on the accessory, intensity stays at minimum and logs show ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Homebridge Logs (debug preferred)
+      description: Include relevant logs, redact sensitive values.
+      render: shell
+      placeholder: |
+        [9/24/2025, 8:28:23 AM] [homebridge-philips-hue-sync-box] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Plugin Config (from `config.json`)
+      description: Provide only this plugin's config. **Do not include full Homebridge config.** Redact tokens.
+      render: json
+      placeholder: |
+        {
+          "platform": "PhilipsHueSyncBox",
+          "syncBoxIpAddress": "192.168.x.x",
+          "syncBoxApiAccessToken": "<REDACTED>",
+          "defaultOnMode": "video",
+          "defaultOffMode": "passthrough"
+        }
+    validations:
+      required: true
+
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin Version
+    validations:
+      required: true
+
+  - type: input
+    id: homebridge_version
+    attributes:
+      label: Homebridge Version
+      description: Output of `homebridge -V`
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js Version
+      description: Output of `node -v`
+    validations:
+      required: true
+
+  - type: input
+    id: npm_version
+    attributes:
+      label: NPM Version
+      description: Output of `npm -v`
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Raspbian
+        - Ubuntu
+        - Debian
+        - Windows
+        - macOS
+        - Docker
+        - hb-service
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context / screenshots
+      description: Optional. Add any other context or screenshots to help explain your problem.
+    validations:
+      required: false

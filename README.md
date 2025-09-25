@@ -107,11 +107,11 @@ You have to create new credentials to communicate with the Philips Hue Sync Box:
 - Make sure synchronization is stopped
 - Make an HTTP POST request to `https://<SYNC-BOX-IP>/api/v1/registrations`
 - The body of the request has to be JSON:
-  `{ "appName": "homebridge", "appSecret": "MDAwMTExMDAwMTExMDAwMTExMDAwMTExMDAwMTExMDA=", "instanceName": "homebridge" }`
+  `{ "appName": "homebridge", "instanceName": "homebridge" }`
 - The first response to the request will be `{ "code": 16, "message": "Invalid State" }`
-- IMPORTANT: Now, click and hold the button of the Sync Box until the LED switches to green. Immediately release the
+- IMPORTANT: Within 5 seconds, press and hold the button of the Sync Box until the LED switches to green. Immediately release the
   button as soon as the LED is green! It will switch to white again.
-- Immediately make the request again
+- Within 5 seconds, make the same HTTP POST request again
 - The response contains an `accessToken` string
 
 Hints:
@@ -122,11 +122,15 @@ Hints:
 - Another way may be to use tools like **Postman**. Set the request method to `POST` and enter
   `https://<SYNC-BOX-IP>/api/v1/registrations` as the request URL (replace `<SYNC-BOX-IP>` with the IP address of your
   Sync Box). Next, open the tab "Body", set the type to "raw" and select "JSON" as the content type in the dropdown.
-  Then, enter
-  `{ "appName": "homebridge", "appSecret": "MDAwMTExMDAwMTExMDAwMTExMDAwMTExMDAwMTExMDA=", "instanceName": "homebridge" }`
+  Then, enter `{ "appName": "homebridge", "instanceName": "homebridge" }`
   into the text box for the body. Click on the "Send" button at the top right to send the request. If an issue occurs
   due to a certificate error, you can disable certificate verification in Postman. Go to the global settings, open the
   tab "General" and disable the toggle switch for "SSL certificate verification".
+
+The official Hue documentation for retrieving the Sync Box access token can be
+found [here](https://developers.meethue.com/develop/hue-entertainment/hue-hdmi-sync-box-api/#Getting%20Started) (free
+account required). **Please do not open issues regarding the access token or "Invalid Token" errors in plugin logs, the
+plugin has no control over the access token. The issues will be immediately closed**
 
 ### Multiple Sync Boxes
 
@@ -351,7 +355,8 @@ The body of the request has to be JSON and can contain any/some/all of the follo
     syncActive: true,
     hdmiActive: true,
     hdmiSource: 'input4',
-    hueTarget: '12345678-be8e-4866-adce-ff3800aca123', // this must be the ID of the group you want to sync from hue.groups. Any other value will cause an error.
+    hueTarget: '12345678-be8e-4866-adce-ff3800aca123',
+    // this must be the ID of the group you want to sync from hue.groups. Any other value will cause an error.
     brightness: 200,
     lastSyncMode: 'video',
     video: {
