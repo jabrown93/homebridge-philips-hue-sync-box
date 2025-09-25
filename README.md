@@ -129,7 +129,9 @@ Hints:
 
 The official Hue documentation for retrieving the Sync Box access token can be
 found [here](https://developers.meethue.com/develop/hue-entertainment/hue-hdmi-sync-box-api/#Getting%20Started) (free
-account required). **Please do not open issues regarding the access token or "Invalid Token" errors in plugin logs, the
+account required). 
+
+**Please do not open issues regarding the access token or "Invalid Token" errors in plugin logs, the
 plugin has no control over the access token. The issues will be immediately closed**
 
 ### Multiple Sync Boxes
