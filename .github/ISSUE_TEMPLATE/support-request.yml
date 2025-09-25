@@ -39,7 +39,7 @@ body:
       placeholder: |
         [9/24/2025, 8:28:23 AM] [homebridge-philips-hue-sync-box] ...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: config

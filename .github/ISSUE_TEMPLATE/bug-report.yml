@@ -7,17 +7,22 @@ body:
     attributes:
       value: |
         Please fill out this form to help us diagnose and fix the issue.
-  - type: checkbox
-    id: not_401_issue
+  - type: checkboxes
+    id: prechecks
     attributes:
-      label: This is not a 401 Unauthorized / Invalid Token issue.
-      required: true
+      label: Pre‑checks
+      options:
+        - label: I confirm this is **not** a 401 Unauthorized / "Invalid Token" issue. I validated my token via `curl` and it is accepted by the Sync Box.
+          required: true
+        - label: I have read the README and FAQ and searched existing issues.
+          required: true
   - type: textarea
     id: problem_description
     attributes:
       label: Describe The Bug
       description: A clear and concise description of what the bug is.
       placeholder: Describe the problem...
+    validations:
       required: true
   - type: textarea
     id: steps_to_reproduce
@@ -25,6 +30,7 @@ body:
       label: To Reproduce
       description: Steps to reproduce the behavior.
       placeholder: List the steps to reproduce the issue...
+    validations:
       required: true
   - type: textarea
     id: expected_behavior
@@ -38,6 +44,7 @@ body:
       label: Logs
       description: Show the Homebridge logs here, remove any sensitive information. Debug logs are preferred.
       placeholder: Copy and paste logs here...
+    validations:
       required: true
   - type: code
     id: plugin_config
@@ -46,6 +53,7 @@ body:
       description: Show your Homebridge plugin config here, remove any sensitive information. You only need to provide the plugin's config and not the entire config.json file.
       language: json
       placeholder: '{ "plugin": { "option": "value" } }'
+    validations:
       required: true
   - type: group
     id: environment
@@ -59,6 +67,7 @@ body:
         attributes:
           label: Plugin Version
           placeholder: e.g. 1.0.0
+        validations:
           required: true
       - type: input
         id: homebridge_version
@@ -66,6 +75,7 @@ body:
           label: Homebridge Version
           description: Run `homebridge -V`
           placeholder: e.g. 1.4.0
+        validations:
           required: true
       - type: input
         id: node_version
@@ -73,6 +83,7 @@ body:
           label: Node.js Version
           description: Run `node -v`
           placeholder: e.g. 18.12.1
+        validations:
           required: true
       - type: input
         id: npm_version
@@ -80,13 +91,15 @@ body:
           label: NPM Version
           description: Run `npm -v`
           placeholder: e.g. 9.1.2
+        validations:
           required: true
       - type: input
         id: operating_system
         attributes:
           label: Operating System
-          description: e.g. Raspbian / Ubuntu / Debian / Windows / macOS / Docker / hb-service
+          description: e.g. Raspbian / Ubuntu / Windows / macOS / Docker / hb-service
           placeholder: e.g. Raspbian
+        validations:
           required: true
   - type: textarea
     id: additional_context
