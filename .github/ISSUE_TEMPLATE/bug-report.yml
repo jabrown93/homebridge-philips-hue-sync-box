@@ -46,7 +46,7 @@ body:
       placeholder: Copy and paste logs here...
     validations:
       required: true
-  - type: code
+  - type: textarea
     id: plugin_config
     attributes:
       label: Plugin Config
@@ -55,52 +55,45 @@ body:
       placeholder: '{ "plugin": { "option": "value" } }'
     validations:
       required: true
-  - type: group
-    id: environment
+  - type: input
+    id: plugin_version
     attributes:
-      label: Environment
-      description: This section is required in order to help reproduce your issues.
-    repeats: false
-    body:
-      - type: input
-        id: plugin_version
-        attributes:
-          label: Plugin Version
-          placeholder: e.g. 1.0.0
-        validations:
-          required: true
-      - type: input
-        id: homebridge_version
-        attributes:
-          label: Homebridge Version
-          description: Run `homebridge -V`
-          placeholder: e.g. 1.4.0
-        validations:
-          required: true
-      - type: input
-        id: node_version
-        attributes:
-          label: Node.js Version
-          description: Run `node -v`
-          placeholder: e.g. 18.12.1
-        validations:
-          required: true
-      - type: input
-        id: npm_version
-        attributes:
-          label: NPM Version
-          description: Run `npm -v`
-          placeholder: e.g. 9.1.2
-        validations:
-          required: true
-      - type: input
-        id: operating_system
-        attributes:
-          label: Operating System
-          description: e.g. Raspbian / Ubuntu / Windows / macOS / Docker / hb-service
-          placeholder: e.g. Raspbian
-        validations:
-          required: true
+      label: Plugin Version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: homebridge_version
+    attributes:
+      label: Homebridge Version
+      description: Run `homebridge -V`
+      placeholder: e.g. 1.4.0
+    validations:
+      required: true
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js Version
+      description: Run `node -v`
+      placeholder: e.g. 18.12.1
+    validations:
+      required: true
+  - type: input
+    id: npm_version
+    attributes:
+      label: NPM Version
+      description: Run `npm -v`
+      placeholder: e.g. 9.1.2
+    validations:
+      required: true
+  - type: input
+    id: operating_system
+    attributes:
+      label: Operating System
+      description: e.g. Raspbian / Ubuntu / Windows / macOS / Docker / hb-service
+      placeholder: e.g. Raspbian
+    validations:
+      required: true
   - type: textarea
     id: additional_context
     attributes:
