@@ -85,7 +85,7 @@
     "@typescript-eslint/eslint-plugin": "8.44.1",
     "@typescript-eslint/parser": "8.44.1",
     "conventional-changelog-conventionalcommits": "9.1.0",
-    "cross-env": "10.0.0",
+    "cross-env": "10.1.0",
     "eslint": "9.36.0",
     "homebridge": "1.11.0",
     "homebridge-config-ui-x": "5.7.0",
