@@ -25,7 +25,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Node.js
-        uses: actions/setup-node@v5.0.0
+        uses: actions/setup-node@v6.0.0
         with:
           node-version: 'lts/*'
       - name: Install dependencies
