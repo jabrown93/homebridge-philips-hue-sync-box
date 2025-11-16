@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.2.4...v2.0.0) (2025-11-16)
+
+### ⚠ BREAKING CHANGES
+
+* Add support for Node 24 and drop Node 18 support (#283)
+
+### Features
+
+* Add support for Node 24 and drop Node 18 support ([#283](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/283)) ([f2b5ed8](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/f2b5ed82aed380c5781ef5cac11f5e5a4d8569db))
+* **deps:** update all non-major dependencies ([#218](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/218)) ([5ee467f](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/5ee467f572429ab4f05ccca858a9f26c7f60ea3d))
+* **deps:** update dependency homebridge-config-ui-x to v5.7.0 ([#220](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/220)) ([65f8b12](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/65f8b120bbc117460bfb712e07835068598d084a))
+
 ## [1.2.4](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.2.3...v1.2.4) (2025-06-29)
 
 ### Bug Fixes
