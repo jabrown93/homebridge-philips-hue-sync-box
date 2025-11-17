@@ -90,7 +90,7 @@
         "type": "boolean",
         "default": false,
         "required": false,
-        "description": "TV Accessories will be marked as off when in passthrough mode, by default they will be on"
+        "description": "When enabled, TV accessories will be marked as off when in passthrough mode. By default (when disabled), they are marked as on in passthrough mode."
       },
       "updateIntervalInSeconds": {
         "title": "Update Interval",
