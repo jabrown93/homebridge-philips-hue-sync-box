@@ -102,6 +102,13 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   }
 
   protected shouldBeOn(): boolean {
+    if (
+      this.platform.config.treatPassthroughAsOffForTv &&
+      this.state.execution.mode === PASSTHROUGH
+    ) {
+      return false;
+    }
+
     return this.state.execution.mode !== POWER_SAVE;
   }
 

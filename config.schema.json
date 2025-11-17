@@ -85,6 +85,13 @@
       "entertainmentTvAccessoryLightbulb": {
         "$ref": "#/definitions/lightbulbOption"
       },
+      "treatPassthroughAsOffForTv": {
+        "title": "Treat Passthrough as Off for TV Accessories",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "TV Accessories will be marked as off when in passthrough mode, by default they will be on"
+      },
       "updateIntervalInSeconds": {
         "title": "Update Interval",
         "type": "integer",
