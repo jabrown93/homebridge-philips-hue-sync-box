@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.0.0...v2.1.0) (2025-11-17)
+
+### Features
+
+* Make TV power state conditons configurable ([#284](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/284)) ([5334c21](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/5334c214f152b3c4c6028271f45f519f68fce69f))
+
 ## [2.0.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v1.2.4...v2.0.0) (2025-11-16)
 
 ### ⚠ BREAKING CHANGES
