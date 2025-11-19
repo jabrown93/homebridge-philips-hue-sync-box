@@ -1,27 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "pluginAlias": "PhilipsHueSyncBoxPlatform",
   "pluginType": "platform",
   "headerDisplay": "Homebridge plugin for the Philips Hue Sync Box. Important: TV accessories must be added to HomeKit manually, the logs show the pin for adding them (should be the same pin as for the plugin).",
   "footerDisplay": "For help please visit the [GitHub repository](https://github.com/jabrown93/homebridge-philips-hue-sync-box).",
   "strictValidation": true,
-  "definitions": {
-    "homeKitType": {
-      "type": "string",
-      "default": "tv",
-      "oneOf": [
-        { "title": "TV", "enum": ["tv", "TV"] },
-        { "title": "Set Top Box", "enum": ["settopbox"] },
-        { "title": "TV Stick", "enum": ["tvstick"] },
-        { "title": "Audio Receiver", "enum": ["audioreceiver"] }
-      ]
-    },
-    "lightbulbOption": {
-      "type": "boolean",
-      "default": false,
-      "description": "Enables an integrated lightbulb for the TV Accessory."
-    }
-  },
   "schema": {
     "type": "object",
     "properties": {
@@ -45,10 +27,22 @@
         "default": "video",
         "description": "The mode that is used when switching the Sync Box on via HomeKit. Possible values are 'video', 'music', 'game' or 'lastSyncMode'.",
         "oneOf": [
-          { "title": "Video", "enum": ["video"] },
-          { "title": "Music", "enum": ["music"] },
-          { "title": "Game", "enum": ["game"] },
-          { "title": "Last Sync Mode", "enum": ["lastSyncMode"] }
+          {
+            "title": "Video",
+            "enum": ["video"]
+          },
+          {
+            "title": "Music",
+            "enum": ["music"]
+          },
+          {
+            "title": "Game",
+            "enum": ["game"]
+          },
+          {
+            "title": "Last Sync Mode",
+            "enum": ["lastSyncMode"]
+          }
         ]
       },
       "defaultOffMode": {
@@ -58,8 +52,14 @@
         "default": "passthrough",
         "description": "The mode that is used when switching the Sync Box off via HomeKit. Possible values are 'powersave' or 'passthrough'.",
         "oneOf": [
-          { "title": "Passthrough", "enum": ["passthrough"] },
-          { "title": "Power Save", "enum": ["powersave"] }
+          {
+            "title": "Passthrough",
+            "enum": ["passthrough"]
+          },
+          {
+            "title": "Power Save",
+            "enum": ["powersave"]
+          }
         ]
       },
       "baseAccessory": {
@@ -68,22 +68,191 @@
         "default": "lightbulb",
         "required": true,
         "oneOf": [
-          { "title": "Lightbulb", "enum": ["lightbulb"] },
-          { "title": "Switch", "enum": ["switch"] },
-          { "title": "None", "enum": ["none"] }
+          {
+            "title": "Lightbulb",
+            "enum": ["lightbulb"]
+          },
+          {
+            "title": "Switch",
+            "enum": ["switch"]
+          },
+          {
+            "title": "None",
+            "enum": ["none"]
+          }
         ]
       },
-      "tvAccessoryType": { "$ref": "#/definitions/homeKitType" },
-      "modeTvAccessoryType": { "$ref": "#/definitions/homeKitType" },
-      "intensityTvAccessoryType": { "$ref": "#/definitions/homeKitType" },
-      "entertainmentTvAccessoryType": { "$ref": "#/definitions/homeKitType" },
-      "tvAccessoryLightbulb": { "$ref": "#/definitions/lightbulbOption" },
-      "modeTvAccessoryLightbulb": { "$ref": "#/definitions/lightbulbOption" },
+      "tvAccessory": {
+        "title": "Enable HDMI TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the inputs of the Sync Box."
+      },
+      "tvAccessoryConfiguredName": {
+        "title": "Set name for the HDMI TV",
+        "type": "string",
+        "required": false,
+        "description": "Sets custom name for the HDMI TV. Overwrites names configured HomeKit."
+      },
+      "tvAccessoryType": {
+        "title": "HDMI TV HomeKit Type",
+        "type": "string",
+        "default": "tv",
+        "oneOf": [
+          {
+            "title": "TV",
+            "enum": ["tv", "TV"]
+          },
+          {
+            "title": "Set Top Box",
+            "enum": ["settopbox"]
+          },
+          {
+            "title": "TV Stick",
+            "enum": ["tvstick"]
+          },
+          {
+            "title": "Audio Receiver",
+            "enum": ["audioreceiver"]
+          }
+        ]
+      },
+      "tvAccessoryLightbulb": {
+        "title": "Enable lightbulb for HDMI TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "modeTvAccessory": {
+        "title": "Enable Mode TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the modes of the Sync Box."
+      },
+      "modeTvAccessoryConfiguredName": {
+        "title": "Set name for Mode TV",
+        "type": "string",
+        "required": false,
+        "description": "Sets custom name for the Mode TV. Overwrites names configured HomeKit."
+      },
+      "modeTvAccessoryType": {
+        "title": "Mode TV HomeKit Type",
+        "type": "string",
+        "default": "tv",
+        "oneOf": [
+          {
+            "title": "TV",
+            "enum": ["tv", "TV"]
+          },
+          {
+            "title": "Set Top Box",
+            "enum": ["settopbox"]
+          },
+          {
+            "title": "TV Stick",
+            "enum": ["tvstick"]
+          },
+          {
+            "title": "Audio Receiver",
+            "enum": ["audioreceiver"]
+          }
+        ]
+      },
+      "modeTvAccessoryLightbulb": {
+        "title": "Enable lightbulb for Mode TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "intensityTvAccessory": {
+        "title": "Enable Intensity TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the intensity of the Sync Box."
+      },
+      "intensityTvAccessoryConfiguredName": {
+        "title": "Set name for Intensity TV",
+        "type": "string",
+        "required": false,
+        "description": "Sets custom name for the Intensity TV. Overwrites names configured HomeKit."
+      },
+      "intensityTvAccessoryType": {
+        "title": "Intensity TV HomeKit Type",
+        "type": "string",
+        "default": "tv",
+        "oneOf": [
+          {
+            "title": "TV",
+            "enum": ["tv", "TV"]
+          },
+          {
+            "title": "Set Top Box",
+            "enum": ["settopbox"]
+          },
+          {
+            "title": "TV Stick",
+            "enum": ["tvstick"]
+          },
+          {
+            "title": "Audio Receiver",
+            "enum": ["audioreceiver"]
+          }
+        ]
+      },
       "intensityTvAccessoryLightbulb": {
-        "$ref": "#/definitions/lightbulbOption"
+        "title": "Enable lightbulb for Intensity TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
+      },
+      "entertainmentTvAccessory": {
+        "title": "Enable Entertainment Area TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a TV Accessory for switching the entertainment area of the Sync Box."
+      },
+      "entertainmentTvAccessoryConfiguredName": {
+        "title": "Set name for Entertainment Area TV",
+        "type": "string",
+        "required": false,
+        "description": "Sets custom name for the Entertainment Area TV. Overwrites names configured HomeKit."
+      },
+      "entertainmentTvAccessoryType": {
+        "title": "Entertainment Area TV HomeKit Type",
+        "type": "string",
+        "default": "tv",
+        "oneOf": [
+          {
+            "title": "TV",
+            "enum": ["tv", "TV"]
+          },
+          {
+            "title": "Set Top Box",
+            "enum": ["settopbox"]
+          },
+          {
+            "title": "TV Stick",
+            "enum": ["tvstick"]
+          },
+          {
+            "title": "Audio Receiver",
+            "enum": ["audioreceiver"]
+          }
+        ]
       },
       "entertainmentTvAccessoryLightbulb": {
-        "$ref": "#/definitions/lightbulbOption"
+        "title": "Enable lightbulb for Entertainment Area TV",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables an integrated lightbulb for the TV Accessory."
       },
       "treatPassthroughAsOffForTv": {
         "title": "Treat Passthrough as Off for TV Accessories",
