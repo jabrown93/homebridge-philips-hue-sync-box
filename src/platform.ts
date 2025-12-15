@@ -20,6 +20,16 @@ import {
   SWITCH,
   SWITCH_ACCESSORY,
   TV_ACCESSORY,
+  DEFAULT_ON_MODE,
+  DEFAULT_OFF_MODE,
+  DEFAULT_UPDATE_INTERVAL_SECONDS,
+  DEFAULT_API_SERVER_PORT,
+  DEFAULT_BASE_ACCESSORY,
+  DEFAULT_TV_ACCESSORY_TYPE,
+  TV_TYPE_SET_TOP_BOX,
+  TV_TYPE_STREAMING_STICK,
+  TV_TYPE_AUDIO_RECEIVER,
+  TV_TYPE_TV,
 } from './lib/constants.js';
 import { SwitchDevice } from './accessories/switch.js';
 import { LightbulbDevice } from './accessories/lightbulb.js';
@@ -62,10 +72,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log.info('Initializing platform:', this.config.name);
 
     this.TV_ACCESSORY_TYPES_TO_CATEGORY = {
-      settopbox: this.api.hap.Categories.TV_SET_TOP_BOX,
-      tvstick: this.api.hap.Categories.TV_STREAMING_STICK,
-      audioreceiver: this.api.hap.Categories.AUDIO_RECEIVER,
-      tv: this.api.hap.Categories.TELEVISION,
+      [TV_TYPE_SET_TOP_BOX]: this.api.hap.Categories.TV_SET_TOP_BOX,
+      [TV_TYPE_STREAMING_STICK]: this.api.hap.Categories.TV_STREAMING_STICK,
+      [TV_TYPE_AUDIO_RECEIVER]: this.api.hap.Categories.AUDIO_RECEIVER,
+      [TV_TYPE_TV]: this.api.hap.Categories.TELEVISION,
     };
 
     if (!this.config.syncBoxIpAddress || !this.config.syncBoxApiAccessToken) {
@@ -90,30 +100,34 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   handleConfigDefaults() {
     this.config.updateIntervalInSeconds =
-      this.config.updateIntervalInSeconds ?? 5;
+      this.config.updateIntervalInSeconds ?? DEFAULT_UPDATE_INTERVAL_SECONDS;
     this.config.apiServerEnabled = this.config.apiServerEnabled ?? false;
-    this.config.apiServerPort = this.config.apiServerPort ?? 40220;
-    this.config.defaultOnMode = this.config.defaultOnMode ?? 'video';
-    this.config.defaultOffMode = this.config.defaultOffMode ?? 'passthrough';
-    this.config.baseAccessory = this.config.baseAccessory ?? 'lightbulb';
+    this.config.apiServerPort =
+      this.config.apiServerPort ?? DEFAULT_API_SERVER_PORT;
+    this.config.defaultOnMode = this.config.defaultOnMode ?? DEFAULT_ON_MODE;
+    this.config.defaultOffMode = this.config.defaultOffMode ?? DEFAULT_OFF_MODE;
+    this.config.baseAccessory =
+      this.config.baseAccessory ?? DEFAULT_BASE_ACCESSORY;
     this.config.tvAccessory = this.config.tvAccessory ?? false;
-    this.config.tvAccessoryType = this.config.tvAccessoryType ?? 'tv';
+    this.config.tvAccessoryType =
+      this.config.tvAccessoryType ?? DEFAULT_TV_ACCESSORY_TYPE;
     this.config.tvAccessoryLightbulb =
       this.config.tvAccessoryLightbulb ?? false;
     this.config.modeTvAccessory = this.config.modeTvAccessory ?? false;
-    this.config.modeTvAccessoryType = this.config.modeTvAccessoryType ?? 'tv';
+    this.config.modeTvAccessoryType =
+      this.config.modeTvAccessoryType ?? DEFAULT_TV_ACCESSORY_TYPE;
     this.config.modeTvAccessoryLightbulb =
       this.config.modeTvAccessoryLightbulb ?? false;
     this.config.intensityTvAccessory =
       this.config.intensityTvAccessory ?? false;
     this.config.intensityTvAccessoryType =
-      this.config.intensityTvAccessoryType ?? 'tv';
+      this.config.intensityTvAccessoryType ?? DEFAULT_TV_ACCESSORY_TYPE;
     this.config.intensityTvAccessoryLightbulb =
       this.config.intensityTvAccessoryLightbulb ?? false;
     this.config.entertainmentTvAccessory =
       this.config.entertainmentTvAccessory ?? false;
     this.config.entertainmentTvAccessoryType =
-      this.config.entertainmentTvAccessoryType ?? 'tv';
+      this.config.entertainmentTvAccessoryType ?? DEFAULT_TV_ACCESSORY_TYPE;
     this.config.entertainmentTvAccessoryLightbulb =
       this.config.entertainmentTvAccessoryLightbulb ?? false;
   }

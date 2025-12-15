@@ -7,7 +7,18 @@ import {
 } from 'homebridge';
 import { HueSyncBoxPlatform } from '../platform';
 import { State } from '../state';
-import { PASSTHROUGH, POWER_SAVE } from '../lib/constants.js';
+import {
+  PASSTHROUGH,
+  POWER_SAVE,
+  MODE_VIDEO,
+  MODE_MUSIC,
+  MODE_GAME,
+  MODE_LAST_SYNC,
+  BRIGHTNESS_MAX_SYNCBOX,
+  BRIGHTNESS_MAX_HOMEKIT,
+  BRIGHTNESS_STEP_SYNCBOX,
+  BRIGHTNESS_MIN,
+} from '../lib/constants.js';
 
 export abstract class BaseTvDevice extends SyncBoxDevice {
   protected lightbulbService?: Service;
@@ -29,19 +40,19 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   ]);
 
   protected readonly modeToNumber: Map<string, number> = new Map([
-    ['video', 1],
-    ['music', 2],
-    ['game', 3],
-    ['passthrough', 4],
-    ['powersave', 5],
+    [MODE_VIDEO, 1],
+    [MODE_MUSIC, 2],
+    [MODE_GAME, 3],
+    [PASSTHROUGH, 4],
+    [POWER_SAVE, 5],
   ]);
 
   protected readonly numberToMode: Map<number, string> = new Map([
-    [1, 'video'],
-    [2, 'music'],
-    [3, 'game'],
-    [4, 'passthrough'],
-    [5, 'powersave'],
+    [1, MODE_VIDEO],
+    [2, MODE_MUSIC],
+    [3, MODE_GAME],
+    [4, PASSTHROUGH],
+    [5, POWER_SAVE],
   ]);
 
   protected constructor(
@@ -160,14 +171,20 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_UP:
         this.platform.log.debug('Increase brightness by 25%');
         this.updateExecution({
-          brightness: Math.min(200, this.state.execution.brightness + 50),
+          brightness: Math.min(
+            BRIGHTNESS_MAX_SYNCBOX,
+            this.state.execution.brightness + BRIGHTNESS_STEP_SYNCBOX
+          ),
         });
         break;
 
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_DOWN:
         this.platform.log.debug('Decrease brightness by 25%');
         this.updateExecution({
-          brightness: Math.max(0, this.state.execution.brightness - 50),
+          brightness: Math.max(
+            BRIGHTNESS_MIN,
+            this.state.execution.brightness - BRIGHTNESS_STEP_SYNCBOX
+          ),
         });
         break;
 
@@ -244,8 +261,8 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
           });
         } else {
           let onMode: string = this.platform.config.defaultOnMode;
-          if (onMode === 'lastSyncMode') {
-            onMode = this?.state?.execution?.lastSyncMode ?? 'video';
+          if (onMode === MODE_LAST_SYNC) {
+            onMode = this?.state?.execution?.lastSyncMode ?? MODE_VIDEO;
           }
 
           this.updateExecution({
@@ -305,7 +322,10 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     );
     this.lightbulbService.updateCharacteristic(
       this.platform.api.hap.Characteristic.Brightness,
-      Math.round((this.state.execution.brightness / 200.0) * 100)
+      Math.round(
+        (this.state.execution.brightness / BRIGHTNESS_MAX_SYNCBOX) *
+          BRIGHTNESS_MAX_HOMEKIT
+      )
     );
   }
 
@@ -383,7 +403,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   }
 
   protected getMode() {
-    let mode = 'video';
+    let mode = MODE_VIDEO;
     if (
       this.state.execution.mode !== POWER_SAVE &&
       this.state.execution.mode !== PASSTHROUGH
