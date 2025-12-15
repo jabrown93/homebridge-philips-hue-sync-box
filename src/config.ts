@@ -10,6 +10,7 @@ export interface HueSyncBoxPlatformConfig extends PlatformConfig {
   defaultOnMode: OnMode;
   defaultOffMode: OffMode;
   baseAccessory: 'lightbulb' | 'switch' | 'none';
+  powerSwitchAccessory: boolean;
   tvAccessory: boolean;
   tvAccessoryConfiguredName: string;
   tvAccessoryType: TvAccessoryType;
