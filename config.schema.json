@@ -82,6 +82,13 @@
           }
         ]
       },
+      "powerSwitchAccessory": {
+        "title": "Enable Power Switch",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Enables a separate power switch accessory that controls the Sync Box power state (powersave vs. passthrough/sync). When ON: box is powered on in passthrough mode. When OFF: box enters powersave mode."
+      },
       "tvAccessory": {
         "title": "Enable HDMI TV",
         "type": "boolean",
