@@ -11,7 +11,7 @@ import {
   BRIGHTNESS_STEP_PERCENT,
   BRIGHTNESS_STEP_SYNCBOX,
   BRIGHTNESS_MIN,
-  HDMI_INPUT_COUNT,
+  HDMI_INPUT_MAX,
   HDMI_INPUT_MIN,
   DEFAULT_ON_MODE,
   DEFAULT_OFF_MODE,
@@ -78,12 +78,12 @@ describe('Constants', () => {
   describe('HDMI Constants', () => {
     it('should have correct HDMI input range', () => {
       expect(HDMI_INPUT_MIN).toBe(1);
-      expect(HDMI_INPUT_COUNT).toBe(4);
+      expect(HDMI_INPUT_MAX).toBe(4);
     });
 
-    it('should allow iteration from min to count', () => {
+    it('should allow iteration from min to max', () => {
       const inputs: number[] = [];
-      for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_COUNT; i++) {
+      for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
         inputs.push(i);
       }
       expect(inputs).toEqual([1, 2, 3, 4]);
