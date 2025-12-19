@@ -141,6 +141,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       const uuid = accessory.UUID; // see if an accessory with the same uuid has already been registered and restored from
       const existingAccessory = this.existingAccessories.get(uuid);
       const isMainAccessory = accessory.UUID === this.mainAccessory?.UUID;
+      const isPowerSwitch = accessory.context.kind === POWER_SWITCH_ACCESSORY;
       if (existingAccessory) {
         this.log.debug(
           'Restoring existing accessory from cache: ',
@@ -149,7 +150,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
         const device = this.createDevice(existingAccessory, state);
         this.accessories.set(accessory.UUID, existingAccessory);
         this.devices.push(device);
-        if (isMainAccessory) {
+        if (isMainAccessory || isPowerSwitch) {
           this.api.updatePlatformAccessories([existingAccessory]);
         }
       } else {
@@ -157,7 +158,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
         const device = this.createDevice(accessory, state);
         this.devices.push(device);
         this.accessories.set(accessory.UUID, accessory);
-        if (isMainAccessory) {
+        if (isMainAccessory || isPowerSwitch) {
           this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
             accessory,
           ]);

@@ -89,12 +89,6 @@
         "required": false,
         "description": "Enables a separate power switch accessory that controls the Sync Box power state (powersave vs. passthrough/sync). When ON: box is powered on in passthrough mode. When OFF: box enters powersave mode."
       },
-      "powerSwitchAccessoryConfiguredName": {
-        "title": "Set name for the Power Switch",
-        "type": "string",
-        "required": false,
-        "description": "Sets custom name for the Power Switch. Overwrites names configured HomeKit."
-      },
       "tvAccessory": {
         "title": "Enable HDMI TV",
         "type": "boolean",
