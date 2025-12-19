@@ -6,11 +6,12 @@ import * as https from 'node:https';
 import { Logger } from 'homebridge';
 import { HueSyncBoxPlatformConfig } from '../config.js';
 import AsyncLock, { AsyncLockOptions } from 'async-lock';
+import { HTTP_RETRY_COUNT, HTTP_RETRY_BASE_DELAY_MS } from './constants.js';
 
 const fetch = fetch_retry(originalFetch, {
-  retries: 3,
+  retries: HTTP_RETRY_COUNT,
   retryDelay: attempt => {
-    return Math.pow(2, attempt) * 1000; // 1000, 2000, 4000
+    return Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS; // 1000, 2000, 4000
   },
 });
 
