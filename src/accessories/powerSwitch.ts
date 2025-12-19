@@ -17,6 +17,38 @@ export class PowerSwitchDevice extends SyncBoxDevice {
     protected state: State
   ) {
     super(platform, accessory, state);
+
+    // Set up ConfiguredName characteristic
+    let name;
+    if (this.platform.config.powerSwitchAccessoryConfiguredName) {
+      name = this.platform.config.powerSwitchAccessoryConfiguredName;
+    } else if (this.accessory.context.powerSwitchAccessoryConfiguredName) {
+      name = this.accessory.context.powerSwitchAccessoryConfiguredName;
+    } else {
+      name = this.state.device.name + ' Power';
+    }
+    this.service
+      .getCharacteristic(this.platform.api.hap.Characteristic.ConfiguredName)
+      .onSet(this.handleConfiguredNameChange.bind(this));
+    this.service.updateCharacteristic(
+      this.platform.api.hap.Characteristic.ConfiguredName,
+      name
+    );
+  }
+
+  protected handleConfiguredNameChange(value: CharacteristicValue) {
+    if (this.platform.config.powerSwitchAccessoryConfiguredName) {
+      this.platform.log.warn(
+        'powerSwitchAccessoryConfiguredName is set in the config, therefore it cannot be changed by HomeKit.' +
+          ' Please change it in the Homebridge config. Alternatively remove the' +
+          ' config and manually configure in HomeKit (not recommended).'
+      );
+      return;
+    }
+    this.platform.log.debug(
+      'powerSwitchAccessoryConfiguredName changed to ' + value
+    );
+    this.accessory.context.powerSwitchAccessoryConfiguredName = value;
   }
 
   protected getPowerCharacteristic() {
