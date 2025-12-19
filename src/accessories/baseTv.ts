@@ -15,10 +15,10 @@ import {
   MODE_GAME,
   MODE_LAST_SYNC,
   BRIGHTNESS_MAX_SYNCBOX,
-  BRIGHTNESS_MAX_HOMEKIT,
   BRIGHTNESS_STEP_SYNCBOX,
   BRIGHTNESS_MIN,
 } from '../lib/constants.js';
+import { convertSyncBoxToHomekit } from '../lib/brightness.js';
 
 export abstract class BaseTvDevice extends SyncBoxDevice {
   protected lightbulbService?: Service;
@@ -322,10 +322,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     );
     this.lightbulbService.updateCharacteristic(
       this.platform.api.hap.Characteristic.Brightness,
-      Math.round(
-        (this.state.execution.brightness / BRIGHTNESS_MAX_SYNCBOX) *
-          BRIGHTNESS_MAX_HOMEKIT
-      )
+      convertSyncBoxToHomekit(this.state.execution.brightness)
     );
   }
 

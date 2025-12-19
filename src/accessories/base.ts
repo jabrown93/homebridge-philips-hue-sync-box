@@ -13,9 +13,8 @@ import {
   POWER_SAVE,
   MODE_LAST_SYNC,
   MODE_VIDEO,
-  BRIGHTNESS_MAX_HOMEKIT,
-  BRIGHTNESS_MAX_SYNCBOX,
 } from '../lib/constants.js';
+import { convertHomekitToSyncBox } from '../lib/brightness.js';
 
 export abstract class SyncBoxDevice {
   protected readonly platform: HueSyncBoxPlatform;
@@ -126,9 +125,7 @@ export abstract class SyncBoxDevice {
   protected setBrightness(value: CharacteristicValue) {
     this.platform.log.debug('Switch brightness to ' + value);
     this.updateExecution({
-      brightness: Math.round(
-        ((value as number) / BRIGHTNESS_MAX_HOMEKIT) * BRIGHTNESS_MAX_SYNCBOX
-      ),
+      brightness: convertHomekitToSyncBox(value as number),
     });
   }
 
