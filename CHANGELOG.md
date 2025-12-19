@@ -3,27 +3,11 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [2.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.1.1...v2.2.0-beta.1) (2025-12-19)
+## [2.2.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.1.1...v2.2.0) (2025-12-19)
 
 ### Features
 
-* add power switch accessory for separate power control ([#313](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/313)) ([94812d9](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/94812d985a7fc9e77ad0b871ddc0db96531bd8b8)), closes [#175](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/175) [#175](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/175)
-
-### Bug Fixes
-
-* power switch registers as platform accessory ([#319](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/319)) ([a997bb1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/a997bb198762d7c7e76cb7b3a1fb9be806b7e285))
-
-## [2.2.0-beta.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.0-beta.1...v2.2.0-beta.2) (2025-12-19)
-
-### Bug Fixes
-
-* power switch registers as platform accessory ([#319](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/319)) ([bd9b058](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/bd9b058ba32c539d7dbc314455eb74e49bf6d31e))
-
-## [2.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.1.1...v2.2.0-beta.1) (2025-12-16)
-
-### Features
-
-* add power switch accessory for separate power control ([#313](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/313)) ([dada176](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/dada1762bc292a81d03788930290af476acdca02)), closes [#175](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/175) [#175](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/175)
+* add power switch accessory for separate power control  ([#320](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/320)) ([7eb6423](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/7eb6423541ed8ccf990ef43c811aae0e25dbb906))
 
 ## [2.1.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.1.0...v2.1.1) (2025-11-19)
 
