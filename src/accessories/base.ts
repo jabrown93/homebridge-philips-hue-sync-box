@@ -27,12 +27,11 @@ export abstract class SyncBoxDevice {
 
     const existingService =
       this.getServiceSubType() === undefined
-        ? this.accessory.getServiceById(
+        ? this.accessory.getService(this.getServiceType())
+        : this.accessory.getServiceById(
             this.getServiceType(),
             this.getServiceSubType() as string
-          )
-        : this.accessory.getService(this.getServiceType());
-
+          );
     this.service =
       existingService ||
       this.accessory.addService(
