@@ -17,10 +17,10 @@ export const INTENSITY_TV_ACCESSORY: string = 'IntensityTVAccessory';
 export const ENTERTAINMENT_TV_ACCESSORY: string = 'EntertainmentTVAccessory';
 
 // ===== TV Accessory Types =====
-export const TV_TYPE_TV = 'tv';
-export const TV_TYPE_SET_TOP_BOX = 'settopbox';
-export const TV_TYPE_STREAMING_STICK = 'tvstick';
-export const TV_TYPE_AUDIO_RECEIVER = 'audioreceiver';
+export const TV_TYPE_TV: string = 'tv';
+export const TV_TYPE_SET_TOP_BOX: string = 'settopbox';
+export const TV_TYPE_STREAMING_STICK: string = 'tvstick';
+export const TV_TYPE_AUDIO_RECEIVER: string = 'audioreceiver';
 
 // ===== Brightness Constants =====
 export const BRIGHTNESS_MIN = 0;
