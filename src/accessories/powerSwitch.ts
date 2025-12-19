@@ -1,32 +1,13 @@
-import type { CharacteristicValue, PlatformAccessory } from 'homebridge';
-
-import { HueSyncBoxPlatform } from '../platform';
-import { State } from '../state';
-import { SyncBoxDevice } from './base.js';
 import { PASSTHROUGH, POWER_SAVE } from '../lib/constants.js';
+import { SwitchDevice } from './switch.js';
+import { CharacteristicValue } from 'homebridge';
 
 /**
  * PowerSwitchDevice controls the power state of the Sync Box (powersave vs. passthrough/sync)
  * - ON: Sets to passthrough mode (HDMI active, sync off)
  * - OFF: Sets to powersave mode (power off)
  */
-export class PowerSwitchDevice extends SyncBoxDevice {
-  constructor(
-    protected readonly platform: HueSyncBoxPlatform,
-    public readonly accessory: PlatformAccessory,
-    protected state: State
-  ) {
-    super(platform, accessory, state);
-  }
-
-  protected getPowerCharacteristic() {
-    return this.platform.api.hap.Characteristic.On;
-  }
-
-  protected getServiceType() {
-    return this.platform.api.hap.Service.Switch;
-  }
-
+export class PowerSwitchDevice extends SwitchDevice {
   protected getSuffix(): string {
     return '-power';
   }
