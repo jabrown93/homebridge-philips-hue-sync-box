@@ -26,13 +26,12 @@ export abstract class SyncBoxDevice {
     this.state = state;
 
     const existingService =
-      this.getServiceSubType() !== undefined
+      this.getServiceSubType() === undefined
         ? this.accessory.getService(this.getServiceType())
         : this.accessory.getServiceById(
             this.getServiceType(),
             this.getServiceSubType() as string
           );
-
     this.service =
       existingService ||
       this.accessory.addService(
