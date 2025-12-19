@@ -1,6 +1,7 @@
 import http from 'http';
 import { HueSyncBoxPlatform } from './platform.js';
 import { State } from './state.js';
+import { HTTP_STATUS_OK, HTTP_STATUS_UNAUTHORIZED } from './lib/constants.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -41,7 +42,7 @@ export class ApiServer {
                 this.platform.log.debug(
                   'Authorization header missing or invalid.'
                 );
-                response.statusCode = 401;
+                response.statusCode = HTTP_STATUS_UNAUTHORIZED;
                 response.write(JSON.stringify({ error: 'Unauthorized' }));
                 response.end();
                 return;
@@ -74,7 +75,7 @@ export class ApiServer {
       const state = await this.platform.client.getState();
       response.setHeader('Content-Type', 'application/json');
       response.write(JSON.stringify(state));
-      response.statusCode = 200;
+      response.statusCode = HTTP_STATUS_OK;
     } catch (e) {
       this.platform.log.error('Error while getting the state.', e);
       response.statusCode = 500;
@@ -120,7 +121,7 @@ export class ApiServer {
       }
 
       const newState = await this.platform.client.getState();
-      response.statusCode = 200;
+      response.statusCode = HTTP_STATUS_OK;
       response.write(JSON.stringify(newState));
     } catch (e) {
       this.platform.log.error('Error while updating the state.', e);

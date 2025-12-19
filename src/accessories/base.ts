@@ -8,7 +8,13 @@ import {
   WithUUID,
 } from 'homebridge';
 import { HueSyncBoxPlatform } from '../platform.js';
-import { PASSTHROUGH, POWER_SAVE } from '../lib/constants.js';
+import {
+  PASSTHROUGH,
+  POWER_SAVE,
+  MODE_LAST_SYNC,
+  MODE_VIDEO,
+} from '../lib/constants.js';
+import { convertHomekitToSyncBox } from '../lib/brightness.js';
 
 export abstract class SyncBoxDevice {
   protected readonly platform: HueSyncBoxPlatform;
@@ -97,8 +103,8 @@ export abstract class SyncBoxDevice {
     if (newValue) {
       this.platform.log.debug('Switch state to ON');
       mode = this.platform.config.defaultOnMode;
-      if (mode === 'lastSyncMode') {
-        mode = this?.state?.execution?.lastSyncMode || 'video';
+      if (mode === MODE_LAST_SYNC) {
+        mode = this?.state?.execution?.lastSyncMode || MODE_VIDEO;
       }
     } else {
       this.platform.log.debug('Switch state to OFF');
@@ -118,7 +124,7 @@ export abstract class SyncBoxDevice {
   protected setBrightness(value: CharacteristicValue) {
     this.platform.log.debug('Switch brightness to ' + value);
     this.updateExecution({
-      brightness: Math.round(((value as number) / 100.0) * 200),
+      brightness: convertHomekitToSyncBox(value as number),
     });
   }
 
