@@ -9,8 +9,10 @@ export const MODE_LAST_SYNC: string = 'lastSyncMode';
 // ===== Accessory Types =====
 export const LIGHTBULB = 'lightbulb';
 export const SWITCH = 'switch';
+export const POWER_SWITCH = 'powerSwitch';
 export const LIGHTBULB_ACCESSORY: string = 'LightBulbAccessory';
 export const SWITCH_ACCESSORY: string = 'SwitchAccessory';
+export const POWER_SWITCH_ACCESSORY: string = 'PowerSwitchAccessory';
 export const TV_ACCESSORY: string = 'TVAccessory';
 export const MODE_TV_ACCESSORY: string = 'ModeTVAccessory';
 export const INTENSITY_TV_ACCESSORY: string = 'IntensityTVAccessory';

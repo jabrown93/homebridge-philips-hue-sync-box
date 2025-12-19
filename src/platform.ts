@@ -17,6 +17,7 @@ import {
   LIGHTBULB,
   LIGHTBULB_ACCESSORY,
   MODE_TV_ACCESSORY,
+  POWER_SWITCH_ACCESSORY,
   SWITCH,
   SWITCH_ACCESSORY,
   TV_ACCESSORY,
@@ -33,6 +34,7 @@ import {
 } from './lib/constants.js';
 import { SwitchDevice } from './accessories/switch.js';
 import { LightbulbDevice } from './accessories/lightbulb.js';
+import { PowerSwitchDevice } from './accessories/powerSwitch.js';
 import { TvDevice } from './accessories/tv.js';
 import { ModeTvDevice } from './accessories/modeTv.js';
 import { IntensityTvDevice } from './accessories/intensityTv.js';
@@ -108,6 +110,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.config.defaultOffMode = this.config.defaultOffMode ?? DEFAULT_OFF_MODE;
     this.config.baseAccessory =
       this.config.baseAccessory ?? DEFAULT_BASE_ACCESSORY;
+     this.config.powerSwitchAccessory =
+      this.config.powerSwitchAccessory ?? false;
     this.config.tvAccessory = this.config.tvAccessory ?? false;
     this.config.tvAccessoryType =
       this.config.tvAccessoryType ?? DEFAULT_TV_ACCESSORY_TYPE;
@@ -151,6 +155,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       const uuid = accessory.UUID; // see if an accessory with the same uuid has already been registered and restored from
       const existingAccessory = this.existingAccessories.get(uuid);
       const isMainAccessory = accessory.UUID === this.mainAccessory?.UUID;
+      const isPowerSwitch = accessory.context.kind === POWER_SWITCH_ACCESSORY;
       if (existingAccessory) {
         this.log.debug(
           'Restoring existing accessory from cache: ',
@@ -159,7 +164,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
         const device = this.createDevice(existingAccessory, state);
         this.accessories.set(accessory.UUID, existingAccessory);
         this.devices.push(device);
-        if (isMainAccessory) {
+        if (isMainAccessory || isPowerSwitch) {
           this.api.updatePlatformAccessories([existingAccessory]);
         }
       } else {
@@ -167,7 +172,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
         const device = this.createDevice(accessory, state);
         this.devices.push(device);
         this.accessories.set(accessory.UUID, accessory);
-        if (isMainAccessory) {
+        if (isMainAccessory || isPowerSwitch) {
           this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
             accessory,
           ]);
@@ -237,6 +242,14 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       accessories.push(this.mainAccessory);
     }
 
+    if (this.config.powerSwitchAccessory) {
+      const powerSwitchAccessory = this.createPlatformAccessory(
+        state,
+        POWER_SWITCH_ACCESSORY
+      );
+      accessories.push(powerSwitchAccessory);
+    }
+
     if (this.config.tvAccessory) {
       const tvAccessory = this.createTvAccessory(
         state,
@@ -280,7 +293,9 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log.debug('Creating new accessory with kind ' + kind + '.');
     const uuidSeed = this.config.uuidSeed ?? '';
     const accessory = new this.api.platformAccessory(
-      state.device.name,
+      kind === POWER_SWITCH_ACCESSORY
+        ? state.device.name + ' Power'
+        : state.device.name,
       this.api.hap.uuid.generate(kind + uuidSeed)
     );
     if (kind === LIGHTBULB_ACCESSORY) {
@@ -288,6 +303,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       accessory.category = this.api.hap.Categories.LIGHTBULB;
     } else if (kind === SWITCH_ACCESSORY) {
       this.mainAccessory = accessory;
+      accessory.category = this.api.hap.Categories.SWITCH;
+    } else if (kind === POWER_SWITCH_ACCESSORY) {
       accessory.category = this.api.hap.Categories.SWITCH;
     }
     accessory.context.kind = kind;
@@ -325,6 +342,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
         return new SwitchDevice(this, accessory, state);
       case LIGHTBULB_ACCESSORY:
         return new LightbulbDevice(this, accessory, state);
+      case POWER_SWITCH_ACCESSORY:
+        return new PowerSwitchDevice(this, accessory, state);
       case TV_ACCESSORY:
         return new TvDevice(this, accessory, state, this.mainAccessory);
       case MODE_TV_ACCESSORY:
