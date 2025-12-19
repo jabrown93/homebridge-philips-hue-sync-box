@@ -17,6 +17,10 @@ import {
   DEFAULT_OFF_MODE,
   DEFAULT_UPDATE_INTERVAL_SECONDS,
   DEFAULT_API_SERVER_PORT,
+  DEFAULT_BASE_ACCESSORY,
+  DEFAULT_TV_ACCESSORY_TYPE,
+  LIGHTBULB,
+  TV_TYPE_TV,
   HTTP_RETRY_COUNT,
   HTTP_RETRY_BASE_DELAY_MS,
   HTTP_STATUS_OK,
@@ -92,6 +96,8 @@ describe('Constants', () => {
       expect(DEFAULT_OFF_MODE).toBe(PASSTHROUGH);
       expect(DEFAULT_UPDATE_INTERVAL_SECONDS).toBe(5);
       expect(DEFAULT_API_SERVER_PORT).toBe(40220);
+      expect(DEFAULT_BASE_ACCESSORY).toBe(LIGHTBULB);
+      expect(DEFAULT_TV_ACCESSORY_TYPE).toBe(TV_TYPE_TV);
     });
 
     it('should have default on mode be a valid sync mode', () => {
