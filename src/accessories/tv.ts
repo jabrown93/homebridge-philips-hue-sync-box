@@ -2,7 +2,7 @@ import { PlatformAccessory, Service } from 'homebridge';
 import { HueSyncBoxPlatform } from '../platform';
 import { HdmiInput, State } from '../state';
 import { BaseTvDevice } from './baseTv.js';
-import { HDMI_INPUT_COUNT, HDMI_INPUT_MIN } from '../lib/constants.js';
+import { HDMI_INPUT_MAX, HDMI_INPUT_MIN } from '../lib/constants.js';
 
 export class TvDevice extends BaseTvDevice {
   constructor(
@@ -53,7 +53,7 @@ export class TvDevice extends BaseTvDevice {
 
   protected createInputServices(): void {
     const services: Service[] = [];
-    for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_COUNT; i++) {
+    for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
       // Sets the TV name
       const hdmiState: HdmiInput = this.state.hdmi[`input${i}`];
       const hdmiPosition = 'HDMI ' + i;
