@@ -1,3 +1,4 @@
+---
 name: Beta Release
 on:
   push:

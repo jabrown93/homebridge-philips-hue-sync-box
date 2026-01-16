@@ -1,7 +1,11 @@
+---
 name: Bug Report
 description: Create a report to help us improve
-labels: ['bug', 'needs-triage']
-assignees: ['jabrown93']
+labels:
+  - bug
+  - needs-triage
+assignees:
+  - jabrown93
 body:
   - type: markdown
     attributes:
