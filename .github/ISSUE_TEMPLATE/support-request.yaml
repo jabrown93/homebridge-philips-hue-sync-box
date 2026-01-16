@@ -1,6 +1,6 @@
 name: Support Request
 description: Need help using the plugin?
-labels: ['question']
+labels: ['question', 'needs-triage']
 assignees: ['jabrown93']
 body:
   - type: markdown
