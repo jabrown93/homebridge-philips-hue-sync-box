@@ -110,7 +110,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.config.defaultOffMode = this.config.defaultOffMode ?? DEFAULT_OFF_MODE;
     this.config.baseAccessory =
       this.config.baseAccessory ?? DEFAULT_BASE_ACCESSORY;
-     this.config.powerSwitchAccessory =
+    this.config.powerSwitchAccessory =
       this.config.powerSwitchAccessory ?? false;
     this.config.tvAccessory = this.config.tvAccessory ?? false;
     this.config.tvAccessoryType =

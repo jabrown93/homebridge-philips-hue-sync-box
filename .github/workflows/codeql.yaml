@@ -1,3 +1,4 @@
+---
 # For most projects, this workflow file will not need changing; you simply need
 # to commit it to your repository.
 #
@@ -13,9 +14,13 @@ name: 'CodeQL Advanced'
 
 on:
   push:
-    branches: ['main', 'beta']
+    branches:
+      - main
+      - beta
   pull_request:
-    branches: ['main', 'beta']
+    branches:
+      - main
+      - beta
   schedule:
     - cron: '25 22 * * 5'
 

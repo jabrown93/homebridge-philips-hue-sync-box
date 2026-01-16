@@ -1,15 +1,16 @@
-name: Beta Release
+---
+name: Release
 on:
   push:
     branches:
-      - beta
+      - main
 
 permissions:
-  contents: write
+  contents: write # for checkout
 
 jobs:
   release:
-    name: Beta Release
+    name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish a GitHub release
