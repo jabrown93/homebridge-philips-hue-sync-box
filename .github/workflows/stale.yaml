@@ -16,10 +16,10 @@ jobs:
       with:
         days-before-stale: '30'
         days-before-close: '7'
-        stale-issue-message: 'This issue has no recent activity and will be closed in 7 days. Comment to keep the issue open'
-        stale-pr-message: 'This PR has no recent activity and will be closed in 7 days. Comment or update to keep the PR open'
+        stale-issue-message: 'This issue has no recent activity and will be closed in 7 days. Comment to keep the issue open.'
+        stale-pr-message: 'This PR has no recent activity and will be closed in 7 days. Comment or update to keep the PR open.'
         stale-issue-label: 'stale'
         exempt-issue-labels: 'work-in-progress,disable-stale-bot'
         stale-pr-label: 'no-pr-activity'
         any-of-labels: 'waiting-on-reporter'
-        close-issue-message: 'No activity in over 30 days, closing'
+        close-issue-message: 'No activity in over 30 days, closing.'
