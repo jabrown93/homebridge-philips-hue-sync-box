@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.0...v2.2.1) (2026-02-14)
+
+### Bug Fixes
+
+* **deps:** revert eslint to v9 for typescript-eslint compatibility ([#347](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/347)) ([9969c2e](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/9969c2e505fc257ee51da61973a98e06c3da5ba8)), closes [#344](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/344)
+
 ## [2.2.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.1.1...v2.2.0) (2025-12-19)
 
 ### Features
