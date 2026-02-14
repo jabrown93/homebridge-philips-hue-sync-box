@@ -79,7 +79,7 @@ export class EntertainmentTvDevice extends BaseTvDevice {
   }
 
   protected isLightbulbEnabled(): boolean {
-    return this.platform.config.intensityTvAccessoryLightbulb;
+    return this.platform.config.entertainmentTvAccessoryLightbulb;
   }
 
   protected createInputServices(): void {
