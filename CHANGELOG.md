@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.3](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.2...v2.2.3) (2026-02-14)
+
+### Bug Fixes
+
+* use correct config property for Entertainment TV lightbulb ([#346](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/346)) ([13b1953](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/13b1953e018509968461b33d4b99bc4ba8340699))
+
 ## [2.2.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.1...v2.2.2) (2026-02-14)
 
 ### Bug Fixes
