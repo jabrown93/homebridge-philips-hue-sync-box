@@ -93,7 +93,7 @@
     "homebridge-config-ui-x": "5.19.0",
     "husky": "9.1.7",
     "jest": "30.3.0",
-    "lint-staged": "16.3.2",
+    "lint-staged": "16.3.3",
     "nodemon": "3.1.14",
     "npm-run-all2": "8.0.4",
     "prettier": "3.8.1",
