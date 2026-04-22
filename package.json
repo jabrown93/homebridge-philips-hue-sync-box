@@ -67,7 +67,7 @@
   "dependencies": {
     "async-lock": "^1.4.1",
     "fetch-retry": "^6.0.0",
-    "homebridge-lib": "^7.1.6",
+    "homebridge-lib": "^8.0.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
