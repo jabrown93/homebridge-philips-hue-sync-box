@@ -5,8 +5,8 @@ import {
   PlatformAccessory,
   Service,
 } from 'homebridge';
-import { HueSyncBoxPlatform } from '../platform';
-import { State } from '../state';
+import type { HueSyncBoxPlatform } from '../platform.js';
+import type { State } from '../state.js';
 import {
   PASSTHROUGH,
   POWER_SAVE,

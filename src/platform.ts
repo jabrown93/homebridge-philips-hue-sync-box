@@ -6,7 +6,7 @@ import {
   PlatformConfig,
 } from 'homebridge';
 
-import { HueSyncBoxPlatformConfig } from './config';
+import type { HueSyncBoxPlatformConfig } from './config.js';
 import { SyncBoxClient } from './lib/client.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { State } from './state.js';

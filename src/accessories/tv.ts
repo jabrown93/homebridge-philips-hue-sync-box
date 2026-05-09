@@ -1,6 +1,6 @@
 import { PlatformAccessory, Service } from 'homebridge';
-import { HueSyncBoxPlatform } from '../platform';
-import { HdmiInput, State } from '../state';
+import type { HueSyncBoxPlatform } from '../platform.js';
+import type { HdmiInput, State } from '../state.js';
 import { BaseTvDevice } from './baseTv.js';
 import { HDMI_INPUT_MAX, HDMI_INPUT_MIN } from '../lib/constants.js';
 
