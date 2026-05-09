@@ -1,6 +1,6 @@
 import type { CharacteristicValue, PlatformAccessory } from 'homebridge';
-import { HueSyncBoxPlatform } from '../platform';
-import { State } from '../state';
+import type { HueSyncBoxPlatform } from '../platform.js';
+import type { State } from '../state.js';
 import { BaseTvDevice } from './baseTv.js';
 
 export class IntensityTvDevice extends BaseTvDevice {

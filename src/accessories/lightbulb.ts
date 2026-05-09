@@ -1,7 +1,7 @@
 import { SyncBoxDevice } from './base.js';
 import type { PlatformAccessory } from 'homebridge';
-import { State } from '../state';
-import { HueSyncBoxPlatform } from '../platform';
+import type { State } from '../state.js';
+import type { HueSyncBoxPlatform } from '../platform.js';
 
 export class LightbulbDevice extends SyncBoxDevice {
   constructor(
