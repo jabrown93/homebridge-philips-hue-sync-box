@@ -97,7 +97,7 @@ export class ApiServer {
       return;
     }
 
-    let body: State | null = null;
+    let body: State;
     try {
       body = JSON.parse(Buffer.concat(payload as Uint8Array[]).toString());
       if (!body) {
