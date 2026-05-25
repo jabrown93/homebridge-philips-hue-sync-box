@@ -6,6 +6,10 @@ on:
       - main
       - beta
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write # to be able to publish a GitHub release
   issues: write # to be able to comment on released issues
@@ -26,6 +30,12 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
+          # Check out the current branch tip, not github.sha. With
+          # concurrency queueing, a queued run otherwise releases its
+          # trigger SHA and is rejected as non-fast-forward once the
+          # branch has advanced. Pulling the tip turns redundant queued
+          # runs into no-ops instead.
+          ref: ${{ github.ref }}
       - uses: actions/setup-node@v6.4.0
         with:
           node-version: '24'
@@ -33,6 +43,8 @@ jobs:
           package-manager-cache: false
       - run: npm clean-install
       - run: npm audit signatures
+      - name: Configure atomic git pushes
+        run: git config --global push.atomic true
       - run: npm run semantic-release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
