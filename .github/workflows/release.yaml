@@ -6,6 +6,10 @@ on:
       - main
       - beta
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write # to be able to publish a GitHub release
   issues: write # to be able to comment on released issues
@@ -33,6 +37,8 @@ jobs:
           package-manager-cache: false
       - run: npm clean-install
       - run: npm audit signatures
+      - name: Configure atomic git pushes
+        run: git config --global push.atomic true
       - run: npm run semantic-release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
