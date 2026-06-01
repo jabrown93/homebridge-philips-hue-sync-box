@@ -71,8 +71,8 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "21.0.1",
-    "@commitlint/config-conventional": "21.0.1",
+    "@commitlint/cli": "21.0.2",
+    "@commitlint/config-conventional": "21.0.2",
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
     "@semantic-release/changelog": "6.0.3",
