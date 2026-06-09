@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.4...v2.3.0) (2026-06-09)
+
+### Features
+
+* **ci:** upload CycloneDX SBOM to Dependency-Track ([#396](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/396)) ([ef8031e](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/ef8031e01037feafe190ca30b7d112ad79adbfbb))
+
 ## [2.2.4](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.3...v2.2.4) (2026-05-25)
 
 ### Bug Fixes
