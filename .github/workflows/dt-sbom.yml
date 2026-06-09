@@ -4,16 +4,22 @@
 # stays in place until DT is proven out across the OSS repos).
 #
 # Two jobs, because only one of them may touch the cluster:
-#   sbom   - hosted runner: `npm ci`, then emit target/sbom.cdx.json
-#            (@cyclonedx/cyclonedx-npm) plus project.env.
+#   sbom   - hosted runner (UNTRUSTED): `npm ci` (which may run dependency
+#            lifecycle scripts) and the SBOM generator run here, never on the
+#            in-cluster runner. Emits sbom.cdx.json.
 #   upload - in-cluster arc-oss-homebridge-philips-hue-sync-box runner: exchange
 #            this run's GitHub OIDC token for the Dependency-Track CI key via
-#            OpenBao (vault-action), then POST the SBOM. The runner is
-#            egress-locked to a few in-cluster services, so OpenBao and DT are
-#            addressed by their in-cluster Service DNS names, not the public
-#            gateway. The set is REPO-scoped (one arc-oss-<repo> set per OSS repo;
-#            a user account can't host shared runners). See
-#            github.com/jabrown93/homelab -> docs/dependency-track.md.
+#            OpenBao (vault-action), then POST the SBOM. Project identity is taken
+#            from trusted GitHub context (github.repository / github.sha), NOT
+#            from anything the sbom job produced, so a compromised dependency
+#            can't inject values that get executed on the cluster runner. The
+#            runner is egress-locked to a few in-cluster services, so OpenBao and
+#            DT are addressed by their in-cluster Service DNS names, not the
+#            public gateway (the LE cert has no in-cluster SAN -> tlsSkipVerify;
+#            egress is identity-locked to the OpenBao pods, and pod-to-pod
+#            traffic is WireGuard-encrypted). The set is REPO-scoped (one
+#            arc-oss-<repo> set per OSS repo; a user account can't host shared
+#            runners). See github.com/jabrown93/homelab -> docs/dependency-track.md.
 #
 # push-to-main + manual only: never runs on pull_request, so fork PR code can't
 # reach the in-cluster runner. DT is visibility-only, so there is no PR gate to
@@ -32,7 +38,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Set up Node.js
         uses: actions/setup-node@v6.4.0
@@ -46,27 +52,16 @@ jobs:
       - name: Generate CycloneDX SBOM
         run: |
           set -euo pipefail
-          mkdir -p target
           npx --yes @cyclonedx/cyclonedx-npm@4.2.1 \
             --output-format JSON \
-            --output-file target/sbom.cdx.json
-
-      - name: Write project metadata
-        run: |
-          set -euo pipefail
-          {
-            echo "PROJECT_NAME=github.com/${{ github.repository }}"
-            echo "PROJECT_VERSION=${{ github.sha }}"
-          } > project.env
+            --output-file sbom.cdx.json
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v7.0.1
         with:
           name: sbom
           if-no-files-found: error
-          path: |
-            target/sbom.cdx.json
-            project.env
+          path: sbom.cdx.json
 
   upload:
     needs: sbom
@@ -79,16 +74,6 @@ jobs:
         uses: actions/download-artifact@v8.0.1
         with:
           name: sbom
-
-      - name: Load project metadata
-        id: meta
-        run: |
-          set -euo pipefail
-          set -a
-          . ./project.env
-          set +a
-          echo "name=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
-          echo "version=${PROJECT_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch DT API key from OpenBao
         id: bao
@@ -106,12 +91,14 @@ jobs:
       - name: Upload SBOM to Dependency-Track
         env:
           DT_API_KEY: ${{ steps.bao.outputs.DT_API_KEY }}
+          PROJECT_NAME: github.com/${{ github.repository }}
+          PROJECT_VERSION: ${{ github.sha }}
         run: |
           set -euo pipefail
           curl -fsS -X POST http://dependency-track-api-server.dependency-track.svc.cluster.local:8080/api/v1/bom \
             -H "X-Api-Key: ${DT_API_KEY}" \
             -F "autoCreate=true" \
-            -F "projectName=${{ steps.meta.outputs.name }}" \
-            -F "projectVersion=${{ steps.meta.outputs.version }}" \
+            -F "projectName=${PROJECT_NAME}" \
+            -F "projectVersion=${PROJECT_VERSION}" \
             -F "isLatest=true" \
-            -F "bom=@target/sbom.cdx.json"
+            -F "bom=@sbom.cdx.json"
