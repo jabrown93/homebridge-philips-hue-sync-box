@@ -15,10 +15,11 @@
 #              upload the PR SBOM, poll until processing finishes, fetch the raw
 #              policy violations. Reaches OpenBao/DT by in-cluster Service DNS
 #              (egress-locked set). No jq on this image -> only raw JSON is
-#              emitted here; it is parsed on a hosted runner.
-#   comment  - hosted runner: render the LICENSE violations and post/update the
-#              advisory PR comment (needs a writable GITHUB_TOKEN, kept off the
-#              cluster runner).
+#              emitted here; it is parsed on a hosted runner. Fully non-fatal:
+#              it records the violation-fetch HTTP code and always exits 0.
+#   comment  - hosted runner: render the LICENSE violations (or an "unavailable"
+#              note) and post/update the advisory PR comment (needs a writable
+#              GITHUB_TOKEN, kept off the cluster runner).
 #
 # Same-repo PRs only: a fork PR gets no OIDC token and no writable token, and
 # must never reach the in-cluster runner. Fork PRs are skipped entirely.
@@ -54,6 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes @cyclonedx/cyclonedx-npm@4.2.1 \
+            --ignore-npm-errors \
             --output-format JSON \
             --output-file sbom.cdx.json
 
@@ -96,14 +98,19 @@ jobs:
           PROJECT_NAME: github.com/${{ github.repository }}
           PROJECT_VERSION: pr-${{ github.event.pull_request.number }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           DT=http://dependency-track-api-server.dependency-track.svc.cluster.local:8080
+          # Advisory: this step never fails the PR. Defaults stand in if any
+          # call falls through; the violation-fetch HTTP code is recorded for
+          # the comment job to interpret.
+          echo '[]' > violations.json
+          printf '000' > http_code.txt
           # Upload the PR SBOM. No isLatest -> the `main` version stays canonical.
-          resp=$(curl -fsS -H "X-Api-Key: ${DT_API_KEY}" -X POST "$DT/api/v1/bom" \
+          resp=$(curl -sS -H "X-Api-Key: ${DT_API_KEY}" -X POST "$DT/api/v1/bom" \
             -F autoCreate=true \
             -F "projectName=${PROJECT_NAME}" \
             -F "projectVersion=${PROJECT_VERSION}" \
-            -F "bom=@sbom.cdx.json")
+            -F "bom=@sbom.cdx.json") || { echo "SBOM upload failed"; exit 0; }
           token=$(printf '%s' "$resp" | sed -n 's/.*"token"[^"]*"\([^"]*\)".*/\1/p')
           echo "Upload token: ${token:-<none>}"
           # Poll until BOM ingestion finishes (cap ~5 min).
@@ -123,23 +130,26 @@ jobs:
             --data-urlencode "name=${PROJECT_NAME}" \
             --data-urlencode "version=${PROJECT_VERSION}" \
             | grep -oiE '"uuid"[[:space:]]*:[[:space:]]*"[0-9a-f-]{36}"' \
-            | grep -oiE '[0-9a-f-]{36}' | head -n1 || true)
+            | grep -oiE '[0-9a-f-]{36}' | head -n1)
           echo "Project UUID: ${uuid:-<none>}"
           # Fetch the raw policy violations (parsed on the hosted comment job).
           if [ -n "${uuid}" ]; then
-            curl -fsS -H "X-Api-Key: ${DT_API_KEY}" \
-              "$DT/api/v1/violation/project/${uuid}?suppressed=false&pageSize=1000" \
-              -o violations.json
-          else
-            echo '[]' > violations.json
+            code=$(curl -sS -H "X-Api-Key: ${DT_API_KEY}" -o violations.json -w '%{http_code}' \
+              "$DT/api/v1/violation/project/${uuid}?suppressed=false&pageSize=1000") || code=000
+            printf '%s' "${code}" > http_code.txt
+            echo "Violations HTTP: ${code}"
+            [ "${code}" = "200" ] || echo '[]' > violations.json
           fi
+          echo "done"
 
       - name: Upload violations artifact
         uses: actions/upload-artifact@v7.0.1
         with:
           name: violations
           if-no-files-found: error
-          path: violations.json
+          path: |
+            violations.json
+            http_code.txt
 
   comment:
     needs: evaluate
@@ -159,25 +169,31 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            let data = [];
-            try { data = JSON.parse(fs.readFileSync('violations.json', 'utf8')); } catch (e) {}
-            const all = Array.isArray(data) ? data : (data.violations || []);
-            const lic = all.filter(v => String(v.type || '').toUpperCase() === 'LICENSE');
             const marker = '<!-- dt-license-check -->';
             const dtUi = 'https://dependency-track.jaredbrown.io';
-            const fmt = (v) => {
-              const c = v.component || {};
-              const coord = c.purl || `${c.group ? c.group + ':' : ''}${c.name || '?'}@${c.version || '?'}`;
-              const pol = (v.policyCondition && v.policyCondition.policy && v.policyCondition.policy.name) || 'license policy';
-              const rl = c.resolvedLicense || {};
-              const lname = rl.name || rl.licenseId || c.license || '—';
-              return `| \`${coord}\` | ${lname} | ${pol} |`;
-            };
+            let code = '000';
+            try { code = fs.readFileSync('http_code.txt', 'utf8').trim(); } catch (e) {}
             let body;
-            if (lic.length === 0) {
-              body = `${marker}\n### ✅ Dependency-Track license check\n\nNo license policy violations for \`pr-${context.issue.number}\`.\n\n_Advisory only — reflects the GitOps DT license policies (FOSSA replacement). Vulnerabilities are not gated here. [Open in DT](${dtUi})._`;
+            if (code !== '200') {
+              body = `${marker}\n### ℹ️ Dependency-Track license check — evaluation unavailable\n\nDT returned HTTP \`${code}\` reading policy violations for \`pr-${context.issue.number}\`.\n\n- \`403\` → grant the **Automation** team the \`VIEW_POLICY_VIOLATION\` permission in DT (Administration → Access Management → Teams).\n- \`000\` → the SBOM upload or project lookup did not complete.\n\n_Advisory only — not blocking._`;
             } else {
-              body = `${marker}\n### ⚠️ Dependency-Track license check — ${lic.length} finding(s)\n\n| Component | License | Policy |\n|---|---|---|\n${lic.map(fmt).join('\n')}\n\n_Advisory only (non-blocking). Review at ${dtUi}. Source of truth: the GitOps DT license policies._`;
+              let data = [];
+              try { data = JSON.parse(fs.readFileSync('violations.json', 'utf8')); } catch (e) {}
+              const all = Array.isArray(data) ? data : (data.violations || []);
+              const lic = all.filter(v => String(v.type || '').toUpperCase() === 'LICENSE');
+              const fmt = (v) => {
+                const c = v.component || {};
+                const coord = c.purl || `${c.group ? c.group + ':' : ''}${c.name || '?'}@${c.version || '?'}`;
+                const pol = (v.policyCondition && v.policyCondition.policy && v.policyCondition.policy.name) || 'license policy';
+                const rl = c.resolvedLicense || {};
+                const lname = rl.name || rl.licenseId || c.license || '—';
+                return `| \`${coord}\` | ${lname} | ${pol} |`;
+              };
+              if (lic.length === 0) {
+                body = `${marker}\n### ✅ Dependency-Track license check\n\nNo license policy violations for \`pr-${context.issue.number}\`.\n\n_Advisory only — reflects the GitOps DT license policies (FOSSA replacement). Vulnerabilities are not gated here. [Open in DT](${dtUi})._`;
+              } else {
+                body = `${marker}\n### ⚠️ Dependency-Track license check — ${lic.length} finding(s)\n\n| Component | License | Policy |\n|---|---|---|\n${lic.map(fmt).join('\n')}\n\n_Advisory only (non-blocking). Review at ${dtUi}. Source of truth: the GitOps DT license policies._`;
+              }
             }
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
