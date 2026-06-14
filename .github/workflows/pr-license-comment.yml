@@ -131,7 +131,7 @@ jobs:
           echo "done"
 
       - name: Render and post advisory license comment
-        uses: actions/github-script@v8.0.0
+        uses: actions/github-script@v9.0.0
         env:
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         with:
