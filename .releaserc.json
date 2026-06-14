@@ -50,7 +50,20 @@
         "tarballDir": "dist"
       }
     ],
-    ["@semantic-release/github"],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "npx --yes @cyclonedx/cyclonedx-npm@4.2.1 --ignore-npm-errors --output-format JSON --output-file sbom.cdx.json"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "sbom.cdx.json", "label": "CycloneDX SBOM (sbom.cdx.json)" }
+        ]
+      }
+    ],
     [
       "@semantic-release/git",
       {

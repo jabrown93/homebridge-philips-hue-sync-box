@@ -1,0 +1,57 @@
+---
+# Producer half of the advisory PR license check (consumer: pr-license-comment.yml).
+#
+# SECURITY BOUNDARY: a `pull_request` build runs the PR's OWN copy of this file
+# plus the PR's (untrusted) dependencies, so it holds NO secrets and never
+# reaches the cluster. It only builds the SBOM and hands it to the trusted
+# consumer as an artifact. The privileged upload-to-DT + PR comment runs in
+# pr-license-comment.yml, a `workflow_run` workflow that always executes the
+# main-branch definition, with the OpenBao role pinned to that file
+# @refs/heads/main. This mirrors argocd-diff.yaml in jabrown93/homelab and is the
+# GitHub-recommended pattern for giving secrets to PR-triggered automation
+# without exposing them to PR-controlled code.
+#
+# Public repo → hosted ubuntu-latest is free/unlimited and has no cluster reach,
+# which is exactly what we want for untrusted PR code.
+name: PR License Check (Dependency-Track)
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    # Fork PRs can't produce a comment (the consumer is gated to same-repo runs),
+    # so don't bother building for them.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          set -euo pipefail
+          npx --yes @cyclonedx/cyclonedx-npm@4.2.1 \
+            --ignore-npm-errors \
+            --output-format JSON \
+            --output-file sbom.cdx.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: sbom
+          if-no-files-found: error
+          path: sbom.cdx.json
