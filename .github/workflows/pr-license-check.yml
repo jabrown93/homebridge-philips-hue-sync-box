@@ -1,28 +1,18 @@
 ---
-# Advisory license check for pull requests, backed by Dependency-Track.
+# Producer half of the advisory PR license check (consumer: pr-license-comment.yml).
 #
-# Companion to dt-sbom.yml (which uploads the canonical `main` SBOM). This
-# uploads the PR's SBOM under a throwaway `pr-<number>` project version, lets
-# DT evaluate it against the GitOps license policies (the FOSSA replacement,
-# managed in jabrown93/homelab -> argocd/configs/dependency-track/policies.json),
-# and posts the LICENSE-type policy violations back as a NON-BLOCKING PR comment.
-# It never fails the PR -- the rules are visibility-only by design.
+# SECURITY BOUNDARY: a `pull_request` build runs the PR's OWN copy of this file
+# plus the PR's (untrusted) dependencies, so it holds NO secrets and never
+# reaches the cluster. It only builds the SBOM and hands it to the trusted
+# consumer as an artifact. The privileged upload-to-DT + PR comment runs in
+# pr-license-comment.yml, a `workflow_run` workflow that always executes the
+# main-branch definition, with the OpenBao role pinned to that file
+# @refs/heads/main. This mirrors argocd-diff.yaml in jabrown93/homelab and is the
+# GitHub-recommended pattern for giving secrets to PR-triggered automation
+# without exposing them to PR-controlled code.
 #
-# Three jobs, by trust boundary:
-#   sbom     - hosted runner (UNTRUSTED): `npm ci` + cyclonedx-npm. Build/dep
-#              lifecycle scripts run here, never on the in-cluster runner.
-#   evaluate - in-cluster arc-oss-homebridge-philips-hue-sync-box runner: OIDC -> OpenBao -> DT CI key,
-#              upload the PR SBOM, poll until processing finishes, fetch the raw
-#              policy violations. Reaches OpenBao/DT by in-cluster Service DNS
-#              (egress-locked set). No jq on this image -> only raw JSON is
-#              emitted here; it is parsed on a hosted runner. Fully non-fatal:
-#              it records the violation-fetch HTTP code and always exits 0.
-#   comment  - hosted runner: render the LICENSE violations (or an "unavailable"
-#              note) and post/update the advisory PR comment (needs a writable
-#              GITHUB_TOKEN, kept off the cluster runner).
-#
-# Same-repo PRs only: a fork PR gets no OIDC token and no writable token, and
-# must never reach the in-cluster runner. Fork PRs are skipped entirely.
+# Public repo → hosted ubuntu-latest is free/unlimited and has no cluster reach,
+# which is exactly what we want for untrusted PR code.
 name: PR License Check (Dependency-Track)
 
 on:
@@ -34,10 +24,10 @@ permissions:
 
 jobs:
   sbom:
+    # Fork PRs can't produce a comment (the consumer is gated to same-repo runs),
+    # so don't bother building for them.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.3
@@ -65,142 +55,3 @@ jobs:
           name: sbom
           if-no-files-found: error
           path: sbom.cdx.json
-
-  evaluate:
-    needs: sbom
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: arc-oss-homebridge-philips-hue-sync-box
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Download SBOM artifact
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: sbom
-
-      - name: Fetch DT API key from OpenBao
-        id: bao
-        uses: hashicorp/vault-action@v4.0.0
-        with:
-          url: https://openbao-active.openbao.svc.cluster.local:8200
-          tlsSkipVerify: true
-          method: jwt
-          path: github-actions
-          role: dt-sbom-upload
-          jwtGithubAudience: openbao
-          secrets: |
-            secret/data/dependency-track/ci-api-key apiKey | DT_API_KEY
-
-      - name: Upload PR SBOM and collect license policy violations
-        env:
-          DT_API_KEY: ${{ steps.bao.outputs.DT_API_KEY }}
-          PROJECT_NAME: github.com/${{ github.repository }}
-          PROJECT_VERSION: pr-${{ github.event.pull_request.number }}
-        run: |
-          set -uo pipefail
-          DT=http://dependency-track-api-server.dependency-track.svc.cluster.local:8080
-          # Advisory: this step never fails the PR. Defaults stand in if any
-          # call falls through; the violation-fetch HTTP code is recorded for
-          # the comment job to interpret.
-          echo '[]' > violations.json
-          printf '000' > http_code.txt
-          # Upload the PR SBOM. No isLatest -> the `main` version stays canonical.
-          resp=$(curl -sS -H "X-Api-Key: ${DT_API_KEY}" -X POST "$DT/api/v1/bom" \
-            -F autoCreate=true \
-            -F "projectName=${PROJECT_NAME}" \
-            -F "projectVersion=${PROJECT_VERSION}" \
-            -F "bom=@sbom.cdx.json") || { echo "SBOM upload failed"; exit 0; }
-          token=$(printf '%s' "$resp" | sed -n 's/.*"token"[^"]*"\([^"]*\)".*/\1/p')
-          echo "Upload token: ${token:-<none>}"
-          # Poll until BOM ingestion finishes (cap ~5 min).
-          if [ -n "${token}" ]; then
-            for _ in $(seq 1 60); do
-              if curl -fsS -H "X-Api-Key: ${DT_API_KEY}" "$DT/api/v1/bom/token/${token}" \
-                   | grep -q '"processing"[[:space:]]*:[[:space:]]*false'; then
-                break
-              fi
-              sleep 5
-            done
-          fi
-          # Let policy evaluation settle after ingestion.
-          sleep 10
-          # Resolve the project UUID for this PR version.
-          uuid=$(curl -fsSG -H "X-Api-Key: ${DT_API_KEY}" "$DT/api/v1/project/lookup" \
-            --data-urlencode "name=${PROJECT_NAME}" \
-            --data-urlencode "version=${PROJECT_VERSION}" \
-            | grep -oiE '"uuid"[[:space:]]*:[[:space:]]*"[0-9a-f-]{36}"' \
-            | grep -oiE '[0-9a-f-]{36}' | head -n1)
-          echo "Project UUID: ${uuid:-<none>}"
-          # Fetch the raw policy violations (parsed on the hosted comment job).
-          if [ -n "${uuid}" ]; then
-            code=$(curl -sS -H "X-Api-Key: ${DT_API_KEY}" -o violations.json -w '%{http_code}' \
-              "$DT/api/v1/violation/project/${uuid}?suppressed=false&pageSize=1000") || code=000
-            printf '%s' "${code}" > http_code.txt
-            echo "Violations HTTP: ${code}"
-            [ "${code}" = "200" ] || echo '[]' > violations.json
-          fi
-          echo "done"
-
-      - name: Upload violations artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: violations
-          if-no-files-found: error
-          path: |
-            violations.json
-            http_code.txt
-
-  comment:
-    needs: evaluate
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Download violations artifact
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: violations
-
-      - name: Render and post advisory license comment
-        uses: actions/github-script@v8.0.0
-        with:
-          script: |
-            const fs = require('fs');
-            const marker = '<!-- dt-license-check -->';
-            const dtUi = 'https://dependency-track.jaredbrown.io';
-            let code = '000';
-            try { code = fs.readFileSync('http_code.txt', 'utf8').trim(); } catch (e) {}
-            let body;
-            if (code !== '200') {
-              body = `${marker}\n### ℹ️ Dependency-Track license check — evaluation unavailable\n\nDT returned HTTP \`${code}\` reading policy violations for \`pr-${context.issue.number}\`.\n\n- \`403\` → grant the **Automation** team the \`VIEW_POLICY_VIOLATION\` permission in DT (Administration → Access Management → Teams).\n- \`000\` → the SBOM upload or project lookup did not complete.\n\n_Advisory only — not blocking._`;
-            } else {
-              let data = [];
-              try { data = JSON.parse(fs.readFileSync('violations.json', 'utf8')); } catch (e) {}
-              const all = Array.isArray(data) ? data : (data.violations || []);
-              const lic = all.filter(v => String(v.type || '').toUpperCase() === 'LICENSE');
-              const fmt = (v) => {
-                const c = v.component || {};
-                const coord = c.purl || `${c.group ? c.group + ':' : ''}${c.name || '?'}@${c.version || '?'}`;
-                const pol = (v.policyCondition && v.policyCondition.policy && v.policyCondition.policy.name) || 'license policy';
-                const rl = c.resolvedLicense || {};
-                const lname = rl.name || rl.licenseId || c.license || '—';
-                return `| \`${coord}\` | ${lname} | ${pol} |`;
-              };
-              if (lic.length === 0) {
-                body = `${marker}\n### ✅ Dependency-Track license check\n\nNo license policy violations for \`pr-${context.issue.number}\`.\n\n_Advisory only — reflects the GitOps DT license policies (FOSSA replacement). Vulnerabilities are not gated here. [Open in DT](${dtUi})._`;
-              } else {
-                body = `${marker}\n### ⚠️ Dependency-Track license check — ${lic.length} finding(s)\n\n| Component | License | Policy |\n|---|---|---|\n${lic.map(fmt).join('\n')}\n\n_Advisory only (non-blocking). Review at ${dtUi}. Source of truth: the GitOps DT license policies._`;
-              }
-            }
-            const { owner, repo } = context.repo;
-            const issue_number = context.issue.number;
-            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
-            }
