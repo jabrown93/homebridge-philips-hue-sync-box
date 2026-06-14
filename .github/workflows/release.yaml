@@ -42,6 +42,13 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
       - run: npm clean-install
+      - name: Generate CycloneDX SBOM (attached to the GitHub release)
+        run: |
+          set -euo pipefail
+          npx --yes @cyclonedx/cyclonedx-npm@4.2.1 \
+            --ignore-npm-errors \
+            --output-format JSON \
+            --output-file sbom.cdx.json
       - run: npm audit signatures
       - name: Configure atomic git pushes
         run: git config --global push.atomic true
