@@ -51,6 +51,12 @@
       }
     ],
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "npx --yes @cyclonedx/cyclonedx-npm@4.2.1 --ignore-npm-errors --output-format JSON --output-file sbom.cdx.json"
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         "assets": [

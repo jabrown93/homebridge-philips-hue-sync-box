@@ -25,12 +25,16 @@ on:
       - completed
 
 permissions:
+  actions: read           # download-artifact run-id mode (cross-run) needs this
   contents: read
   id-token: write
   pull-requests: write
 
 concurrency:
-  group: pr-license-${{ github.event.workflow_run.head_branch }}
+  # Suffix by conclusion so a failed/skipped producer's (no-op) consumer run can't
+  # cancel an in-flight successful evaluation; successful runs still supersede each
+  # other (newest wins).
+  group: pr-license-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.conclusion }}
   cancel-in-progress: true
 
 jobs:
