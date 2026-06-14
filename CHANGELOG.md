@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.3.0...v3.0.0) (2026-06-14)
+
+### ⚠ BREAKING CHANGES
+
+* **engines:** require Node 22 or 24, drop Node 20 (#398)
+
+### Features
+
+* **engines:** require Node 22 or 24, drop Node 20 ([#398](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/398)) ([96c4108](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/96c41081c8ca1f0cb6c619df476f92870fe6c5f3))
+
 ## [2.3.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v2.2.4...v2.3.0) (2026-06-09)
 
 ### Features
