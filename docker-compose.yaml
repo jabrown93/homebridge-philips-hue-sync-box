@@ -1,6 +1,6 @@
 services:
   mockServer:
-    image: mockserver/mockserver:7.0.0
+    image: mockserver/mockserver:7.1.0
     ports:
       - 1080:1080
     environment:
