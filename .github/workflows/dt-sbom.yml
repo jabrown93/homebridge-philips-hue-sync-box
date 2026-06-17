@@ -86,7 +86,7 @@ jobs:
           role: dt-sbom-upload
           jwtGithubAudience: openbao
           secrets: |
-            secret/data/dependency-track/ci-api-key apiKey | DT_API_KEY
+            secret/data/ci/dependency-track/ci-api-key apiKey | DT_API_KEY
 
       - name: Upload SBOM to Dependency-Track
         env:
