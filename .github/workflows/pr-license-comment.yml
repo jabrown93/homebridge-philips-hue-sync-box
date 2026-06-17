@@ -59,7 +59,7 @@ jobs:
           echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
 
       - name: Download SBOM from the producer run
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: sbom
           run-id: ${{ github.event.workflow_run.id }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Fetch DT API key from OpenBao
         id: bao
-        uses: hashicorp/vault-action@v4.0.0
+        uses: hashicorp/vault-action@892a26828f195e65540a40b4768ae4571f51ebfc # v4.0.0
         with:
           url: https://openbao-active.openbao.svc.cluster.local:8200
           tlsSkipVerify: true
@@ -131,7 +131,7 @@ jobs:
           echo "done"
 
       - name: Render and post advisory license comment
-        uses: actions/github-script@v9.0.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         with:

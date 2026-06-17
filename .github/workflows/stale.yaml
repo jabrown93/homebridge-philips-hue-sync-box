@@ -3,24 +3,10 @@ name: 'Close stale issues and PRs'
 on:
   schedule:
     - cron: '30 1 * * *'
-permissions:
-  actions: write
-  issues: write
-  pull-requests: write
-
 jobs:
   stale:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/stale@v10.3.0
-        with:
-          days-before-stale: '30'
-          days-before-close: '7'
-          stale-issue-message: 'This issue has no recent activity and will be closed in 7 days. Comment to keep the issue open.'
-          stale-pr-message: 'This PR has no recent activity and will be closed in 7 days. Comment or update to keep the PR open.'
-          stale-issue-label: 'stale'
-          exempt-issue-labels: 'work-in-progress,disable-stale-bot,needs-triage'
-          exempt-pr-labels: 'work-in-progress,disable-stale-bot,needs-triage'
-          stale-pr-label: 'no-pr-activity'
-          close-issue-message: 'No activity in over 30 days, closing.'
-          close-pr-message: 'No activity in over 30 days, closing.'
+    uses: jabrown93/.github/.github/workflows/stale.yml@646fa5ec406b9d4ee20498512d6748135f4a6206 # v1.1.0
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
