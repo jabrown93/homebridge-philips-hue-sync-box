@@ -1,42 +1,10 @@
 ---
 name: Build and Lint
-
 on:
   - push
   - pull_request
-
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version:
-          - 22.x
-          - 24.x
-
-    steps:
-      - uses: actions/checkout@v6.0.3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6.4.0
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Lint the project
-        run: npm run lint
-
-      - name: Build the project
-        run: npm run build
-
-      - name: List, audit, fix outdated dependencies and build again
-        run: |
-          npm list --outdated
-          npm audit || true  # ignore failures
-          npm audit fix || true
-          npm list --outdated
-          npm run build
+    uses: jabrown93/.github/.github/workflows/node-build.yml@646fa5ec406b9d4ee20498512d6748135f4a6206 # v1.1.0
+    with:
+      node-versions: '["22.x", "24.x"]'
