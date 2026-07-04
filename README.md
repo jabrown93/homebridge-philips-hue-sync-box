@@ -18,8 +18,9 @@
 [![GitHub Last Commit](https://badgen.net/github/last-commit/jabrown93/homebridge-philips-hue-sync-box?color=cyan&icon=github)](https://github.com/jabrown93/homebridge-philips-hue-sync-box)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/jabrown93/homebridge-philips-hue-sync-box.svg)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/pulls)
 [![GitHub issues](https://img.shields.io/github/issues/jabrown93/homebridge-philips-hue-sync-box.svg)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues)
-[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=license)
-[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B50603%2Fgithub.com%2Fjabrown93%2Fhomebridge-philips-hue-sync-box?ref=badge_shield&issueType=security)
+[![Build](https://img.shields.io/github/actions/workflow/status/jabrown93/homebridge-philips-hue-sync-box/build.yaml?label=build)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/actions/workflows/build.yaml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/jabrown93/homebridge-philips-hue-sync-box/codeql.yaml?label=CodeQL)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/actions/workflows/codeql.yaml)
+[![Release](https://img.shields.io/github/v/release/jabrown93/homebridge-philips-hue-sync-box)](https://github.com/jabrown93/homebridge-philips-hue-sync-box/releases)
 
 ## Table of Contents
 
