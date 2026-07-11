@@ -83,7 +83,7 @@
     "@semantic-release/npm": "13.1.5",
     "@semantic-release/release-notes-generator": "14.1.1",
     "@types/async-lock": "1.4.2",
-    "@types/node": "24.13.2",
+    "@types/node": "24.13.3",
     "@typescript-eslint/eslint-plugin": "8.63.0",
     "@typescript-eslint/parser": "8.63.0",
     "conventional-changelog-conventionalcommits": "10.2.1",
