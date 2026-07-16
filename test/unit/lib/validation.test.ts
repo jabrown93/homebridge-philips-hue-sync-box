@@ -19,6 +19,15 @@ function makeState(groups: Record<string, { name: string }>): State {
   } as State;
 }
 
+function makeHdmi(): State['hdmi'] {
+  return {
+    input1: { name: 'Input 1' },
+    input2: { name: 'Input 2' },
+    input3: { name: 'Input 3' },
+    input4: { name: 'Input 4' },
+  } as State['hdmi'];
+}
+
 function makeFullState(): State {
   return {
     device: {
@@ -26,9 +35,9 @@ function makeFullState(): State {
       firmwareVersion: '1.0.0',
       uniqueId: 'unique-id',
     },
-    execution: { mode: 'video' },
-    hue: makeState({}).hue,
-    hdmi: {},
+    execution: { mode: 'video', hdmiSource: 'input1' },
+    hue: makeState({ 'group-1': { name: 'Living Room' } }).hue,
+    hdmi: makeHdmi(),
   } as State;
 }
 
@@ -72,6 +81,46 @@ describe('isValidState', () => {
     expect(isValidState(withoutHue)).toBe(false);
     const { hdmi: _hdmi, ...withoutHdmi } = makeFullState();
     expect(isValidState(withoutHdmi)).toBe(false);
+  });
+
+  it('rejects a response missing execution.hdmiSource', () => {
+    const state = { ...makeFullState(), execution: { mode: 'video' } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing an HDMI input slot', () => {
+    const { input4: _input4, ...hdmi } = makeFullState().hdmi;
+    const state = { ...makeFullState(), hdmi };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where an HDMI input is missing a name', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: { ...makeHdmi(), input1: {} },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('accepts a response with no entertainment groups', () => {
+    const state = { ...makeFullState(), hue: makeState({}).hue };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('rejects a response where a hue group is missing a name', () => {
+    const state = {
+      ...makeFullState(),
+      hue: makeState({ 'group-1': {} as { name: string } }).hue,
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where hue.groups is not an object', () => {
+    const state = {
+      ...makeFullState(),
+      hue: { ...makeFullState().hue, groups: 'not-an-object' },
+    };
+    expect(isValidState(state)).toBe(false);
   });
 
   it('rejects non-object and null responses', () => {

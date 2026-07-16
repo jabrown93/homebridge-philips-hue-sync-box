@@ -33,11 +33,47 @@ export function isPlainObject(
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isValidHdmiInput(value: unknown): boolean {
+  return isPlainObject(value) && typeof value.name === 'string';
+}
+
+/**
+ * TvDevice.createInputServices() unconditionally dereferences
+ * hdmi.input1 through input4 (state.hdmi[`input${i}`].name) when the TV
+ * accessory is enabled, so every input slot must be present with a name.
+ */
+function isValidHdmiState(value: unknown): boolean {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+  for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
+    if (!isValidHdmiInput(value[`input${i}`])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * EntertainmentTvDevice.createInputServices()/updateTv() unconditionally
+ * dereference each entry in hue.groups (group.name) when the entertainment
+ * TV accessory is enabled, so every group must be an object with a name.
+ */
+function isValidHueState(value: unknown): boolean {
+  if (!isPlainObject(value) || !isPlainObject(value.groups)) {
+    return false;
+  }
+  return Object.values(value.groups).every(
+    group => isPlainObject(group) && typeof group.name === 'string'
+  );
+}
+
 /**
  * Confirms the shape every accessory unconditionally dereferences
- * (device.name/firmwareVersion/uniqueId, execution.mode, hue, hdmi) is
- * actually present, so a malformed or spoofed Sync Box response fails here
- * instead of throwing a TypeError deep inside an accessory's update().
+ * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource,
+ * hue.groups[*].name, hdmi.input1-4.name) is actually present, so a
+ * malformed or spoofed Sync Box response fails here instead of throwing a
+ * TypeError deep inside an accessory's update().
  */
 export function isValidState(value: unknown): value is State {
   if (!isPlainObject(value)) {
@@ -51,8 +87,9 @@ export function isValidState(value: unknown): value is State {
     typeof device.uniqueId === 'string' &&
     isPlainObject(execution) &&
     typeof execution.mode === 'string' &&
-    isPlainObject(hue) &&
-    isPlainObject(hdmi)
+    typeof execution.hdmiSource === 'string' &&
+    isValidHueState(hue) &&
+    isValidHdmiState(hdmi)
   );
 }
 
