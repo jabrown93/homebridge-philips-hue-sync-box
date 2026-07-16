@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
 import {
   isPlainObject,
+  isValidState,
   validateExecution,
   validateHue,
 } from '../../../src/lib/validation.js';
@@ -18,6 +19,19 @@ function makeState(groups: Record<string, { name: string }>): State {
   } as State;
 }
 
+function makeFullState(): State {
+  return {
+    device: {
+      name: 'Sync Box',
+      firmwareVersion: '1.0.0',
+      uniqueId: 'unique-id',
+    },
+    execution: { mode: 'video' },
+    hue: makeState({}).hue,
+    hdmi: {},
+  } as State;
+}
+
 describe('isPlainObject', () => {
   it('accepts plain objects', () => {
     expect(isPlainObject({})).toBe(true);
@@ -30,6 +44,41 @@ describe('isPlainObject', () => {
     expect(isPlainObject('a string')).toBe(false);
     expect(isPlainObject(42)).toBe(false);
     expect(isPlainObject(undefined)).toBe(false);
+  });
+});
+
+describe('isValidState', () => {
+  it('accepts a well-formed state', () => {
+    expect(isValidState(makeFullState())).toBe(true);
+  });
+
+  it('rejects a response missing execution entirely', () => {
+    const { execution: _execution, ...rest } = makeFullState();
+    expect(isValidState(rest)).toBe(false);
+  });
+
+  it('rejects a response where execution.mode is not a string', () => {
+    const state = { ...makeFullState(), execution: { mode: 42 } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing device fields', () => {
+    const state = { ...makeFullState(), device: { name: 'Sync Box' } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing hue or hdmi', () => {
+    const { hue: _hue, ...withoutHue } = makeFullState();
+    expect(isValidState(withoutHue)).toBe(false);
+    const { hdmi: _hdmi, ...withoutHdmi } = makeFullState();
+    expect(isValidState(withoutHdmi)).toBe(false);
+  });
+
+  it('rejects non-object and null responses', () => {
+    expect(isValidState(null)).toBe(false);
+    expect(isValidState(undefined)).toBe(false);
+    expect(isValidState('not an object')).toBe(false);
+    expect(isValidState([])).toBe(false);
   });
 });
 

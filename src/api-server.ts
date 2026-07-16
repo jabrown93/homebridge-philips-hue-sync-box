@@ -28,84 +28,93 @@ export class ApiServer {
 
   public start() {
     const { apiServerPort, apiServerToken } = this.platform.config;
-    if (!apiServerPort || !apiServerToken) {
+    if (!apiServerPort) {
       this.platform.log.error(
         'API server cannot start due to missing configuration.'
       );
       return;
     }
-    if (apiServerToken.length < MIN_API_TOKEN_LENGTH) {
+    if (
+      typeof apiServerToken !== 'string' ||
+      apiServerToken.length < MIN_API_TOKEN_LENGTH
+    ) {
       this.platform.log.error(
-        `API server cannot start: apiServerToken must be at least ${MIN_API_TOKEN_LENGTH} characters long.`
+        `API server cannot start: apiServerToken must be a string at least ${MIN_API_TOKEN_LENGTH} characters long.`
       );
       return;
     }
 
     try {
-      this.server = http
-        .createServer((request, response) => {
-          request.on('error', e =>
-            this.platform.log.error('API - Error received.', e)
-          );
-          response.on('error', () =>
-            this.platform.log.error('API - Error sending the response.')
-          );
+      this.server = http.createServer((request, response) => {
+        request.on('error', e =>
+          this.platform.log.error('API - Error received.', e)
+        );
+        response.on('error', () =>
+          this.platform.log.error('API - Error sending the response.')
+        );
 
-          // Authorization is checked before any body bytes are read, so an
-          // unauthenticated caller can never force the server to buffer data.
-          if (!this.isAuthorized(request, apiServerToken)) {
-            this.platform.log.debug('Authorization header missing or invalid.');
-            response.statusCode = HTTP_STATUS_UNAUTHORIZED;
-            // No 'data' listener is attached, so the request stream never
-            // resumes: any body the caller keeps sending is bounded by the
-            // OS socket receive buffer (via normal TCP flow control), not by
-            // application memory. That's what actually stops the DoS -
-            // destroying the socket here would race the response write and
-            // reset the connection before the client reads it.
-            response.end(JSON.stringify({ error: 'Unauthorized' }));
-            return;
-          }
+        // Authorization is checked before any body bytes are read, so an
+        // unauthenticated caller can never force the server to buffer data.
+        if (!this.isAuthorized(request, apiServerToken)) {
+          this.platform.log.debug('Authorization header missing or invalid.');
+          response.statusCode = HTTP_STATUS_UNAUTHORIZED;
+          // No 'data' listener is attached, so the request stream never
+          // resumes: any body the caller keeps sending is bounded by the
+          // OS socket receive buffer (via normal TCP flow control), not by
+          // application memory. That's what actually stops the DoS -
+          // destroying the socket here would race the response write and
+          // reset the connection before the client reads it.
+          response.end(JSON.stringify({ error: 'Unauthorized' }));
+          return;
+        }
 
-          const payload: Buffer[] = [];
-          let receivedBytes = 0;
-          let rejected = false;
+        const payload: Buffer[] = [];
+        let receivedBytes = 0;
+        let rejected = false;
 
-          request
-            .on('data', (chunk: Buffer) => {
-              if (rejected) {
-                return;
-              }
-              receivedBytes += chunk.length;
-              if (receivedBytes > MAX_API_BODY_BYTES) {
-                rejected = true;
-                response.statusCode = HTTP_STATUS_PAYLOAD_TOO_LARGE;
-                // Remaining chunks are still drained (and discarded) by this
-                // same 'data' handler rather than buffered, bounding memory;
-                // the server's requestTimeout bounds how long that continues.
-                response.end(JSON.stringify({ error: 'Payload too large.' }));
-                return;
-              }
-              payload.push(chunk);
-            })
-            .on('end', async () => {
-              if (rejected) {
-                return;
-              }
-              switch (request.method) {
-                case 'GET':
-                  await this.handleGet(response);
-                  break;
-                case 'POST':
-                  await this.handlePost(payload, response);
-                  break;
-                default:
-                  this.platform.log.debug('No action matched.');
-                  response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
-                  response.end();
-              }
-            });
-        })
-        .listen(apiServerPort, '0.0.0.0');
+        request
+          .on('data', (chunk: Buffer) => {
+            if (rejected) {
+              return;
+            }
+            receivedBytes += chunk.length;
+            if (receivedBytes > MAX_API_BODY_BYTES) {
+              rejected = true;
+              response.statusCode = HTTP_STATUS_PAYLOAD_TOO_LARGE;
+              // Remaining chunks are still drained (and discarded) by this
+              // same 'data' handler rather than buffered, bounding memory;
+              // the server's requestTimeout bounds how long that continues.
+              response.end(JSON.stringify({ error: 'Payload too large.' }));
+              return;
+            }
+            payload.push(chunk);
+          })
+          .on('end', async () => {
+            if (rejected) {
+              return;
+            }
+            switch (request.method) {
+              case 'GET':
+                await this.handleGet(response);
+                break;
+              case 'POST':
+                await this.handlePost(payload, response);
+                break;
+              default:
+                this.platform.log.debug('No action matched.');
+                response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
+                response.end();
+            }
+          });
+      });
+      // Without this listener, an async server error (e.g. EADDRINUSE from a
+      // second Sync Box instance defaulting to the same port) is rethrown by
+      // Node as an uncaught exception, which Homebridge treats as fatal to
+      // the entire process rather than just this plugin.
+      this.server.on('error', e => {
+        this.platform.log.error('API server encountered an error.', e);
+      });
+      this.server.listen(apiServerPort, '0.0.0.0');
       this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
       this.platform.log.error('API could not be started:', e);

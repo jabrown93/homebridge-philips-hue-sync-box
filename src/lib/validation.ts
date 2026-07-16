@@ -13,7 +13,8 @@ import {
 } from './constants.js';
 
 export type ValidationResult<T> =
-  { ok: true; value: Partial<T> } | { ok: false; error: string };
+  | { ok: true; value: Partial<T> }
+  | { ok: false; error: string };
 
 const VALID_EXECUTION_MODES: string[] = [
   MODE_VIDEO,
@@ -30,6 +31,29 @@ export function isPlainObject(
   value: unknown
 ): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Confirms the shape every accessory unconditionally dereferences
+ * (device.name/firmwareVersion/uniqueId, execution.mode, hue, hdmi) is
+ * actually present, so a malformed or spoofed Sync Box response fails here
+ * instead of throwing a TypeError deep inside an accessory's update().
+ */
+export function isValidState(value: unknown): value is State {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+  const { device, execution, hue, hdmi } = value;
+  return (
+    isPlainObject(device) &&
+    typeof device.name === 'string' &&
+    typeof device.firmwareVersion === 'string' &&
+    typeof device.uniqueId === 'string' &&
+    isPlainObject(execution) &&
+    typeof execution.mode === 'string' &&
+    isPlainObject(hue) &&
+    isPlainObject(hdmi)
+  );
 }
 
 function validateIntensityPayload(
