@@ -136,6 +136,23 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       this.config.entertainmentTvAccessoryLightbulb ?? false;
   }
 
+  // Omits WiFi SSID and LAN IP addresses from debug output, since debug logs are
+  // routinely pasted into public support requests/issues.
+  private redactStateForLogging(state: State): unknown {
+    return {
+      ...state,
+      device: {
+        ...state.device,
+        ipAddress: '[REDACTED]',
+        wifi: { ...state.device.wifi, ssid: '[REDACTED]' },
+      },
+      hue: {
+        ...state.hue,
+        bridgeIpAddress: '[REDACTED]',
+      },
+    };
+  }
+
   configureAccessory(accessory: PlatformAccessory) {
     this.log.info('Loading accessory from cache:', accessory.context.kind);
     this.existingAccessories.set(accessory.UUID, accessory);
@@ -149,7 +166,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
           'ensure the sync box is online and the API token is correct and restart the plugin.'
       );
     }
-    this.log.debug('Discovered state:', state);
+    this.log.debug('Discovered state:', this.redactStateForLogging(state));
     const accessories = this.discoverAccessories(state);
     const uuids = accessories.map(accessory => {
       const uuid = accessory.UUID; // see if an accessory with the same uuid has already been registered and restored from

@@ -15,8 +15,19 @@ export class TvDevice extends BaseTvDevice {
     this.service
       .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
       .onSet(value => {
+        const identifier = value as number;
+        if (
+          !Number.isInteger(identifier) ||
+          identifier < HDMI_INPUT_MIN ||
+          identifier > HDMI_INPUT_MAX
+        ) {
+          this.platform.log.warn(
+            'Ignoring out-of-range HDMI input identifier: ' + identifier
+          );
+          return;
+        }
         return this.updateExecution({
-          hdmiSource: 'input' + value,
+          hdmiSource: 'input' + identifier,
         });
       });
   }
