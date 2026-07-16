@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
 import {
   isPlainObject,
+  isValidState,
   validateExecution,
   validateHue,
 } from '../../../src/lib/validation.js';
@@ -18,6 +19,34 @@ function makeState(groups: Record<string, { name: string }>): State {
   } as State;
 }
 
+function makeHdmi(): State['hdmi'] {
+  return {
+    input1: { name: 'Input 1' },
+    input2: { name: 'Input 2' },
+    input3: { name: 'Input 3' },
+    input4: { name: 'Input 4' },
+  } as State['hdmi'];
+}
+
+function omit<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
+  const clone: Partial<T> = { ...obj };
+  delete clone[key];
+  return clone as Omit<T, K>;
+}
+
+function makeFullState(): State {
+  return {
+    device: {
+      name: 'Sync Box',
+      firmwareVersion: '1.0.0',
+      uniqueId: 'unique-id',
+    },
+    execution: { mode: 'video', hdmiSource: 'input1', brightness: 150 },
+    hue: makeState({ 'group-1': { name: 'Living Room' } }).hue,
+    hdmi: makeHdmi(),
+  } as State;
+}
+
 describe('isPlainObject', () => {
   it('accepts plain objects', () => {
     expect(isPlainObject({})).toBe(true);
@@ -30,6 +59,135 @@ describe('isPlainObject', () => {
     expect(isPlainObject('a string')).toBe(false);
     expect(isPlainObject(42)).toBe(false);
     expect(isPlainObject(undefined)).toBe(false);
+  });
+});
+
+describe('isValidState', () => {
+  it('accepts a well-formed state', () => {
+    expect(isValidState(makeFullState())).toBe(true);
+  });
+
+  it('rejects a response missing execution entirely', () => {
+    expect(isValidState(omit(makeFullState(), 'execution'))).toBe(false);
+  });
+
+  it('rejects a response where execution.mode is not a string', () => {
+    const state = { ...makeFullState(), execution: { mode: 42 } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing device fields', () => {
+    const state = { ...makeFullState(), device: { name: 'Sync Box' } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where device.name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      device: { ...makeFullState().device, name: '' },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing hue or hdmi', () => {
+    expect(isValidState(omit(makeFullState(), 'hue'))).toBe(false);
+    expect(isValidState(omit(makeFullState(), 'hdmi'))).toBe(false);
+  });
+
+  it('rejects a response missing execution.hdmiSource', () => {
+    const state = { ...makeFullState(), execution: { mode: 'video' } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where execution.hdmiSource is not a valid input', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, hdmiSource: 'invalid' },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing or non-finite execution.brightness', () => {
+    expect(
+      isValidState({
+        ...makeFullState(),
+        execution: omit(makeFullState().execution, 'brightness'),
+      })
+    ).toBe(false);
+    expect(
+      isValidState({
+        ...makeFullState(),
+        execution: { ...makeFullState().execution, brightness: NaN },
+      })
+    ).toBe(false);
+  });
+
+  it('rejects a response with out-of-range execution.brightness', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, brightness: 201 },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing an HDMI input slot', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: omit(makeHdmi(), 'input4'),
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where an HDMI input is missing a name', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: { ...makeHdmi(), input1: {} },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where an HDMI input name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: { ...makeHdmi(), input1: { name: '' } },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where a hue group name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      hue: makeState({ 'group-1': { name: '' } }).hue,
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('accepts a response with no entertainment groups', () => {
+    const state = { ...makeFullState(), hue: makeState({}).hue };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('rejects a response where a hue group is missing a name', () => {
+    const state = {
+      ...makeFullState(),
+      hue: makeState({ 'group-1': {} as { name: string } }).hue,
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where hue.groups is not an object', () => {
+    const state = {
+      ...makeFullState(),
+      hue: { ...makeFullState().hue, groups: 'not-an-object' },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects non-object and null responses', () => {
+    expect(isValidState(null)).toBe(false);
+    expect(isValidState(undefined)).toBe(false);
+    expect(isValidState('not an object')).toBe(false);
+    expect(isValidState([])).toBe(false);
   });
 });
 

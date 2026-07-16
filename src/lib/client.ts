@@ -6,7 +6,12 @@ import * as https from 'node:https';
 import { Logger } from 'homebridge';
 import { HueSyncBoxPlatformConfig } from '../config.js';
 import AsyncLock, { AsyncLockOptions } from 'async-lock';
-import { HTTP_RETRY_COUNT, HTTP_RETRY_BASE_DELAY_MS } from './constants.js';
+import {
+  HTTP_RETRY_COUNT,
+  HTTP_RETRY_BASE_DELAY_MS,
+  MAX_SYNC_BOX_RESPONSE_BYTES,
+} from './constants.js';
+import { isValidState } from './validation.js';
 
 const fetch = fetch_retry(originalFetch, {
   retries: HTTP_RETRY_COUNT,
@@ -82,6 +87,10 @@ export class SyncBoxClient {
       method,
       body: body ? JSON.stringify(body) : null,
       agent: new https.Agent({ rejectUnauthorized: false, keepAlive: true }),
+      // Aborts the response stream once it exceeds this many bytes, so a
+      // spoofed oversized response can't be fully buffered by res.json()
+      // before isValidState() gets a chance to reject it.
+      size: MAX_SYNC_BOX_RESPONSE_BYTES,
     };
 
     this.log.debug(
@@ -100,6 +109,18 @@ export class SyncBoxClient {
       );
       throw new Error(`Error: ${res.status} - ${res.statusText}`);
     }
-    return method === 'GET' ? ((await res.json()) as T) : (null as T);
+    if (method !== 'GET') {
+      return null as T;
+    }
+    const json = await res.json();
+    // The Sync Box's cert is accepted without identity verification
+    // (rejectUnauthorized: false), so a LAN-adjacent attacker able to spoof
+    // its responses must not be able to hand every accessory's update() a
+    // shape it dereferences unconditionally - that already crashed the
+    // entire Homebridge process, not just this plugin's accessories.
+    if (!isValidState(json)) {
+      throw new Error('Sync Box returned a malformed state response.');
+    }
+    return json as T;
   }
 }

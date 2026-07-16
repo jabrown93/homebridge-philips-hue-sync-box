@@ -32,6 +32,89 @@ export function isPlainObject(
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+// Matches BaseTvDevice.getInputService()'s `if (!name) throw` guard, so a
+// blank name fails validation instead of throwing during accessory setup.
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+function isValidHdmiInput(value: unknown): boolean {
+  return isPlainObject(value) && isNonEmptyString(value.name);
+}
+
+// BaseTvDevice's remote up/down handlers do arithmetic on this value and
+// serialize it back to the Sync Box, and updateLightbulb() forwards it to
+// the HomeKit Brightness characteristic - a non-finite value turns into
+// `null`/NaN in both places instead of a TypeError, so it's a correctness
+// bound rather than a crash guard, but still worth rejecting up front.
+function isValidBrightness(value: unknown): boolean {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= BRIGHTNESS_MIN &&
+    value <= BRIGHTNESS_MAX_SYNCBOX
+  );
+}
+
+/**
+ * TvDevice.createInputServices() unconditionally dereferences
+ * hdmi.input1 through input4 (state.hdmi[`input${i}`].name) when the TV
+ * accessory is enabled, so every input slot must be present with a name.
+ */
+function isValidHdmiState(value: unknown): boolean {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+  for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
+    if (!isValidHdmiInput(value[`input${i}`])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * EntertainmentTvDevice.createInputServices()/updateTv() unconditionally
+ * dereference each entry in hue.groups (group.name) when the entertainment
+ * TV accessory is enabled, so every group must be an object with a name.
+ */
+function isValidHueState(value: unknown): boolean {
+  if (!isPlainObject(value) || !isPlainObject(value.groups)) {
+    return false;
+  }
+  return Object.values(value.groups).every(
+    group => isPlainObject(group) && isNonEmptyString(group.name)
+  );
+}
+
+/**
+ * Confirms the shape every accessory unconditionally dereferences
+ * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource/
+ * brightness, hue.groups[*].name, hdmi.input1-4.name) is actually present,
+ * so a malformed or spoofed Sync Box response fails here instead of
+ * throwing a TypeError - or forwarding NaN/empty values to HomeKit - deep
+ * inside an accessory's update().
+ */
+export function isValidState(value: unknown): value is State {
+  if (!isPlainObject(value)) {
+    return false;
+  }
+  const { device, execution, hue, hdmi } = value;
+  return (
+    isPlainObject(device) &&
+    isNonEmptyString(device.name) &&
+    typeof device.firmwareVersion === 'string' &&
+    typeof device.uniqueId === 'string' &&
+    isPlainObject(execution) &&
+    typeof execution.mode === 'string' &&
+    typeof execution.hdmiSource === 'string' &&
+    HDMI_SOURCE_PATTERN.test(execution.hdmiSource) &&
+    isValidBrightness(execution.brightness) &&
+    isValidHueState(hue) &&
+    isValidHdmiState(hdmi)
+  );
+}
+
 function validateIntensityPayload(
   value: unknown,
   field: string
