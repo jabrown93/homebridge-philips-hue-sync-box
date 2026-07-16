@@ -52,6 +52,22 @@ export const HTTP_STATUS_BAD_REQUEST = 400;
 export const HTTP_STATUS_PAYLOAD_TOO_LARGE = 413;
 export const HTTP_STATUS_METHOD_NOT_ALLOWED = 405;
 export const HTTP_STATUS_INTERNAL_ERROR = 500;
+// Aborts a single Sync Box request (all retries included, since fetch-retry
+// reuses the same AbortSignal) if it hangs with no response. Without this,
+// a connected-but-silent socket hangs node-fetch forever - no timeout of any
+// kind is applied by node-fetch v3 or fetch-retry on their own.
+export const SYNC_BOX_REQUEST_TIMEOUT_MS = 8000;
+// Queue-wait timeout for async-lock: how long a caller waits for a turn.
+export const SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS = 10000;
+// Worst case one sendRequest() call can take: SYNC_BOX_REQUEST_TIMEOUT_MS
+// for the first attempt, plus up to HTTP_RETRY_COUNT retries of real
+// (non-abort) network errors backing off at HTTP_RETRY_BASE_DELAY_MS *
+// 2^attempt each. Must stay comfortably above that worst case - if a job
+// legitimately runs longer than this, async-lock hands its slot to the next
+// queued caller while the original request keeps running in the background,
+// which can let two requests execute concurrently against the lock's
+// mutual-exclusion guarantee.
+export const SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS = 20000;
 
 // ===== Intensity Constants =====
 export const VALID_INTENSITIES: string[] = [

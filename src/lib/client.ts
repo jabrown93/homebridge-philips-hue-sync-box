@@ -10,6 +10,9 @@ import {
   HTTP_RETRY_COUNT,
   HTTP_RETRY_BASE_DELAY_MS,
   MAX_SYNC_BOX_RESPONSE_BYTES,
+  SYNC_BOX_REQUEST_TIMEOUT_MS,
+  SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS,
+  SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
 } from './constants.js';
 import { isValidState } from './validation.js';
 
@@ -18,16 +21,29 @@ const fetch = fetch_retry(originalFetch, {
   retryDelay: attempt => {
     return Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS; // 1000, 2000, 4000
   },
+  // fetch-retry reuses the same request `init` - and so the same
+  // AbortSignal - across every retry attempt. Once our own request timeout
+  // fires, the signal is permanently aborted, so retrying just burns the
+  // full backoff delay on attempts that fail instantly for no benefit.
+  // Real network errors (connection refused/reset, DNS failure, etc.) still
+  // get retried normally.
+  retryOn: (attempt: number, error: Error | null) => {
+    return !!error && error.name !== 'AbortError';
+  },
 });
 
 export class SyncBoxClient {
   private readonly LOCK_KEY = 'sync-box';
   private readonly LOCK_OPTIONS: AsyncLockOptions = {
-    timeout: 10000,
-    maxExecutionTime: 15000,
+    timeout: SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS,
+    maxExecutionTime: SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
   };
 
   private readonly lock: AsyncLock;
+  private readonly agent = new https.Agent({
+    rejectUnauthorized: false,
+    keepAlive: true,
+  });
 
   constructor(
     private readonly log: Logger | Console,
@@ -44,7 +60,7 @@ export class SyncBoxClient {
         this.LOCK_OPTIONS
       )
       .catch(e => {
-        this.log.error('Sync box is offline', e);
+        this.log.error('Failed to get state from Sync Box:', e);
         return null;
       });
   }
@@ -86,11 +102,15 @@ export class SyncBoxClient {
       },
       method,
       body: body ? JSON.stringify(body) : null,
-      agent: new https.Agent({ rejectUnauthorized: false, keepAlive: true }),
+      agent: this.agent,
       // Aborts the response stream once it exceeds this many bytes, so a
       // spoofed oversized response can't be fully buffered by res.json()
       // before isValidState() gets a chance to reject it.
       size: MAX_SYNC_BOX_RESPONSE_BYTES,
+      // Bounds the whole request (all retries included - see the retryOn
+      // override above) in case the Sync Box accepts the connection but
+      // never sends a response; node-fetch applies no timeout on its own.
+      signal: AbortSignal.timeout(SYNC_BOX_REQUEST_TIMEOUT_MS),
     };
 
     this.log.debug(
