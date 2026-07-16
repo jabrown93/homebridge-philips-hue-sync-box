@@ -57,14 +57,13 @@ export class ApiServer {
         // unauthenticated caller can never force the server to buffer data.
         if (!this.isAuthorized(request, apiServerToken)) {
           this.platform.log.debug('Authorization header missing or invalid.');
-          response.statusCode = HTTP_STATUS_UNAUTHORIZED;
           // No 'data' listener is attached, so the request stream never
           // resumes: any body the caller keeps sending is bounded by the
           // OS socket receive buffer (via normal TCP flow control), not by
           // application memory. That's what actually stops the DoS -
           // destroying the socket here would race the response write and
           // reset the connection before the client reads it.
-          response.end(JSON.stringify({ error: 'Unauthorized' }));
+          this.sendError(response, HTTP_STATUS_UNAUTHORIZED, 'Unauthorized');
           return;
         }
 
@@ -80,11 +79,14 @@ export class ApiServer {
             receivedBytes += chunk.length;
             if (receivedBytes > MAX_API_BODY_BYTES) {
               rejected = true;
-              response.statusCode = HTTP_STATUS_PAYLOAD_TOO_LARGE;
               // Remaining chunks are still drained (and discarded) by this
               // same 'data' handler rather than buffered, bounding memory;
               // the server's requestTimeout bounds how long that continues.
-              response.end(JSON.stringify({ error: 'Payload too large.' }));
+              this.sendError(
+                response,
+                HTTP_STATUS_PAYLOAD_TOO_LARGE,
+                'Payload too large.'
+              );
               return;
             }
             payload.push(chunk);
@@ -138,31 +140,42 @@ export class ApiServer {
     return crypto.timingSafeEqual(providedBuffer, tokenBuffer);
   }
 
+  private sendJson(
+    response: http.ServerResponse,
+    statusCode: number,
+    body: unknown
+  ) {
+    response.statusCode = statusCode;
+    response.end(JSON.stringify(body));
+  }
+
+  private sendError(
+    response: http.ServerResponse,
+    statusCode: number,
+    message: string
+  ) {
+    this.sendJson(response, statusCode, { error: message });
+  }
+
   private async handleGet(response: http.ServerResponse) {
     try {
       this.platform.log.debug('GET request received.');
       const state = await this.platform.client.getState();
       response.setHeader('Content-Type', 'application/json');
-      response.write(JSON.stringify(state));
-      response.statusCode = HTTP_STATUS_OK;
+      this.sendJson(response, HTTP_STATUS_OK, state);
     } catch (e) {
       this.platform.log.error('Error while getting the state.', e);
-      response.statusCode = HTTP_STATUS_INTERNAL_ERROR;
-      response.write(
-        JSON.stringify({
-          error: 'An error occurred while processing your request.',
-        })
+      this.sendError(
+        response,
+        HTTP_STATUS_INTERNAL_ERROR,
+        'An error occurred while processing your request.'
       );
-    } finally {
-      response.end();
     }
   }
 
   private async handlePost(payload: Buffer[], response: http.ServerResponse) {
     if (!payload.length) {
-      response.statusCode = HTTP_STATUS_BAD_REQUEST;
-      response.write(JSON.stringify({ error: 'Body missing.' }));
-      response.end();
+      this.sendError(response, HTTP_STATUS_BAD_REQUEST, 'Body missing.');
       return;
     }
 
@@ -171,16 +184,16 @@ export class ApiServer {
       body = JSON.parse(Buffer.concat(payload).toString());
     } catch (e) {
       this.platform.log.error('Body malformed.', e);
-      response.statusCode = HTTP_STATUS_BAD_REQUEST;
-      response.write(JSON.stringify({ error: 'Body malformed.' }));
-      response.end();
+      this.sendError(response, HTTP_STATUS_BAD_REQUEST, 'Body malformed.');
       return;
     }
 
     if (!isPlainObject(body)) {
-      response.statusCode = HTTP_STATUS_BAD_REQUEST;
-      response.write(JSON.stringify({ error: 'Body must be a JSON object.' }));
-      response.end();
+      this.sendError(
+        response,
+        HTTP_STATUS_BAD_REQUEST,
+        'Body must be a JSON object.'
+      );
       return;
     }
 
@@ -188,9 +201,7 @@ export class ApiServer {
     if (Object.hasOwn(body, 'execution')) {
       const result = validateExecution(body.execution);
       if (!result.ok) {
-        response.statusCode = HTTP_STATUS_BAD_REQUEST;
-        response.write(JSON.stringify({ error: result.error }));
-        response.end();
+        this.sendError(response, HTTP_STATUS_BAD_REQUEST, result.error);
         return;
       }
       execution = result.value;
@@ -203,9 +214,7 @@ export class ApiServer {
       const currentState = await this.platform.client.getState();
       const result = validateHue(body.hue, currentState);
       if (!result.ok) {
-        response.statusCode = HTTP_STATUS_BAD_REQUEST;
-        response.write(JSON.stringify({ error: result.error }));
-        response.end();
+        this.sendError(response, HTTP_STATUS_BAD_REQUEST, result.error);
         return;
       }
       hue = result.value;
@@ -220,18 +229,14 @@ export class ApiServer {
       }
 
       const newState = await this.platform.client.getState();
-      response.statusCode = HTTP_STATUS_OK;
-      response.write(JSON.stringify(newState));
+      this.sendJson(response, HTTP_STATUS_OK, newState);
     } catch (e) {
       this.platform.log.error('Error while updating the state.', e);
-      response.statusCode = HTTP_STATUS_INTERNAL_ERROR;
-      response.write(
-        JSON.stringify({
-          error: 'An error occurred while processing your request.',
-        })
+      this.sendError(
+        response,
+        HTTP_STATUS_INTERNAL_ERROR,
+        'An error occurred while processing your request.'
       );
-    } finally {
-      response.end();
     }
   }
 }
