@@ -13,8 +13,7 @@ import {
 } from './constants.js';
 
 export type ValidationResult<T> =
-  | { ok: true; value: Partial<T> }
-  | { ok: false; error: string };
+  { ok: true; value: Partial<T> } | { ok: false; error: string };
 
 const VALID_EXECUTION_MODES: string[] = [
   MODE_VIDEO,

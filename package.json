@@ -109,5 +109,13 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "overrides": {
+    "@nestjs/swagger": {
+      "js-yaml": "^4.2.0"
+    },
+    "homebridge-config-ui-x": {
+      "tar": "^7.5.16"
+    }
   }
 }
