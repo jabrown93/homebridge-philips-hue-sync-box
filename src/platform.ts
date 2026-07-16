@@ -91,7 +91,15 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
     this.api.on('didFinishLaunching', async () => {
       this.log.debug('Executed didFinishLaunching callback');
-      await this.discoverDevices();
+      // A rejection here would otherwise escape this async event listener as
+      // an unhandled rejection, which Homebridge treats as fatal to the
+      // entire process rather than just this plugin - the exact failure mode
+      // this class of fix is meant to close off.
+      try {
+        await this.discoverDevices();
+      } catch (e) {
+        this.log.error('Failed to discover devices on startup.', e);
+      }
     });
 
     if (this.config.apiServerEnabled) {

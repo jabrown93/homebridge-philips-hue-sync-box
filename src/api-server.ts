@@ -116,12 +116,17 @@ export class ApiServer {
       this.server.on('error', e => {
         this.platform.log.error('API server encountered an error.', e);
       });
+      // listen() returns before the socket is actually bound, so logging
+      // success here (rather than from 'listening') would claim the server
+      // is up even when it fails to bind, e.g. EADDRINUSE.
+      this.server.on('listening', () => {
+        this.platform.log.info('API server started.');
+      });
       this.server.listen(apiServerPort, '0.0.0.0');
       this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
       this.platform.log.error('API could not be started:', e);
     }
-    this.platform.log.info('API server started.');
   }
 
   private isAuthorized(
