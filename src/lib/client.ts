@@ -6,7 +6,11 @@ import * as https from 'node:https';
 import { Logger } from 'homebridge';
 import { HueSyncBoxPlatformConfig } from '../config.js';
 import AsyncLock, { AsyncLockOptions } from 'async-lock';
-import { HTTP_RETRY_COUNT, HTTP_RETRY_BASE_DELAY_MS } from './constants.js';
+import {
+  HTTP_RETRY_COUNT,
+  HTTP_RETRY_BASE_DELAY_MS,
+  MAX_SYNC_BOX_RESPONSE_BYTES,
+} from './constants.js';
 import { isValidState } from './validation.js';
 
 const fetch = fetch_retry(originalFetch, {
@@ -83,6 +87,10 @@ export class SyncBoxClient {
       method,
       body: body ? JSON.stringify(body) : null,
       agent: new https.Agent({ rejectUnauthorized: false, keepAlive: true }),
+      // Aborts the response stream once it exceeds this many bytes, so a
+      // spoofed oversized response can't be fully buffered by res.json()
+      // before isValidState() gets a chance to reject it.
+      size: MAX_SYNC_BOX_RESPONSE_BYTES,
     };
 
     this.log.debug(

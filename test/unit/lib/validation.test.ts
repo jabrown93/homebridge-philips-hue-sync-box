@@ -41,7 +41,7 @@ function makeFullState(): State {
       firmwareVersion: '1.0.0',
       uniqueId: 'unique-id',
     },
-    execution: { mode: 'video', hdmiSource: 'input1' },
+    execution: { mode: 'video', hdmiSource: 'input1', brightness: 150 },
     hue: makeState({ 'group-1': { name: 'Living Room' } }).hue,
     hdmi: makeHdmi(),
   } as State;
@@ -96,6 +96,29 @@ describe('isValidState', () => {
 
   it('rejects a response missing execution.hdmiSource', () => {
     const state = { ...makeFullState(), execution: { mode: 'video' } };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response missing or non-finite execution.brightness', () => {
+    expect(
+      isValidState({
+        ...makeFullState(),
+        execution: omit(makeFullState().execution, 'brightness'),
+      })
+    ).toBe(false);
+    expect(
+      isValidState({
+        ...makeFullState(),
+        execution: { ...makeFullState().execution, brightness: NaN },
+      })
+    ).toBe(false);
+  });
+
+  it('rejects a response with out-of-range execution.brightness', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, brightness: 201 },
+    };
     expect(isValidState(state)).toBe(false);
   });
 

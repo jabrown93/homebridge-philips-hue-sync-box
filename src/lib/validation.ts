@@ -42,6 +42,20 @@ function isValidHdmiInput(value: unknown): boolean {
   return isPlainObject(value) && isNonEmptyString(value.name);
 }
 
+// BaseTvDevice's remote up/down handlers do arithmetic on this value and
+// serialize it back to the Sync Box, and updateLightbulb() forwards it to
+// the HomeKit Brightness characteristic - a non-finite value turns into
+// `null`/NaN in both places instead of a TypeError, so it's a correctness
+// bound rather than a crash guard, but still worth rejecting up front.
+function isValidBrightness(value: unknown): boolean {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= BRIGHTNESS_MIN &&
+    value <= BRIGHTNESS_MAX_SYNCBOX
+  );
+}
+
 /**
  * TvDevice.createInputServices() unconditionally dereferences
  * hdmi.input1 through input4 (state.hdmi[`input${i}`].name) when the TV
@@ -75,10 +89,11 @@ function isValidHueState(value: unknown): boolean {
 
 /**
  * Confirms the shape every accessory unconditionally dereferences
- * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource,
- * hue.groups[*].name, hdmi.input1-4.name) is actually present, so a
- * malformed or spoofed Sync Box response fails here instead of throwing a
- * TypeError deep inside an accessory's update().
+ * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource/
+ * brightness, hue.groups[*].name, hdmi.input1-4.name) is actually present,
+ * so a malformed or spoofed Sync Box response fails here instead of
+ * throwing a TypeError - or forwarding NaN/empty values to HomeKit - deep
+ * inside an accessory's update().
  */
 export function isValidState(value: unknown): value is State {
   if (!isPlainObject(value)) {
@@ -93,6 +108,7 @@ export function isValidState(value: unknown): value is State {
     isPlainObject(execution) &&
     typeof execution.mode === 'string' &&
     typeof execution.hdmiSource === 'string' &&
+    isValidBrightness(execution.brightness) &&
     isValidHueState(hue) &&
     isValidHdmiState(hdmi)
   );
