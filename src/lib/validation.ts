@@ -13,8 +13,7 @@ import {
 } from './constants.js';
 
 export type ValidationResult<T> =
-  | { ok: true; value: Partial<T> }
-  | { ok: false; error: string };
+  { ok: true; value: Partial<T> } | { ok: false; error: string };
 
 const VALID_EXECUTION_MODES: string[] = [
   MODE_VIDEO,
@@ -88,7 +87,7 @@ export function isValidState(value: unknown): value is State {
   const { device, execution, hue, hdmi } = value;
   return (
     isPlainObject(device) &&
-    typeof device.name === 'string' &&
+    isNonEmptyString(device.name) &&
     typeof device.firmwareVersion === 'string' &&
     typeof device.uniqueId === 'string' &&
     isPlainObject(execution) &&

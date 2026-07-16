@@ -28,6 +28,12 @@ function makeHdmi(): State['hdmi'] {
   } as State['hdmi'];
 }
 
+function omit<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
+  const clone: Partial<T> = { ...obj };
+  delete clone[key];
+  return clone as Omit<T, K>;
+}
+
 function makeFullState(): State {
   return {
     device: {
@@ -62,8 +68,7 @@ describe('isValidState', () => {
   });
 
   it('rejects a response missing execution entirely', () => {
-    const { execution: _execution, ...rest } = makeFullState();
-    expect(isValidState(rest)).toBe(false);
+    expect(isValidState(omit(makeFullState(), 'execution'))).toBe(false);
   });
 
   it('rejects a response where execution.mode is not a string', () => {
@@ -76,11 +81,17 @@ describe('isValidState', () => {
     expect(isValidState(state)).toBe(false);
   });
 
+  it('rejects a response where device.name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      device: { ...makeFullState().device, name: '' },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
   it('rejects a response missing hue or hdmi', () => {
-    const { hue: _hue, ...withoutHue } = makeFullState();
-    expect(isValidState(withoutHue)).toBe(false);
-    const { hdmi: _hdmi, ...withoutHdmi } = makeFullState();
-    expect(isValidState(withoutHdmi)).toBe(false);
+    expect(isValidState(omit(makeFullState(), 'hue'))).toBe(false);
+    expect(isValidState(omit(makeFullState(), 'hdmi'))).toBe(false);
   });
 
   it('rejects a response missing execution.hdmiSource', () => {
@@ -89,8 +100,10 @@ describe('isValidState', () => {
   });
 
   it('rejects a response missing an HDMI input slot', () => {
-    const { input4: _input4, ...hdmi } = makeFullState().hdmi;
-    const state = { ...makeFullState(), hdmi };
+    const state = {
+      ...makeFullState(),
+      hdmi: omit(makeHdmi(), 'input4'),
+    };
     expect(isValidState(state)).toBe(false);
   });
 
