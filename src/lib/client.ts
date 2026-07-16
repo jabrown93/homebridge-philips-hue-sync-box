@@ -84,7 +84,14 @@ export class SyncBoxClient {
       agent: new https.Agent({ rejectUnauthorized: false, keepAlive: true }),
     };
 
-    this.log.debug('Request to Sync Box:', url, JSON.stringify(options));
+    this.log.debug(
+      'Request to Sync Box:',
+      url,
+      JSON.stringify({
+        ...options,
+        headers: { ...options.headers, Authorization: '[REDACTED]' },
+      })
+    );
 
     const res = await fetch(url, options);
     if (!res.ok) {

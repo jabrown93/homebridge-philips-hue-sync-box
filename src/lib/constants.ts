@@ -48,3 +48,24 @@ export const HTTP_RETRY_COUNT = 3;
 export const HTTP_RETRY_BASE_DELAY_MS = 1000;
 export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_UNAUTHORIZED = 401;
+export const HTTP_STATUS_BAD_REQUEST = 400;
+export const HTTP_STATUS_PAYLOAD_TOO_LARGE = 413;
+export const HTTP_STATUS_METHOD_NOT_ALLOWED = 405;
+export const HTTP_STATUS_INTERNAL_ERROR = 500;
+
+// ===== Intensity Constants =====
+export const VALID_INTENSITIES: string[] = [
+  'subtle',
+  'moderate',
+  'high',
+  'intense',
+];
+
+// ===== API Server Security Constants =====
+// Minimum length required for apiServerToken before the API server will start.
+export const MIN_API_TOKEN_LENGTH = 32;
+// Legitimate execution/hue payloads are a few hundred bytes; this caps request
+// bodies well above that while still bounding memory use per connection.
+export const MAX_API_BODY_BYTES = 100_000;
+// No legitimate request to this API should take anywhere near this long.
+export const API_REQUEST_TIMEOUT_MS = 10_000;

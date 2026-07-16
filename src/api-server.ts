@@ -1,7 +1,19 @@
 import http from 'http';
+import crypto from 'node:crypto';
 import { HueSyncBoxPlatform } from './platform.js';
 import { State } from './state.js';
-import { HTTP_STATUS_OK, HTTP_STATUS_UNAUTHORIZED } from './lib/constants.js';
+import {
+  HTTP_STATUS_OK,
+  HTTP_STATUS_UNAUTHORIZED,
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_PAYLOAD_TOO_LARGE,
+  HTTP_STATUS_METHOD_NOT_ALLOWED,
+  HTTP_STATUS_INTERNAL_ERROR,
+  MIN_API_TOKEN_LENGTH,
+  MAX_API_BODY_BYTES,
+  API_REQUEST_TIMEOUT_MS,
+} from './lib/constants.js';
+import { validateExecution, validateHue } from './lib/validation.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -19,35 +31,63 @@ export class ApiServer {
       );
       return;
     }
+    if (apiServerToken.length < MIN_API_TOKEN_LENGTH) {
+      this.platform.log.error(
+        `API server cannot start: apiServerToken must be at least ${MIN_API_TOKEN_LENGTH} characters long.`
+      );
+      return;
+    }
 
     try {
       this.server = http
         .createServer((request, response) => {
-          const payload: unknown[] = [];
+          request.on('error', e =>
+            this.platform.log.error('API - Error received.', JSON.stringify(e))
+          );
+          response.on('error', () =>
+            this.platform.log.error('API - Error sending the response.')
+          );
+
+          // Authorization is checked before any body bytes are read, so an
+          // unauthenticated caller can never force the server to buffer data.
+          if (!this.isAuthorized(request, apiServerToken)) {
+            this.platform.log.debug('Authorization header missing or invalid.');
+            response.statusCode = HTTP_STATUS_UNAUTHORIZED;
+            // No 'data' listener is attached, so the request stream never
+            // resumes: any body the caller keeps sending is bounded by the
+            // OS socket receive buffer (via normal TCP flow control), not by
+            // application memory. That's what actually stops the DoS -
+            // destroying the socket here would race the response write and
+            // reset the connection before the client reads it.
+            response.end(JSON.stringify({ error: 'Unauthorized' }));
+            return;
+          }
+
+          const payload: Buffer[] = [];
+          let receivedBytes = 0;
+          let rejected = false;
 
           request
-            .on('error', e =>
-              this.platform.log.error(
-                'API - Error received.',
-                JSON.stringify(e)
-              )
-            )
-            .on('data', chunk => payload.push(chunk))
-            .on('end', async () => {
-              response.on('error', () =>
-                this.platform.log.error('API - Error sending the response.')
-              );
-
-              if (request.headers['authorization'] !== apiServerToken) {
-                this.platform.log.debug(
-                  'Authorization header missing or invalid.'
-                );
-                response.statusCode = HTTP_STATUS_UNAUTHORIZED;
-                response.write(JSON.stringify({ error: 'Unauthorized' }));
-                response.end();
+            .on('data', (chunk: Buffer) => {
+              if (rejected) {
                 return;
               }
-
+              receivedBytes += chunk.length;
+              if (receivedBytes > MAX_API_BODY_BYTES) {
+                rejected = true;
+                response.statusCode = HTTP_STATUS_PAYLOAD_TOO_LARGE;
+                // Remaining chunks are still drained (and discarded) by this
+                // same 'data' handler rather than buffered, bounding memory;
+                // the server's requestTimeout bounds how long that continues.
+                response.end(JSON.stringify({ error: 'Payload too large.' }));
+                return;
+              }
+              payload.push(chunk);
+            })
+            .on('end', async () => {
+              if (rejected) {
+                return;
+              }
               switch (request.method) {
                 case 'GET':
                   await this.handleGet(response);
@@ -57,16 +97,33 @@ export class ApiServer {
                   break;
                 default:
                   this.platform.log.debug('No action matched.');
-                  response.statusCode = 405;
+                  response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
                   response.end();
               }
             });
         })
         .listen(apiServerPort, '0.0.0.0');
+      this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
       this.platform.log.error('API could not be started: ' + JSON.stringify(e));
     }
     this.platform.log.info('API server started.');
+  }
+
+  private isAuthorized(
+    request: http.IncomingMessage,
+    apiServerToken: string
+  ): boolean {
+    const provided = request.headers['authorization'];
+    if (typeof provided !== 'string') {
+      return false;
+    }
+    const providedBuffer = Buffer.from(provided);
+    const tokenBuffer = Buffer.from(apiServerToken);
+    if (providedBuffer.length !== tokenBuffer.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(providedBuffer, tokenBuffer);
   }
 
   private async handleGet(response: http.ServerResponse) {
@@ -78,7 +135,7 @@ export class ApiServer {
       response.statusCode = HTTP_STATUS_OK;
     } catch (e) {
       this.platform.log.error('Error while getting the state.', e);
-      response.statusCode = 500;
+      response.statusCode = HTTP_STATUS_INTERNAL_ERROR;
       response.write(
         JSON.stringify({
           error: 'An error occurred while processing your request.',
@@ -89,35 +146,62 @@ export class ApiServer {
     }
   }
 
-  private async handlePost(payload: unknown[], response: http.ServerResponse) {
+  private async handlePost(payload: Buffer[], response: http.ServerResponse) {
     if (!payload.length) {
-      response.statusCode = 400;
+      response.statusCode = HTTP_STATUS_BAD_REQUEST;
       response.write(JSON.stringify({ error: 'Body missing.' }));
       response.end();
       return;
     }
 
-    let body: State;
+    let body: Partial<State>;
     try {
-      body = JSON.parse(Buffer.concat(payload as Uint8Array[]).toString());
+      body = JSON.parse(Buffer.concat(payload).toString());
       if (!body) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error('Body missing.');
       }
     } catch (e) {
       this.platform.log.error('Body malformed.', e);
-      response.statusCode = 400;
+      response.statusCode = HTTP_STATUS_BAD_REQUEST;
       response.write(JSON.stringify({ error: 'Body malformed.' }));
       response.end();
       return;
     }
 
-    try {
-      if (body.execution) {
-        await this.platform.client.updateExecution(body.execution);
+    let execution;
+    if (body.execution) {
+      const result = validateExecution(body.execution);
+      if (!result.ok) {
+        response.statusCode = HTTP_STATUS_BAD_REQUEST;
+        response.write(JSON.stringify({ error: result.error }));
+        response.end();
+        return;
       }
-      if (body.hue) {
-        await this.platform.client.updateHue(body.hue);
+      execution = result.value;
+    }
+
+    let hue;
+    if (body.hue) {
+      // Validated against live device state so only a groupId that actually
+      // exists can be forwarded.
+      const currentState = await this.platform.client.getState();
+      const result = validateHue(body.hue, currentState);
+      if (!result.ok) {
+        response.statusCode = HTTP_STATUS_BAD_REQUEST;
+        response.write(JSON.stringify({ error: result.error }));
+        response.end();
+        return;
+      }
+      hue = result.value;
+    }
+
+    try {
+      if (execution) {
+        await this.platform.client.updateExecution(execution);
+      }
+      if (hue) {
+        await this.platform.client.updateHue(hue);
       }
 
       const newState = await this.platform.client.getState();
@@ -125,7 +209,7 @@ export class ApiServer {
       response.write(JSON.stringify(newState));
     } catch (e) {
       this.platform.log.error('Error while updating the state.', e);
-      response.statusCode = 500;
+      response.statusCode = HTTP_STATUS_INTERNAL_ERROR;
       response.write(
         JSON.stringify({
           error: 'An error occurred while processing your request.',

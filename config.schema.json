@@ -298,8 +298,9 @@
       "apiServerToken": {
         "title": "API Token",
         "type": "string",
+        "minLength": 32,
         "required": false,
-        "description": "The token that has to be included in each request of the API. Is required if the API is enabled and has no default value."
+        "description": "The token that has to be included in each request of the API. Must be at least 32 characters long. Is required if the API is enabled and has no default value. Generate one with e.g. `openssl rand -hex 32`."
       }
     }
   }

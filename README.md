@@ -216,7 +216,7 @@ a `platform` value of `PhilipsHueSyncBoxPlatform`.
 | `uuidSeed`                               | Only set this if you're running multiple instances of this plugin to differentiate the accessories. If you have existing accessories, changing this will cause them to be removed and re-created. HomeKit will consider these as new accessories and you will need to setup them up again. | string   |               | No           |                                               |
 | `apiServerEnabled`                       | Enables an HTTP API for controlling the Sync Box.                                                                                                                                                                                                                                          | boolean  | `false`       | No           |                                               |
 | `apiServerPort`                          | The port that the API (if enabled) runs on. Defaults to `40220`, please change this setting if the port is already in use.                                                                                                                                                                 | integer  | `40220`       | No           |                                               |
-| `apiServerToken`                         | The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.                                                                                                                                                                  | string   |               | No           |                                               |
+| `apiServerToken`                         | The token that has to be included in each request of the API. Must be at least 32 characters long. Is required if the API is enabled and has no default value. Generate one with e.g. `openssl rand -hex 32` &mdash; do not reuse the example value below.                                 | string   |               | No           |                                               |
 
 ```json
 {
@@ -248,7 +248,7 @@ a `platform` value of `PhilipsHueSyncBoxPlatform`.
       "uuidSeed": "livingroom",
       "apiServerEnabled": false,
       "apiServerPort": 40220,
-      "apiServerToken": "token"
+      "apiServerToken": "<A-LONG-RANDOM-SECRET-AT-LEAST-32-CHARS>"
     }
   ]
 }
