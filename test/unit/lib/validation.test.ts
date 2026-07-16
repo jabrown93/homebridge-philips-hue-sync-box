@@ -99,6 +99,14 @@ describe('isValidState', () => {
     expect(isValidState(state)).toBe(false);
   });
 
+  it('rejects a response where execution.hdmiSource is not a valid input', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, hdmiSource: 'invalid' },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
   it('rejects a response missing or non-finite execution.brightness', () => {
     expect(
       isValidState({

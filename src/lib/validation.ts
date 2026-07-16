@@ -108,6 +108,7 @@ export function isValidState(value: unknown): value is State {
     isPlainObject(execution) &&
     typeof execution.mode === 'string' &&
     typeof execution.hdmiSource === 'string' &&
+    HDMI_SOURCE_PATTERN.test(execution.hdmiSource) &&
     isValidBrightness(execution.brightness) &&
     isValidHueState(hue) &&
     isValidHdmiState(hdmi)
