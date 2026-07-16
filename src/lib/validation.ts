@@ -33,8 +33,14 @@ export function isPlainObject(
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+// Matches BaseTvDevice.getInputService()'s `if (!name) throw` guard, so a
+// blank name fails validation instead of throwing during accessory setup.
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
 function isValidHdmiInput(value: unknown): boolean {
-  return isPlainObject(value) && typeof value.name === 'string';
+  return isPlainObject(value) && isNonEmptyString(value.name);
 }
 
 /**
@@ -64,7 +70,7 @@ function isValidHueState(value: unknown): boolean {
     return false;
   }
   return Object.values(value.groups).every(
-    group => isPlainObject(group) && typeof group.name === 'string'
+    group => isPlainObject(group) && isNonEmptyString(group.name)
   );
 }
 

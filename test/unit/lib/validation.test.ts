@@ -102,6 +102,22 @@ describe('isValidState', () => {
     expect(isValidState(state)).toBe(false);
   });
 
+  it('rejects a response where an HDMI input name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: { ...makeHdmi(), input1: { name: '' } },
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
+  it('rejects a response where a hue group name is empty', () => {
+    const state = {
+      ...makeFullState(),
+      hue: makeState({ 'group-1': { name: '' } }).hue,
+    };
+    expect(isValidState(state)).toBe(false);
+  });
+
   it('accepts a response with no entertainment groups', () => {
     const state = { ...makeFullState(), hue: makeState({}).hue };
     expect(isValidState(state)).toBe(true);
