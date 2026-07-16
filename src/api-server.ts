@@ -1,7 +1,6 @@
 import http from 'http';
 import crypto from 'node:crypto';
 import { HueSyncBoxPlatform } from './platform.js';
-import { State } from './state.js';
 import {
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
@@ -13,7 +12,11 @@ import {
   MAX_API_BODY_BYTES,
   API_REQUEST_TIMEOUT_MS,
 } from './lib/constants.js';
-import { validateExecution, validateHue } from './lib/validation.js';
+import {
+  isPlainObject,
+  validateExecution,
+  validateHue,
+} from './lib/validation.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -42,7 +45,7 @@ export class ApiServer {
       this.server = http
         .createServer((request, response) => {
           request.on('error', e =>
-            this.platform.log.error('API - Error received.', JSON.stringify(e))
+            this.platform.log.error('API - Error received.', e)
           );
           response.on('error', () =>
             this.platform.log.error('API - Error sending the response.')
@@ -105,7 +108,7 @@ export class ApiServer {
         .listen(apiServerPort, '0.0.0.0');
       this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
-      this.platform.log.error('API could not be started: ' + JSON.stringify(e));
+      this.platform.log.error('API could not be started:', e);
     }
     this.platform.log.info('API server started.');
   }
@@ -154,13 +157,9 @@ export class ApiServer {
       return;
     }
 
-    let body: Partial<State>;
+    let body: unknown;
     try {
       body = JSON.parse(Buffer.concat(payload).toString());
-      if (!body) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error('Body missing.');
-      }
     } catch (e) {
       this.platform.log.error('Body malformed.', e);
       response.statusCode = HTTP_STATUS_BAD_REQUEST;
@@ -169,8 +168,15 @@ export class ApiServer {
       return;
     }
 
+    if (!isPlainObject(body)) {
+      response.statusCode = HTTP_STATUS_BAD_REQUEST;
+      response.write(JSON.stringify({ error: 'Body must be a JSON object.' }));
+      response.end();
+      return;
+    }
+
     let execution;
-    if (body.execution) {
+    if (Object.hasOwn(body, 'execution')) {
       const result = validateExecution(body.execution);
       if (!result.ok) {
         response.statusCode = HTTP_STATUS_BAD_REQUEST;
@@ -182,7 +188,7 @@ export class ApiServer {
     }
 
     let hue;
-    if (body.hue) {
+    if (Object.hasOwn(body, 'hue')) {
       // Validated against live device state so only a groupId that actually
       // exists can be forwarded.
       const currentState = await this.platform.client.getState();

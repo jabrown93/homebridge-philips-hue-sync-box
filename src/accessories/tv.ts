@@ -16,7 +16,11 @@ export class TvDevice extends BaseTvDevice {
       .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
       .onSet(value => {
         const identifier = value as number;
-        if (identifier < HDMI_INPUT_MIN || identifier > HDMI_INPUT_MAX) {
+        if (
+          !Number.isInteger(identifier) ||
+          identifier < HDMI_INPUT_MIN ||
+          identifier > HDMI_INPUT_MAX
+        ) {
           this.platform.log.warn(
             'Ignoring out-of-range HDMI input identifier: ' + identifier
           );

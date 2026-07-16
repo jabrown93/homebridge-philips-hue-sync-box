@@ -26,7 +26,9 @@ const HDMI_SOURCE_PATTERN = new RegExp(
   `^input[${HDMI_INPUT_MIN}-${HDMI_INPUT_MAX}]$`
 );
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
+export function isPlainObject(
+  value: unknown
+): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -56,6 +58,66 @@ function validateIntensityPayload(
   return { ok: true, value: { intensity: value.intensity } };
 }
 
+function validateModeField(value: unknown): ValidationResult<Execution> {
+  if (typeof value !== 'string' || !VALID_EXECUTION_MODES.includes(value)) {
+    return {
+      ok: false,
+      error: `execution.mode must be one of: ${VALID_EXECUTION_MODES.join(', ')}.`,
+    };
+  }
+  return { ok: true, value: { mode: value } };
+}
+
+function validateBrightnessField(value: unknown): ValidationResult<Execution> {
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < BRIGHTNESS_MIN ||
+    value > BRIGHTNESS_MAX_SYNCBOX
+  ) {
+    return {
+      ok: false,
+      error: `execution.brightness must be a number between ${BRIGHTNESS_MIN} and ${BRIGHTNESS_MAX_SYNCBOX}.`,
+    };
+  }
+  return { ok: true, value: { brightness: value } };
+}
+
+function validateHdmiSourceField(value: unknown): ValidationResult<Execution> {
+  if (typeof value !== 'string' || !HDMI_SOURCE_PATTERN.test(value)) {
+    return {
+      ok: false,
+      error: `execution.hdmiSource must match input${HDMI_INPUT_MIN} through input${HDMI_INPUT_MAX}.`,
+    };
+  }
+  return { ok: true, value: { hdmiSource: value } };
+}
+
+function validateExecutionField(
+  key: string,
+  value: unknown
+): ValidationResult<Execution> {
+  switch (key) {
+    case 'mode':
+      return validateModeField(value);
+    case 'brightness':
+      return validateBrightnessField(value);
+    case 'hdmiSource':
+      return validateHdmiSourceField(value);
+    case 'video':
+    case 'game':
+    case 'music': {
+      const result = validateIntensityPayload(value, `execution.${key}`);
+      return result.ok ? { ok: true, value: { [key]: result.value } } : result;
+    }
+    default:
+      return {
+        ok: false,
+        error: `execution.${key} is not a recognized or settable field.`,
+      };
+  }
+}
+
 /**
  * Applies the same bounds/allowlist checks the HomeKit-driven accessory code applies
  * before calling SyncBoxClient.updateExecution, so the API server can't be used to send
@@ -69,64 +131,11 @@ export function validateExecution(input: unknown): ValidationResult<Execution> {
   const value: Record<string, unknown> = {};
 
   for (const key of Object.keys(input)) {
-    switch (key) {
-      case 'mode': {
-        const mode = input.mode;
-        if (typeof mode !== 'string' || !VALID_EXECUTION_MODES.includes(mode)) {
-          return {
-            ok: false,
-            error: `execution.mode must be one of: ${VALID_EXECUTION_MODES.join(', ')}.`,
-          };
-        }
-        value.mode = mode;
-        break;
-      }
-      case 'brightness': {
-        const brightness = input.brightness;
-        if (
-          typeof brightness !== 'number' ||
-          !Number.isFinite(brightness) ||
-          brightness < BRIGHTNESS_MIN ||
-          brightness > BRIGHTNESS_MAX_SYNCBOX
-        ) {
-          return {
-            ok: false,
-            error: `execution.brightness must be a number between ${BRIGHTNESS_MIN} and ${BRIGHTNESS_MAX_SYNCBOX}.`,
-          };
-        }
-        value.brightness = brightness;
-        break;
-      }
-      case 'hdmiSource': {
-        const hdmiSource = input.hdmiSource;
-        if (
-          typeof hdmiSource !== 'string' ||
-          !HDMI_SOURCE_PATTERN.test(hdmiSource)
-        ) {
-          return {
-            ok: false,
-            error: `execution.hdmiSource must match input${HDMI_INPUT_MIN} through input${HDMI_INPUT_MAX}.`,
-          };
-        }
-        value.hdmiSource = hdmiSource;
-        break;
-      }
-      case 'video':
-      case 'game':
-      case 'music': {
-        const result = validateIntensityPayload(input[key], `execution.${key}`);
-        if (!result.ok) {
-          return result;
-        }
-        value[key] = result.value;
-        break;
-      }
-      default:
-        return {
-          ok: false,
-          error: `execution.${key} is not a recognized or settable field.`,
-        };
+    const result = validateExecutionField(key, input[key]);
+    if (!result.ok) {
+      return result;
     }
+    Object.assign(value, result.value);
   }
 
   if (Object.keys(value).length === 0) {
@@ -161,10 +170,7 @@ export function validateHue(
     return { ok: false, error: 'hue.groupId must be a non-empty string.' };
   }
 
-  if (
-    !state?.hue?.groups ||
-    !Object.prototype.hasOwnProperty.call(state.hue.groups, groupId)
-  ) {
+  if (!state?.hue?.groups || !Object.hasOwn(state.hue.groups, groupId)) {
     return {
       ok: false,
       error: 'hue.groupId does not match a known entertainment area.',

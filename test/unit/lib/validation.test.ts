@@ -1,5 +1,9 @@
 import { describe, it, expect } from '@jest/globals';
-import { validateExecution, validateHue } from '../../../src/lib/validation.js';
+import {
+  isPlainObject,
+  validateExecution,
+  validateHue,
+} from '../../../src/lib/validation.js';
 import { State } from '../../../src/state.js';
 
 function makeState(groups: Record<string, { name: string }>): State {
@@ -13,6 +17,21 @@ function makeState(groups: Record<string, { name: string }>): State {
     },
   } as State;
 }
+
+describe('isPlainObject', () => {
+  it('accepts plain objects', () => {
+    expect(isPlainObject({})).toBe(true);
+    expect(isPlainObject({ a: 1 })).toBe(true);
+  });
+
+  it('rejects arrays, null, and primitives', () => {
+    expect(isPlainObject([1, 2, 3])).toBe(false);
+    expect(isPlainObject(null)).toBe(false);
+    expect(isPlainObject('a string')).toBe(false);
+    expect(isPlainObject(42)).toBe(false);
+    expect(isPlainObject(undefined)).toBe(false);
+  });
+});
 
 describe('validateExecution', () => {
   it('accepts a valid mode', () => {
