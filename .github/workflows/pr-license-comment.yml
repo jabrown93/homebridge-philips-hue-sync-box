@@ -25,7 +25,7 @@ on:
       - completed
 
 permissions:
-  actions: read           # download-artifact run-id mode (cross-run) needs this
+  actions: read # download-artifact run-id mode (cross-run) needs this
   contents: read
   id-token: write
   pull-requests: write
