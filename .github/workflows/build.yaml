@@ -3,14 +3,23 @@ name: Build and Lint
 on:
   - push
   - pull_request
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     # node-build is now a composite action, so the caller owns the matrix and
     # runs-on (a composite action cannot declare either).
+    # push and pull_request both fire for a same-repo branch; the push run
+    # already covers the commit (and Renovate branch-automerge has no PR), so
+    # skip the duplicate PR run. Fork PRs don't fire push here, so still run.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['22.x', '24.x']
+        node-version: ['22.x', '24.x', '26.x']
     runs-on: ubuntu-latest
     steps:
       - uses: jabrown93/ci/actions/node-build@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # node-build-v1.0.0
