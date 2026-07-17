@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.7](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.6...v3.0.7) (2026-07-17)
+
+### Bug Fixes
+
+* **release:** build in prepack instead of gating publish on checks ([#441](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/441)) ([5043612](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/50436123c5c46277c1184102dc89a0b4e957fdb1)), closes [jabrown93/.github#24](https://github.com/jabrown93/.github/issues/24)
+
 ## [3.0.6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.5...v3.0.6) (2026-07-17)
 
 ### Bug Fixes
