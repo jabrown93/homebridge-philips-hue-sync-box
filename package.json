@@ -48,7 +48,7 @@
     "compile": "tsc",
     "build": "npm-run-all clean test compile typecheck",
     "watch": "npm run setup-config && npm run build && npm link && nodemon",
-    "prepublishOnly": "npm-run-all prettier lint test build",
+    "prepack": "npm-run-all clean compile",
     "semantic-release": "cross-env semantic-release --no-ci",
     "release": "npm-run-all build semantic-release",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
