@@ -5,9 +5,22 @@ All notable changes to this project will be documented in this file. See
 
 ## [3.0.4](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.3...v3.0.4) (2026-07-17)
 
+### Bug Fixes
+
+* **client:** bound Sync Box requests and stop polling overlap ([#435](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/435)) ([aa22562](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/aa22562b0a74e3993c5a981206d7b5b5e0fb26f6)), closes [#431](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/431)
+* **security:** prevent process-wide crashes from api-server and Sync Box response handling ([#434](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/434)) ([c48e4da](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/c48e4da50f1332d9d5d669646f992c2dad54575b))
+
 ## [3.0.3](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.2...v3.0.3) (2026-07-16)
 
+### Bug Fixes
+
+* **security:** close API server DoS, secret-leak, and validation gaps ([#429](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/429)) ([735f4bc](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/735f4bc521756459706889e8db3520bc66093f39))
+
 ## [3.0.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.1...v3.0.2) (2026-06-30)
+
+### Bug Fixes
+
+* rename issue chooser config to config.yml ([#421](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/421)) ([9145feb](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/9145febe00990cea136d26c3e1b97572ff244f91))
 
 ## [3.0.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.0...v3.0.1) (2026-06-17)
 
