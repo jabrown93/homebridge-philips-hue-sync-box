@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { HueSyncBoxPlatformConfig } from '../../../src/config.js';
 import type { State } from '../../../src/state.js';
+import { HSB_CA_CERT } from '../../../src/lib/hsb-ca-cert.js';
 
 // vi.mock is hoisted above these imports, so the mock fetch fn must come from
 // vi.hoisted to avoid a temporal-dead-zone reference inside the factory.
@@ -13,7 +14,8 @@ vi.mock('node-fetch', () => ({
   default: mockFetch,
 }));
 
-const { SyncBoxClient } = await import('../../../src/lib/client.js');
+const { SyncBoxClient, createSyncBoxAgent } =
+  await import('../../../src/lib/client.js');
 const { HTTP_RETRY_BASE_DELAY_MS, MAX_SYNC_BOX_RESPONSE_BYTES } =
   await import('../../../src/lib/constants.js');
 
@@ -207,5 +209,23 @@ describe('SyncBoxClient', () => {
     const result = await client.getState();
 
     expect(result).toEqual(validState);
+  });
+});
+
+describe('createSyncBoxAgent', () => {
+  it('pins to the Sync Box CA and requires the chain to validate', () => {
+    const agent = createSyncBoxAgent();
+    expect(agent.options.ca).toBe(HSB_CA_CERT);
+    expect(agent.options.rejectUnauthorized).toBe(true);
+  });
+
+  it('skips hostname verification since leaf certs are keyed by device id, not IP', () => {
+    const agent = createSyncBoxAgent();
+    const checkServerIdentity = agent.options
+      .checkServerIdentity as unknown as (
+      hostname: string,
+      cert: unknown
+    ) => Error | undefined;
+    expect(checkServerIdentity('192.168.1.50', {} as never)).toBeUndefined();
   });
 });

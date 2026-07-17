@@ -87,8 +87,9 @@ export const MAX_API_BODY_BYTES = 100_000;
 export const API_REQUEST_TIMEOUT_MS = 10_000;
 
 // ===== Sync Box Client Security Constants =====
-// The Sync Box's cert is accepted without identity verification, so a
-// LAN-adjacent attacker able to spoof its address could otherwise return an
-// unbounded body and exhaust the shared Homebridge process's heap before
-// isValidState() ever runs. Legitimate state responses are a few KB.
+// Hostname isn't checked on the Sync Box's cert (see createSyncBoxAgent), so
+// a LAN-adjacent attacker with any cert signed by Philips's Sync Box CA could
+// otherwise return an unbounded body and exhaust the shared Homebridge
+// process's heap before isValidState() ever runs. Legitimate state responses
+// are a few KB.
 export const MAX_SYNC_BOX_RESPONSE_BYTES = 100_000;
