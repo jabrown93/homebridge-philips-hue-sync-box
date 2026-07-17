@@ -19,67 +19,78 @@
 // `${...}` placeholders are expanded by semantic-release, not by JS -- keep
 // them inside double-quoted strings so JS does not interpolate them.
 
-const releaseDeps = process.env.RELEASE_DEPS === "true";
+const releaseDeps = process.env.RELEASE_DEPS === 'true';
 
 const depReleaseRules = [
   // Required: commit-analyzer evaluates every matching custom rule and keeps
   // the highest release type, so without this a breaking fix(deps)! would
   // match ONLY the suppression rule below and never release. Listed first so
   // the analyzer short-circuits on major.
-  { type: "fix", scope: "deps", breaking: true, release: "major" },
+  { type: 'fix', scope: 'deps', breaking: true, release: 'major' },
   releaseDeps
-    ? { type: "fix", scope: "deps", release: "patch" }
-    : { type: "fix", scope: "deps", release: false },
+    ? { type: 'fix', scope: 'deps', release: 'patch' }
+    : { type: 'fix', scope: 'deps', release: false },
 ];
 
-const noteKeywords = ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"];
+const noteKeywords = ['BREAKING CHANGE', 'BREAKING CHANGES', 'BREAKING'];
 
 export default {
-  branches: ["main", "next", { name: "beta", prerelease: true }, { name: "alpha", prerelease: true }],
-  preset: "conventionalcommits",
+  branches: [
+    'main',
+    'next',
+    { name: 'beta', prerelease: true },
+    { name: 'alpha', prerelease: true },
+  ],
+  preset: 'conventionalcommits',
   plugins: [
     [
-      "@semantic-release/commit-analyzer",
+      '@semantic-release/commit-analyzer',
       { parserOpts: { noteKeywords }, releaseRules: depReleaseRules },
     ],
     [
-      "@semantic-release/exec",
+      '@semantic-release/exec',
       {
         prepareCmd:
           "test ${branch.type} != release || sed -i '/^## \\[/h;x;/^[^]]*-/{x;d};x' CHANGELOG.md",
       },
     ],
     [
-      "@semantic-release/release-notes-generator",
+      '@semantic-release/release-notes-generator',
       {
         parserOpts: { noteKeywords },
-        writerOpts: { commitsSort: ["subject", "scope"] },
+        writerOpts: { commitsSort: ['subject', 'scope'] },
       },
     ],
     [
-      "@semantic-release/changelog",
+      '@semantic-release/changelog',
       {
         changelogTitle:
-          "# Changelog\n\nAll notable changes to this project will be documented in this file. See\n[Conventional Commits](https://conventionalcommits.org) for commit guidelines.",
+          '# Changelog\n\n' +
+          'All notable changes to this project will be documented in this file. See\n' +
+          '[Conventional Commits](https://conventionalcommits.org) for commit guidelines.',
       },
     ],
-    ["@semantic-release/npm", { tarballDir: "dist" }],
+    ['@semantic-release/npm', { tarballDir: 'dist' }],
     [
-      "@semantic-release/exec",
+      '@semantic-release/exec',
       {
         prepareCmd:
-          "npx --yes @cyclonedx/cyclonedx-npm@4.2.1 --ignore-npm-errors --output-format JSON --output-file sbom.cdx.json",
+          'npx --yes @cyclonedx/cyclonedx-npm@4.2.1 --ignore-npm-errors --output-format JSON --output-file sbom.cdx.json',
       },
     ],
     [
-      "@semantic-release/github",
+      '@semantic-release/github',
       {
-        assets: [{ path: "sbom.cdx.json", label: "CycloneDX SBOM (sbom.cdx.json)" }],
+        assets: [
+          { path: 'sbom.cdx.json', label: 'CycloneDX SBOM (sbom.cdx.json)' },
+        ],
       },
     ],
     [
-      "@semantic-release/git",
-      { message: "ci(release): ${nextRelease.version}\n\n${nextRelease.notes}" },
+      '@semantic-release/git',
+      {
+        message: 'ci(release): ${nextRelease.version}\n\n${nextRelease.notes}',
+      },
     ],
   ],
 };
