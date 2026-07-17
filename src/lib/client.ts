@@ -27,8 +27,12 @@ const fetch = fetch_retry(originalFetch, {
   // full backoff delay on attempts that fail instantly for no benefit.
   // Real network errors (connection refused/reset, DNS failure, etc.) still
   // get retried normally.
+  //
+  // fetch-retry only enforces its own `retries` option when `retryOn` is an
+  // array; a function `retryOn` fully replaces that bound, so this has to
+  // check `attempt` itself or a persistent network error retries forever.
   retryOn: (attempt: number, error: Error | null) => {
-    return !!error && error.name !== 'AbortError';
+    return !!error && error.name !== 'AbortError' && attempt < HTTP_RETRY_COUNT;
   },
 });
 

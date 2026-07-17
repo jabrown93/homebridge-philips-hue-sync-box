@@ -229,6 +229,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log.debug(`Discovered ${this.devices.length} devices`);
 
     await this.update(state);
+    this.schedulePolling();
+  }
+
+  private schedulePolling(): void {
     let polling = false;
     setInterval(async () => {
       // setInterval doesn't wait for a previous tick's promise to settle.
