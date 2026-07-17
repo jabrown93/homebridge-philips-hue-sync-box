@@ -63,7 +63,7 @@ npm run release                # Build and run semantic-release
   - Communicates with Philips Hue Sync Box HTTPS API
   - Uses async-lock to prevent concurrent requests
   - Includes retry logic (3 retries with exponential backoff)
-  - Accepts self-signed certificates (rejectUnauthorized: false)
+  - Pins TLS connections to Philips's Sync Box CA (`src/lib/hsb-ca-cert.ts`); hostname/CN verification is skipped since each box's cert CN is its device id, not its IP (see `createSyncBoxAgent()`)
   - Methods: `getState()`, `updateExecution()`, `updateHue()`
 
 ### State Management
@@ -154,7 +154,7 @@ Override `handlePowerCharacteristicSet()` or add new characteristic handlers. Al
 
 - This is an **ES2022 module** project - use `.js` extensions in import statements
 - The plugin uses **strict TypeScript** mode (except `noImplicitAny: false`)
-- Sync Box API uses **self-signed certificates** - certificate validation is disabled
+- Sync Box API uses **certificates signed by Philips's Sync Box CA** - the chain is validated but hostname verification is skipped (see `SyncBoxClient`)
 - API requests are **serialized** via async-lock to prevent conflicts
 - TV accessories are **external** and require manual HomeKit pairing
 - The platform uses **Homebridge's dynamic platform API** for accessory management
