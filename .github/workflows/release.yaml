@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    uses: jabrown93/.github/.github/workflows/npm-release.yml@644b89511f2e5143fb600246050eaf3aa5f532eb # v1.5.0
+    uses: jabrown93/ci/.github/workflows/npm-release.yml@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # workflows-v1.0.0
     permissions:
       contents: write
       issues: write

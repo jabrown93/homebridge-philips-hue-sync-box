@@ -5,8 +5,12 @@ on:
     - cron: '30 1 * * *'
 jobs:
   stale:
-    uses: jabrown93/.github/.github/workflows/stale.yml@644b89511f2e5143fb600246050eaf3aa5f532eb # v1.5.0
+    # stale is now a composite action, so the caller owns runs-on and MUST grant
+    # the permissions actions/stale needs. The schedule trigger stays here.
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       issues: write
       pull-requests: write
+    steps:
+      - uses: jabrown93/ci/actions/stale@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # stale-v1.0.0
