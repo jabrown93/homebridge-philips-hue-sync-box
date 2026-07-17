@@ -34,7 +34,7 @@ export default [
     },
 
     rules: {
-      quotes: ['warn', 'single'],
+      quotes: ['warn', 'single', { avoidEscape: true }],
 
       indent: [
         'warn',
@@ -76,6 +76,14 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+    },
+  },
+  {
+    files: ['.releaserc.js', 'eslint.config.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
     },
   },
 ];
