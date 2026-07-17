@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.5...v3.0.6) (2026-07-17)
+
+### Bug Fixes
+
+* **release:** restore changelog bodies by pinning conventionalcommits to v9 ([#440](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/440)) ([a433e74](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/a433e748dceb4bf19356e07084ab6b9950e8d8ad)), closes [#438](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/438) [#418](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/418) [#439](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/439)
+
 ## [3.0.5](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.4...v3.0.5) (2026-07-17)
 
 ### Bug Fixes
