@@ -5,6 +5,6 @@ on:
   - pull_request
 jobs:
   build:
-    uses: jabrown93/.github/.github/workflows/node-build.yml@71c3af9fc09ce87b086cc058773380acaf2b1299 # v1.2.0
+    uses: jabrown93/.github/.github/workflows/node-build.yml@644b89511f2e5143fb600246050eaf3aa5f532eb # v1.5.0
     with:
       node-versions: '["22.x", "24.x"]'
