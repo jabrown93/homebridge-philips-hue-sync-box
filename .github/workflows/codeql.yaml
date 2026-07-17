@@ -9,9 +9,14 @@ on:
     - cron: '25 22 * * 5'
 jobs:
   analyze:
-    uses: jabrown93/.github/.github/workflows/codeql.yml@644b89511f2e5143fb600246050eaf3aa5f532eb # v1.5.0
+    # codeql is now a composite action, so the caller owns runs-on and MUST
+    # grant the permissions CodeQL needs. Language defaults to
+    # javascript-typescript / build-mode none, which is correct for this repo.
+    runs-on: ubuntu-latest
     permissions:
       security-events: write
       packages: read
       actions: read
       contents: read
+    steps:
+      - uses: jabrown93/ci/actions/codeql@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # codeql-v1.0.0

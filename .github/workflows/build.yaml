@@ -5,6 +5,14 @@ on:
   - pull_request
 jobs:
   build:
-    uses: jabrown93/.github/.github/workflows/node-build.yml@644b89511f2e5143fb600246050eaf3aa5f532eb # v1.5.0
-    with:
-      node-versions: '["22.x", "24.x"]'
+    # node-build is now a composite action, so the caller owns the matrix and
+    # runs-on (a composite action cannot declare either).
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['22.x', '24.x']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jabrown93/ci/actions/node-build@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # node-build-v1.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
