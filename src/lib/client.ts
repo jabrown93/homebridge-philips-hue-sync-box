@@ -15,6 +15,7 @@ import {
   SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
 } from './constants.js';
 import { isValidState } from './validation.js';
+import { HSB_CA_CERT } from './hsb-ca-cert.js';
 
 const fetch = fetch_retry(originalFetch, {
   retries: HTTP_RETRY_COUNT,
@@ -36,6 +37,20 @@ const fetch = fetch_retry(originalFetch, {
   },
 });
 
+// Trusts only certs signed by Philips's Sync Box CA, but skips hostname
+// verification: each box's leaf cert has its uniqueId as the CN, not its IP,
+// and this plugin has no discovery step to learn that id ahead of connecting.
+// This still rejects arbitrary/self-signed certs from an untrusted LAN host -
+// it just can't distinguish this Sync Box's cert from another genuine one.
+export function createSyncBoxAgent(): https.Agent {
+  return new https.Agent({
+    ca: HSB_CA_CERT,
+    rejectUnauthorized: true,
+    checkServerIdentity: () => undefined,
+    keepAlive: true,
+  });
+}
+
 export class SyncBoxClient {
   private readonly LOCK_KEY = 'sync-box';
   private readonly LOCK_OPTIONS: AsyncLockOptions = {
@@ -44,10 +59,7 @@ export class SyncBoxClient {
   };
 
   private readonly lock: AsyncLock;
-  private readonly agent = new https.Agent({
-    rejectUnauthorized: false,
-    keepAlive: true,
-  });
+  private readonly agent = createSyncBoxAgent();
 
   constructor(
     private readonly log: Logger | Console,
@@ -137,11 +149,12 @@ export class SyncBoxClient {
       return null as T;
     }
     const json = await res.json();
-    // The Sync Box's cert is accepted without identity verification
-    // (rejectUnauthorized: false), so a LAN-adjacent attacker able to spoof
-    // its responses must not be able to hand every accessory's update() a
-    // shape it dereferences unconditionally - that already crashed the
-    // entire Homebridge process, not just this plugin's accessories.
+    // Any host with a cert signed by Philips's Sync Box CA is accepted
+    // regardless of hostname (see createSyncBoxAgent), so a LAN-adjacent
+    // attacker with a genuine Sync Box's cert must not be able to hand every
+    // accessory's update() a shape it dereferences unconditionally - that
+    // already crashed the entire Homebridge process, not just this plugin's
+    // accessories.
     if (!isValidState(json)) {
       throw new Error('Sync Box returned a malformed state response.');
     }
