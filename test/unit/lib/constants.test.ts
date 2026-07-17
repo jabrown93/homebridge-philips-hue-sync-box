@@ -25,6 +25,8 @@ import {
   HTTP_RETRY_BASE_DELAY_MS,
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
+  SYNC_BOX_REQUEST_TIMEOUT_MS,
+  SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
 } from '../../../src/lib/constants.js';
 
 describe('Constants', () => {
@@ -125,6 +127,26 @@ describe('Constants', () => {
     it('should have positive retry values', () => {
       expect(HTTP_RETRY_COUNT).toBeGreaterThan(0);
       expect(HTTP_RETRY_BASE_DELAY_MS).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Sync Box Client Timing Constants', () => {
+    it('should keep the lock max execution time comfortably above the worst-case request time', () => {
+      // Mirrors sendRequest()'s actual worst case: the bounded first
+      // attempt, plus every retry backing off at HTTP_RETRY_BASE_DELAY_MS *
+      // 2^attempt. If this ever regresses, async-lock can hand a request's
+      // slot to the next queued caller while the original is still running,
+      // letting two requests execute concurrently.
+      let worstCaseRetryDelay = 0;
+      for (let attempt = 0; attempt < HTTP_RETRY_COUNT; attempt++) {
+        worstCaseRetryDelay += Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS;
+      }
+      const worstCaseRequestTime =
+        SYNC_BOX_REQUEST_TIMEOUT_MS + worstCaseRetryDelay;
+
+      expect(SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS).toBeGreaterThan(
+        worstCaseRequestTime
+      );
     });
   });
 });

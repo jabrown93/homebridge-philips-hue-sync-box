@@ -229,9 +229,28 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log.debug(`Discovered ${this.devices.length} devices`);
 
     await this.update(state);
+    this.schedulePolling();
+  }
+
+  private schedulePolling(): void {
+    let polling = false;
     setInterval(async () => {
-      const state = await this.client.getState();
-      await this.update(state);
+      // setInterval doesn't wait for a previous tick's promise to settle.
+      // If one getState() call runs long (retries, a slow response), firing
+      // another on top of it just queues up behind the same client-side
+      // lock instead of skipping the tick, and the queue can grow without
+      // bound on a short poll interval. Skip overlapping ticks instead.
+      if (polling) {
+        this.log.debug('Skipping poll tick, previous update still in progress');
+        return;
+      }
+      polling = true;
+      try {
+        const state = await this.client.getState();
+        await this.update(state);
+      } finally {
+        polling = false;
+      }
     }, this.config.updateIntervalInSeconds * 1000);
   }
 
