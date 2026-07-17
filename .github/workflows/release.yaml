@@ -7,6 +7,8 @@ on:
     branches:
       - main
       - beta
+      - alpha
+      - next
   # Weekly roll-up of the fix(deps) commits that .releaserc.js suppresses on
   # push, promoted into a single patch release. GitHub only fires schedule
   # from the default branch, so this sweeps main only; use the manual trigger
