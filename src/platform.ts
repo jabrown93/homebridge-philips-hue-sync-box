@@ -177,27 +177,31 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log.debug('Discovered state:', this.redactStateForLogging(state));
     const accessories = this.discoverAccessories(state);
     const uuids = accessories.map(accessory => {
-      const uuid = accessory.UUID; // see if an accessory with the same uuid has already been registered and restored from
+      const uuid = accessory.UUID;
+      // see if an accessory with the same uuid has already been registered
+      // and restored from cache
       const existingAccessory = this.existingAccessories.get(uuid);
-      const isMainAccessory = accessory.UUID === this.mainAccessory?.UUID;
-      const isPowerSwitch = accessory.context.kind === POWER_SWITCH_ACCESSORY;
+      const target = existingAccessory ?? accessory;
       if (existingAccessory) {
         this.log.debug(
           'Restoring existing accessory from cache: ',
           existingAccessory.context.kind
         );
-        const device = this.createDevice(existingAccessory, state);
-        this.accessories.set(accessory.UUID, existingAccessory);
-        this.devices.push(device);
-        if (isMainAccessory || isPowerSwitch) {
-          this.api.updatePlatformAccessories([existingAccessory]);
-        }
       } else {
         this.log.info('Registering new accessory:', accessory.context.kind);
-        const device = this.createDevice(accessory, state);
-        this.devices.push(device);
-        this.accessories.set(accessory.UUID, accessory);
-        if (isMainAccessory || isPowerSwitch) {
+      }
+      this.devices.push(this.createDevice(target, state));
+      this.accessories.set(uuid, target);
+
+      // Only the main and power switch accessories are bridged; TVs are
+      // published separately as external accessories.
+      const isBridged =
+        uuid === this.mainAccessory?.UUID ||
+        accessory.context.kind === POWER_SWITCH_ACCESSORY;
+      if (isBridged) {
+        if (existingAccessory) {
+          this.api.updatePlatformAccessories([existingAccessory]);
+        } else {
           this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
             accessory,
           ]);
@@ -219,7 +223,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     });
 
     this.log.debug(
-      `Publishing external ${Array.from(this.externalAccessories.values()).length} accessories`
+      `Publishing external ${this.externalAccessories.size} accessories`
     );
     this.api.publishExternalAccessories(
       PLUGIN_NAME,
@@ -343,12 +347,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       this.api.hap.uuid.generate(kind + uuidSeed)
     );
     if (kind === LIGHTBULB_ACCESSORY) {
-      this.mainAccessory = accessory;
       accessory.category = this.api.hap.Categories.LIGHTBULB;
-    } else if (kind === SWITCH_ACCESSORY) {
-      this.mainAccessory = accessory;
-      accessory.category = this.api.hap.Categories.SWITCH;
-    } else if (kind === POWER_SWITCH_ACCESSORY) {
+    } else if (kind === SWITCH_ACCESSORY || kind === POWER_SWITCH_ACCESSORY) {
       accessory.category = this.api.hap.Categories.SWITCH;
     }
     accessory.context.kind = kind;
