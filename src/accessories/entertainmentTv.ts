@@ -15,8 +15,9 @@ export class EntertainmentTvDevice extends BaseTvDevice {
       .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
       .onSet(value => {
         // The identifier is the group's 1-based position in the groups object
-        const groupId =
-          Object.keys(this.state.hue.groups)[(value as number) - 1];
+        const groupId = Object.keys(this.state.hue.groups)[
+          (value as number) - 1
+        ];
         const group = groupId ? this.state.hue.groups[groupId] : undefined;
         if (!group) {
           return;
