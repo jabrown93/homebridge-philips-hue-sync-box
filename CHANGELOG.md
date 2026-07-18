@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.7...v3.1.0) (2026-07-18)
+
+### Features
+
+* **engines:** standardize Node engines, CI triggers, and deprecate Homebridge 1.x ([#444](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/444)) ([5fd3527](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/5fd352750153070c197932e7865cc80221ff7753))
+
 ## [3.0.7](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.6...v3.0.7) (2026-07-17)
 
 ### Bug Fixes
