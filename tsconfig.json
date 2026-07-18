@@ -1,20 +1,8 @@
 {
+  "extends": "@jabrown93/dev-config/tsconfig",
   "compilerOptions": {
-    "lib": ["ES2022"],
-    "module": "nodenext",
-    "target": "ES2022",
     "rootDir": "src",
-    "moduleResolution": "nodenext",
-    "strict": true,
-    "declaration": true,
-    "outDir": "dist",
-    "declarationMap": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "noImplicitAny": false,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "outDir": "dist"
   },
   "include": [".eslintrc.json", "homebridge-ui", "src/**/*.ts"]
 }
