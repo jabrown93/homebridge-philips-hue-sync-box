@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Homebridge plugin for the Philips Hue Sync Box. It exposes the Sync Box to Apple HomeKit as various accessory types (lightbulbs, switches, TVs) and provides an optional HTTP API for automation. The plugin is written in TypeScript and uses ES2022 modules.
+This is a Homebridge plugin for the Philips Hue Sync Box. It exposes the Sync Box to Apple HomeKit as various accessory types (lightbulbs, switches, TVs) and provides an optional HTTP API for automation. The plugin is written in TypeScript and uses ES2024 modules.
 
 ## Development Commands
 
@@ -152,7 +152,7 @@ Override `handlePowerCharacteristicSet()` or add new characteristic handlers. Al
 
 ## Important Notes
 
-- This is an **ES2022 module** project - use `.js` extensions in import statements
+- This is an **ES2024 module** project - use `.js` extensions in import statements
 - The plugin uses **strict TypeScript** mode (except `noImplicitAny: false`)
 - Sync Box API uses **self-signed certificates** - certificate validation is disabled
 - API requests are **serialized** via async-lock to prevent conflicts
