@@ -13,7 +13,6 @@ import {
   MODE_VIDEO,
   MODE_MUSIC,
   MODE_GAME,
-  MODE_LAST_SYNC,
   BRIGHTNESS_MAX_SYNCBOX,
   BRIGHTNESS_STEP_SYNCBOX,
   BRIGHTNESS_MIN,
@@ -215,13 +214,8 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
             mode: this.platform.config.defaultOffMode,
           });
         } else {
-          let onMode: string = this.platform.config.defaultOnMode;
-          if (onMode === MODE_LAST_SYNC) {
-            onMode = this?.state?.execution?.lastSyncMode ?? MODE_VIDEO;
-          }
-
           this.updateExecution({
-            mode: onMode,
+            mode: this.getOnMode(),
           });
         }
         break;
