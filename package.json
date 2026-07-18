@@ -48,7 +48,6 @@
     "compile": "tsc",
     "build": "npm-run-all clean test compile",
     "watch": "npm run setup-config && npm run build && npm link && nodemon",
-    "prepack": "npm-run-all clean compile",
     "semantic-release": "cross-env semantic-release --no-ci",
     "release": "npm-run-all build semantic-release",
     "test": "vitest run",
@@ -56,7 +55,8 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "tsc": "tsc --noEmit",
-    "setup-config": "if [ ! -f ./test/hbConfig/config.json ]; then cp ./test/hbConfig/config-template.json ./test/hbConfig/config.json; fi"
+    "setup-config": "if [ ! -f ./test/hbConfig/config.json ]; then cp ./test/hbConfig/config-template.json ./test/hbConfig/config.json; fi",
+    "prepack": "npm-run-all clean compile"
   },
   "prettier": "@jabrown93/dev-config/prettier",
   "dependencies": {
