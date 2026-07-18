@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jabrown93/homebridge-philips-hue-sync-box.git"
+    "url": "git+https://github.com/jabrown93/homebridge-philips-hue-sync-box.git"
   },
   "license": "MIT",
   "author": {
@@ -32,6 +32,7 @@
   ],
   "type": "module",
   "main": "dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "src",
     "dist",
@@ -39,7 +40,6 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit",
     "prettier": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint src/**.ts",
@@ -48,7 +48,6 @@
     "compile": "tsc",
     "build": "npm-run-all clean compile",
     "watch": "npm run setup-config && npm run build && npm link && nodemon",
-    "prepack": "npm-run-all clean compile",
     "semantic-release": "cross-env semantic-release --no-ci",
     "release": "npm-run-all build test semantic-release",
     "test": "vitest run",
@@ -56,7 +55,8 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "tsc": "tsc --noEmit",
-    "setup-config": "if [ ! -f ./test/hbConfig/config.json ]; then cp ./test/hbConfig/config-template.json ./test/hbConfig/config.json; fi"
+    "setup-config": "if [ ! -f ./test/hbConfig/config.json ]; then cp ./test/hbConfig/config-template.json ./test/hbConfig/config.json; fi",
+    "prepack": "npm-run-all clean compile"
   },
   "prettier": "@jabrown93/dev-config/prettier",
   "dependencies": {
