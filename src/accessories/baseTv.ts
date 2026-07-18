@@ -166,7 +166,6 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   protected handleRemoteButton(value: CharacteristicValue) {
     this.platform.log.debug('Remote key pressed: ' + value);
 
-    let mode: string;
     switch (value) {
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_UP:
         this.platform.log.debug('Increase brightness by 25%');
@@ -188,57 +187,13 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
         });
         break;
 
-      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_LEFT: {
-        // Gets the current mode or the last sync mode to set the intensity
-        mode = this.getMode();
-
-        this.platform.log.debug('Toggle intensity');
-        if (!this.state.execution[mode]) {
-          this.platform.log.debug(
-            'Current mode ' + mode + ' does not have an intensity to update'
-          );
-          break;
-        }
-        const currentIntensity = this.state.execution[mode].intensity;
-        const nextLowestIntensity =
-          (this.intensityToNumber.get(currentIntensity) ?? 4) - 1;
-        if (nextLowestIntensity < 1) {
-          break;
-        }
-        const nextIntensity = this.numberToIntensity.get(nextLowestIntensity);
-        const body = {};
-        body[mode] = {
-          intensity: nextIntensity,
-        };
-        this.updateExecution(body);
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_LEFT:
+        this.stepIntensity(-1);
         break;
-      }
 
-      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_RIGHT: {
-        // Gets the current mode or the last sync mode to set the intensity
-        mode = this.getMode();
-
-        this.platform.log.debug('Toggle intensity');
-        if (!this.state.execution[mode]) {
-          this.platform.log.debug(
-            'Current mode ' + mode + ' does not have an intensity to update'
-          );
-          break;
-        }
-        const currentIntensity = this.state.execution[mode].intensity;
-        const nextHighestIntensity =
-          (this.intensityToNumber.get(currentIntensity) ?? 1) + 1;
-        if (nextHighestIntensity > 4) {
-          break;
-        }
-        const nextIntensity = this.numberToIntensity.get(nextHighestIntensity);
-        const body = {};
-        body[mode] = {
-          intensity: nextIntensity,
-        };
-        this.updateExecution(body);
+      case this.platform.api.hap.Characteristic.RemoteKey.ARROW_RIGHT:
+        this.stepIntensity(1);
         break;
-      }
 
       case this.platform.api.hap.Characteristic.RemoteKey.SELECT: {
         this.platform.log.debug('Toggle mode');
@@ -282,6 +237,30 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
         break;
       }
     }
+  }
+
+  // An unknown current intensity falls back so the step still lands on a
+  // valid value: stepping down assumes 'intense' (4), stepping up 'subtle' (1).
+  private stepIntensity(direction: -1 | 1): void {
+    // Gets the current mode or the last sync mode to set the intensity
+    const mode = this.getMode();
+
+    this.platform.log.debug('Toggle intensity');
+    if (!this.state.execution[mode]) {
+      this.platform.log.debug(
+        'Current mode ' + mode + ' does not have an intensity to update'
+      );
+      return;
+    }
+    const currentIntensity = this.state.execution[mode].intensity;
+    const fallback = direction === -1 ? 4 : 1;
+    const nextIntensity = this.numberToIntensity.get(
+      (this.intensityToNumber.get(currentIntensity) ?? fallback) + direction
+    );
+    if (!nextIntensity) {
+      return;
+    }
+    this.updateExecution({ [mode]: { intensity: nextIntensity } });
   }
 
   protected updateSources(services: Service[]) {
