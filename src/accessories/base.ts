@@ -154,11 +154,17 @@ export abstract class SyncBoxDevice {
     );
   }
 
-  protected shouldBeOn(): boolean {
+  // True when the box is actively syncing (video/music/game), as opposed to
+  // sitting in passthrough or powersave.
+  protected isSyncActive(): boolean {
     return (
       this.state.execution.mode !== POWER_SAVE &&
       this.state.execution.mode !== PASSTHROUGH
     );
+  }
+
+  protected shouldBeOn(): boolean {
+    return this.isSyncActive();
   }
 
   protected getSuffix(): string {

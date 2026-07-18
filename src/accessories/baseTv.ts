@@ -206,10 +206,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
 
       case this.platform.api.hap.Characteristic.RemoteKey.PLAY_PAUSE:
         this.platform.log.debug('Toggle switch state');
-        if (
-          this.state.execution.mode !== POWER_SAVE &&
-          this.state.execution.mode !== PASSTHROUGH
-        ) {
+        if (this.isSyncActive()) {
           this.updateExecution({
             mode: this.platform.config.defaultOffMode,
           });
@@ -287,8 +284,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     this.platform.log.debug('Updated state to ' + this.state.execution.mode);
     this.lightbulbService.updateCharacteristic(
       this.platform.api.hap.Characteristic.On,
-      this.state.execution.mode !== POWER_SAVE &&
-        this.state.execution.mode !== PASSTHROUGH
+      this.isSyncActive()
     );
     this.platform.log.debug(
       'Updated brightness to ' + this.state.execution.brightness
@@ -373,16 +369,10 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   }
 
   protected getMode() {
-    let mode = MODE_VIDEO;
-    if (
-      this.state.execution.mode !== POWER_SAVE &&
-      this.state.execution.mode !== PASSTHROUGH
-    ) {
-      mode = this.state.execution.mode;
-    } else if (this.state.execution.lastSyncMode) {
-      mode = this.state.execution.lastSyncMode;
+    if (this.isSyncActive()) {
+      return this.state.execution.mode;
     }
-    return mode;
+    return this.state.execution.lastSyncMode || MODE_VIDEO;
   }
 
   protected abstract getConfiguredNamePropertyName(): string;
