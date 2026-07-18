@@ -10,12 +10,8 @@ jobs:
   build:
     # node-build is now a composite action, so the caller owns the matrix and
     # runs-on (a composite action cannot declare either).
-    # push and pull_request both fire for a same-repo branch; the push run
-    # already covers the commit (and Renovate branch-automerge has no PR), so
-    # skip the duplicate PR run. Fork PRs don't fire push here, so still run.
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name != github.repository
+    # Always run pull_request: it builds GitHub's synthetic merge commit,
+    # which the push run (branch head only) cannot cover.
     strategy:
       fail-fast: false
       matrix:
