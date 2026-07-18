@@ -57,7 +57,7 @@ A [Homebridge](https://homebridge.io) plugin that exposes the [Philips Hue Sync 
 ### Requirements
 
 - Homebridge `^1.8.0` or `^2.0.0-beta.0` — **Homebridge 1.x support is deprecated and will be removed in a future major release; please upgrade to Homebridge 2.x**
-- Node.js `^22.12.0`, `^24.11.0`, or `^26.0.0`
+- Node.js `^22.12.0` or `^24.11.0`
 - A Philips Hue Sync Box on the same network as Homebridge
 
 ### Install the Plugin
