@@ -14,20 +14,12 @@ export class EntertainmentTvDevice extends BaseTvDevice {
     this.service
       .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
       .onSet(value => {
-        // Gets the ID of the group based on the index
-        let groupId: string | null = null;
-        let i = 1;
-        for (const currentGroupId in this.state.hue.groups) {
-          if (i === value) {
-            groupId = currentGroupId;
-            break;
-          }
-          i++;
-        }
-
-        // @ts-expect-error need to use self as a key
-        const group = this.state.hue.groups[groupId];
-        if (!group || !groupId) {
+        // The identifier is the group's 1-based position in the groups object
+        const groupId = Object.keys(this.state.hue.groups)[
+          (value as number) - 1
+        ];
+        const group = groupId ? this.state.hue.groups[groupId] : undefined;
+        if (!group) {
           return;
         }
         // Saves the changes
@@ -46,14 +38,11 @@ export class EntertainmentTvDevice extends BaseTvDevice {
   }
 
   updateTv(): void {
-    // Gets the ID of the group based on the index
-    let index = 1;
-    for (const currentGroupId in this.state.hue.groups) {
-      if (currentGroupId === this.state.hue.groupId) {
-        break;
-      }
-      index++;
-    }
+    // Gets the 1-based position of the active group; an unknown groupId
+    // falls past the last input, matching no source
+    const groupIds = Object.keys(this.state.hue.groups);
+    const position = groupIds.indexOf(this.state.hue.groupId);
+    const index = position === -1 ? groupIds.length + 1 : position + 1;
 
     // Updates the input characteristic
     this.service.updateCharacteristic(
@@ -83,19 +72,15 @@ export class EntertainmentTvDevice extends BaseTvDevice {
   }
 
   protected createInputServices(): void {
-    let i = 1;
-    for (const groupId in this.state.hue.groups) {
-      const group = this.state.hue.groups[groupId];
-      const name = group.name;
-      const position = 'AREA ' + i;
-
-      const entertainmentInputService = this.getInputService(name, position);
+    Object.values(this.state.hue.groups).forEach((group, index) => {
+      const entertainmentInputService = this.getInputService(
+        group.name,
+        'AREA ' + (index + 1)
+      );
 
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(entertainmentInputService);
       this.inputServices.push(entertainmentInputService);
-
-      i++;
-    }
+    });
   }
 }

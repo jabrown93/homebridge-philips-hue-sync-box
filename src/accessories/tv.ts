@@ -65,17 +65,11 @@ export class TvDevice extends BaseTvDevice {
   protected createInputServices(): void {
     const services: Service[] = [];
     for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
-      // Sets the TV name
       const hdmiState: HdmiInput = this.state.hdmi[`input${i}`];
       const hdmiPosition = 'HDMI ' + i;
 
       const hdmiName = hdmiState.name ?? hdmiPosition;
       const hdmiInputService = this.getInputService(hdmiName, hdmiPosition);
-      hdmiInputService
-        .getCharacteristic(
-          this.platform.api.hap.Characteristic.TargetVisibilityState
-        )
-        .onSet(this.setVisibility(hdmiInputService));
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(hdmiInputService);
       services.push(hdmiInputService);

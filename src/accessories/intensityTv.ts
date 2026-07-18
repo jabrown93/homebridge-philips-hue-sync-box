@@ -35,12 +35,6 @@ export class IntensityTvDevice extends BaseTvDevice {
       this.service.addLinkedService(intensityInputService);
       this.inputServices.push(intensityInputService);
     }
-    this.service.setCharacteristic(
-      this.platform.api.hap.Characteristic.SleepDiscoveryMode,
-      this.platform.api.hap.Characteristic.SleepDiscoveryMode
-        .ALWAYS_DISCOVERABLE
-    );
-
     this.updateSources(this.inputServices);
   }
 
