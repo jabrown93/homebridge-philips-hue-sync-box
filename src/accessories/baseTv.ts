@@ -22,7 +22,6 @@ import { convertSyncBoxToHomekit } from '../lib/brightness.js';
 export abstract class BaseTvDevice extends SyncBoxDevice {
   protected lightbulbService?: Service;
   protected inputServices: Service[] = [];
-  protected mainAccessory?: PlatformAccessory;
 
   // The numbers double as HomeKit input identifiers, so the order is part of
   // the accessory's UI. The reverse maps are derived to keep them in sync.
@@ -56,10 +55,9 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     protected readonly platform: HueSyncBoxPlatform,
     public readonly accessory: PlatformAccessory,
     protected state: State,
-    protected primaryAccessory?: PlatformAccessory
+    protected mainAccessory?: PlatformAccessory
   ) {
     super(platform, accessory, state);
-    this.mainAccessory = primaryAccessory;
 
     this.createInputServices();
     this.createLightbulbService();
@@ -72,16 +70,11 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       .getCharacteristic(this.platform.api.hap.Characteristic.RemoteKey)
       .onSet(this.handleRemoteButton.bind(this));
 
-    let name;
-    if (this.platform.config[this.getConfiguredNamePropertyName()]) {
-      name = this.platform.config[this.getConfiguredNamePropertyName()];
-    } else if (
-      this.mainAccessory?.context[this.getConfiguredNamePropertyName()]
-    ) {
-      name = this.mainAccessory?.context[this.getConfiguredNamePropertyName()];
-    } else {
-      name = this.state.device.name;
-    }
+    const nameProperty = this.getConfiguredNamePropertyName();
+    const name =
+      this.platform.config[nameProperty] ||
+      this.mainAccessory?.context[nameProperty] ||
+      this.state.device.name;
     this.service
       .getCharacteristic(this.platform.api.hap.Characteristic.ConfiguredName)
       .onSet(this.handleConfiguredNameChange.bind(this));
@@ -92,20 +85,19 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   }
 
   protected handleConfiguredNameChange(value: CharacteristicValue) {
-    if (this.platform.config[this.getConfiguredNamePropertyName()]) {
+    const nameProperty = this.getConfiguredNamePropertyName();
+    if (this.platform.config[nameProperty]) {
       this.platform.log.warn(
-        this.getConfiguredNamePropertyName() +
+        nameProperty +
           ' is set in the config, therefore it cannot be changed by HomeKit.' +
           ' Please change it in the Homebridge config. Alternatively remove the' +
           ' config and manually configure in HomeKit (not recommended).'
       );
       return;
     }
-    this.platform.log.debug(
-      this.getConfiguredNamePropertyName() + ' name changed to ' + value
-    );
+    this.platform.log.debug(nameProperty + ' name changed to ' + value);
     if (this.mainAccessory) {
-      this.mainAccessory.context[this.getConfiguredNamePropertyName()] = value;
+      this.mainAccessory.context[nameProperty] = value;
     }
   }
 
