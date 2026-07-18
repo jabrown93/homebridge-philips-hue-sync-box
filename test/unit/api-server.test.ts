@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from '@jest/globals';
+import { describe, it, expect, vi } from 'vitest';
 import { ApiServer } from '../../src/api-server.js';
 import type { HueSyncBoxPlatform } from '../../src/platform.js';
 
@@ -8,12 +8,12 @@ function makePlatform(config: Record<string, unknown>): HueSyncBoxPlatform {
   return {
     config,
     log: {
-      error: jest.fn(),
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
     },
-    client: { getState: jest.fn() },
+    client: { getState: vi.fn() },
   } as unknown as HueSyncBoxPlatform;
 }
 

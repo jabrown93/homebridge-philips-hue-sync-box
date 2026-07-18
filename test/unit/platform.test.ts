@@ -1,11 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  jest,
-  beforeEach,
-  afterEach,
-} from '@jest/globals';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { HueSyncBoxPlatform } from '../../src/platform.js';
 import type { API, Logging, PlatformConfig } from 'homebridge';
 
@@ -18,18 +11,18 @@ function makeApi(): API {
         AUDIO_RECEIVER: 3,
         TELEVISION: 4,
       },
-      uuid: { generate: jest.fn(() => 'uuid') },
+      uuid: { generate: vi.fn(() => 'uuid') },
     },
-    on: jest.fn(),
+    on: vi.fn(),
   } as unknown as API;
 }
 
 function makeLog(): Logging {
   return {
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   } as unknown as Logging;
 }
 
@@ -48,12 +41,12 @@ type PollingPlatform = HueSyncBoxPlatform & { schedulePolling(): void };
 
 describe('HueSyncBoxPlatform polling', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
+    vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   it('skips a poll tick while the previous one is still in flight', async () => {
@@ -61,7 +54,7 @@ describe('HueSyncBoxPlatform polling', () => {
     let resolveFirst: (value: null) => void = () => {
       throw new Error('resolveFirst called before assignment');
     };
-    const getState = jest
+    const getState = vi
       .spyOn(platform.client, 'getState')
       .mockImplementationOnce(
         () =>
@@ -70,16 +63,16 @@ describe('HueSyncBoxPlatform polling', () => {
           })
       )
       .mockResolvedValue(null);
-    const update = jest.spyOn(platform, 'update').mockResolvedValue(undefined);
+    const update = vi.spyOn(platform, 'update').mockResolvedValue(undefined);
 
     (platform as PollingPlatform).schedulePolling();
 
     // Tick 1: starts a getState() call that never resolves on its own.
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(getState).toHaveBeenCalledTimes(1);
 
     // Tick 2: fires while tick 1 is still pending - must be skipped, not queued.
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(getState).toHaveBeenCalledTimes(1);
     expect(platform.log.debug).toHaveBeenCalledWith(
       'Skipping poll tick, previous update still in progress'
@@ -87,8 +80,8 @@ describe('HueSyncBoxPlatform polling', () => {
 
     // Let tick 1 finish, then confirm polling resumes on the next tick.
     resolveFirst(null);
-    await jest.advanceTimersByTimeAsync(0);
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(1000);
 
     expect(getState).toHaveBeenCalledTimes(2);
     expect(update).toHaveBeenCalledTimes(2);

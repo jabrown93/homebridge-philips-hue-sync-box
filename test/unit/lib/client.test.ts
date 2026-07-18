@@ -1,13 +1,15 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { HueSyncBoxPlatformConfig } from '../../../src/config.js';
 import type { State } from '../../../src/state.js';
 
-const mockFetch = jest.fn();
+// vi.mock is hoisted above these imports, so the mock fetch fn must come from
+// vi.hoisted to avoid a temporal-dead-zone reference inside the factory.
+const { mockFetch } = vi.hoisted(() => ({ mockFetch: vi.fn() }));
 
 // SyncBoxClient imports node-fetch as its default export and wraps it with
 // fetch-retry at module load time, so the mock has to be installed before
 // src/lib/client.js (and transitively node-fetch) is ever imported.
-jest.unstable_mockModule('node-fetch', () => ({
+vi.mock('node-fetch', () => ({
   default: mockFetch,
 }));
 
@@ -17,10 +19,10 @@ const { HTTP_RETRY_BASE_DELAY_MS, MAX_SYNC_BOX_RESPONSE_BYTES } =
 
 function makeLog() {
   return {
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   };
 }
 
@@ -122,7 +124,7 @@ describe('SyncBoxClient', () => {
   });
 
   it('retries a real network error and succeeds once the retry resolves', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     try {
       const validState = makeValidState();
       mockFetch
@@ -133,19 +135,19 @@ describe('SyncBoxClient', () => {
 
       const resultPromise = client.getState();
       // fetch-retry's first backoff delay is 2^0 * HTTP_RETRY_BASE_DELAY_MS.
-      await jest.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
       const result = await resultPromise;
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result).not.toBeNull();
       expect(log.error).not.toHaveBeenCalled();
     } finally {
-      jest.useRealTimers();
+      vi.useRealTimers();
     }
   });
 
   it('bounds retries to HTTP_RETRY_COUNT even for a persistent network error', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     try {
       mockFetch.mockRejectedValue(new Error('ECONNREFUSED'));
       const log = makeLog();
@@ -153,13 +155,13 @@ describe('SyncBoxClient', () => {
 
       const resultPromise = client.getState();
       // Cumulative backoff for HTTP_RETRY_COUNT retries: 1000+2000+4000=7000ms.
-      await jest.advanceTimersByTimeAsync(7000);
+      await vi.advanceTimersByTimeAsync(7000);
       const result = await resultPromise;
 
       expect(result).toBeNull();
       expect(mockFetch).toHaveBeenCalledTimes(4);
     } finally {
-      jest.useRealTimers();
+      vi.useRealTimers();
     }
   }, 3000);
 
