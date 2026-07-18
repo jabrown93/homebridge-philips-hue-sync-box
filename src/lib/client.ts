@@ -68,41 +68,36 @@ export class SyncBoxClient {
     this.lock = new AsyncLock();
   }
 
+  // Serializes all Sync Box requests behind the shared lock.
+  private withLock<T>(task: () => Promise<T>): Promise<T> {
+    return this.lock.acquire(this.LOCK_KEY, task, this.LOCK_OPTIONS);
+  }
+
   public async getState(): Promise<State | null> {
-    return await this.lock
-      .acquire(
-        this.LOCK_KEY,
-        async () => await this.sendRequest<State>('GET', ''),
-        this.LOCK_OPTIONS
-      )
-      .catch(e => {
-        this.log.error('Failed to get state from Sync Box:', e);
-        return null;
-      });
+    try {
+      return await this.withLock(() => this.sendRequest<State>('GET', ''));
+    } catch (e) {
+      this.log.error('Failed to get state from Sync Box:', e);
+      return null;
+    }
   }
 
   public async updateExecution(execution: Partial<Execution>): Promise<void> {
-    return await this.lock
-      .acquire(
-        this.LOCK_KEY,
-        async () => await this.sendRequest<void>('PUT', 'execution', execution),
-        this.LOCK_OPTIONS
-      )
-      .catch(e => {
-        this.log.error('Error updating execution:', e);
-      });
+    try {
+      await this.withLock(() =>
+        this.sendRequest<void>('PUT', 'execution', execution)
+      );
+    } catch (e) {
+      this.log.error('Error updating execution:', e);
+    }
   }
 
   public async updateHue(hue: Partial<Hue>): Promise<void> {
-    return await this.lock
-      .acquire(
-        this.LOCK_KEY,
-        async () => await this.sendRequest<void>('PUT', 'hue', hue),
-        this.LOCK_OPTIONS
-      )
-      .catch(e => {
-        this.log.error('Error updating hue:', e);
-      });
+    try {
+      await this.withLock(() => this.sendRequest<void>('PUT', 'hue', hue));
+    } catch (e) {
+      this.log.error('Error updating hue:', e);
+    }
   }
 
   private async sendRequest<T>(
