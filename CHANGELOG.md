@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.8-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.7...v3.0.8-beta.1) (2026-07-18)
+
+### Bug Fixes
+
+* **security:** pin Sync Box TLS to Philips's Sync Box CA ([#436](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/436)) ([fd8c52f](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/fd8c52fd3b8627eeb894725f4ed1cb0124ba222f))
+
 ## [3.0.7](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.6...v3.0.7) (2026-07-17)
 
 ### Bug Fixes
