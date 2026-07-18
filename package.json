@@ -39,14 +39,13 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit",
     "prettier": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint src/**.ts",
     "lint:fix": "eslint src/**.ts --fix",
     "clean": "rimraf ./dist",
     "compile": "tsc",
-    "build": "npm-run-all clean test compile typecheck",
+    "build": "npm-run-all clean test compile",
     "watch": "npm run setup-config && npm run build && npm link && nodemon",
     "prepack": "npm-run-all clean compile",
     "semantic-release": "cross-env semantic-release --no-ci",
