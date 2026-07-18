@@ -3,10 +3,15 @@ name: Build and Lint
 on:
   - push
   - pull_request
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     # node-build is now a composite action, so the caller owns the matrix and
     # runs-on (a composite action cannot declare either).
+    # Always run pull_request: it builds GitHub's synthetic merge commit,
+    # which the push run (branch head only) cannot cover.
     strategy:
       fail-fast: false
       matrix:

@@ -73,6 +73,12 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.log = logger ?? console;
     this.log.info('Initializing platform:', this.config.name);
 
+    if (this.api.serverVersion.startsWith('1.')) {
+      this.log.warn(
+        'This plugin will drop support for Homebridge 1.x in a future release. Please upgrade to Homebridge 2.x.'
+      );
+    }
+
     this.TV_ACCESSORY_TYPES_TO_CATEGORY = {
       [TV_TYPE_SET_TOP_BOX]: this.api.hap.Categories.TV_SET_TOP_BOX,
       [TV_TYPE_STREAMING_STICK]: this.api.hap.Categories.TV_STREAMING_STICK,

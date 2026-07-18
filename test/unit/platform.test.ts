@@ -4,6 +4,7 @@ import type { API, Logging, PlatformConfig } from 'homebridge';
 
 function makeApi(): API {
   return {
+    serverVersion: '2.0.0',
     hap: {
       Categories: {
         TV_SET_TOP_BOX: 1,
