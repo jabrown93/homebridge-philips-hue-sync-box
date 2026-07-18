@@ -24,6 +24,8 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
   protected inputServices: Service[] = [];
   protected mainAccessory?: PlatformAccessory;
 
+  // The numbers double as HomeKit input identifiers, so the order is part of
+  // the accessory's UI. The reverse maps are derived to keep them in sync.
   protected readonly intensityToNumber: Map<string, number> = new Map([
     ['subtle', 1],
     ['moderate', 2],
@@ -31,12 +33,12 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     ['intense', 4],
   ]);
 
-  protected readonly numberToIntensity: Map<number, string> = new Map([
-    [1, 'subtle'],
-    [2, 'moderate'],
-    [3, 'high'],
-    [4, 'intense'],
-  ]);
+  protected readonly numberToIntensity: Map<number, string> = new Map(
+    [...this.intensityToNumber].map(([intensity, number]) => [
+      number,
+      intensity,
+    ])
+  );
 
   protected readonly modeToNumber: Map<string, number> = new Map([
     [MODE_VIDEO, 1],
@@ -46,13 +48,9 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     [POWER_SAVE, 5],
   ]);
 
-  protected readonly numberToMode: Map<number, string> = new Map([
-    [1, MODE_VIDEO],
-    [2, MODE_MUSIC],
-    [3, MODE_GAME],
-    [4, PASSTHROUGH],
-    [5, POWER_SAVE],
-  ]);
+  protected readonly numberToMode: Map<number, string> = new Map(
+    [...this.modeToNumber].map(([mode, number]) => [number, mode])
+  );
 
   protected constructor(
     protected readonly platform: HueSyncBoxPlatform,
