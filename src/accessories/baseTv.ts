@@ -124,8 +124,6 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       this.accessory.getService(this.platform.api.hap.Service.Lightbulb) ||
       this.accessory.addService(this.platform.api.hap.Service.Lightbulb);
 
-    // Stores the light bulb service
-
     // Subscribes for changes of the on characteristic
     this.lightbulbService
       .getCharacteristic(this.platform.api.hap.Characteristic.On)
