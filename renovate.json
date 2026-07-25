@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>jabrown93/.github//renovate-config.json"],
+  "extends": ["local>jabrown93/.github:renovate-config"],
   "packageRules": [
     {
       "matchPackageNames": ["conventional-changelog-conventionalcommits"],
