@@ -18,6 +18,6 @@ jobs:
         node-version: ['22.x', '24.x']
     runs-on: ubuntu-latest
     steps:
-      - uses: jabrown93/ci/actions/node-build@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # node-build-v1.0.0
+      - uses: jabrown93/ci/actions/node-build@36b73a4e988c38aceaf7b92b1a0c7dedc125ab72 # node-build-v1.0.2
         with:
           node-version: ${{ matrix.node-version }}
