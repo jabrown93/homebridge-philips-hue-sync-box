@@ -2,13 +2,15 @@
 name: Build and Lint
 on:
   push:
-    # Release branches get the post-merge run. renovate/** is required: the
-    # shared preset automerges by BRANCH (:automergeBranch), so those updates
-    # never open a PR and would otherwise reach the ruleset with zero status
-    # checks, which :automergeRequireAllStatusChecks blocks indefinitely.
-    branches: [main, beta, 'renovate/**']
+    # Release branches (main/beta/alpha/next, per release.yml) get the
+    # post-merge run. renovate/** is required because the shared preset
+    # automerges MOST updates by branch (:automergeBranch) rather than by PR,
+    # so those branches would reach the ruleset with zero status checks and
+    # :automergeRequireAllStatusChecks would block them indefinitely. Majors
+    # and security bumps still open a PR, covered by pull_request below.
+    branches: [main, beta, alpha, next, 'renovate/**']
   pull_request:
-    branches: [main, beta]
+    branches: [main, beta, alpha, next]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
