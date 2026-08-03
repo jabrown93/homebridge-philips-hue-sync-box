@@ -2,11 +2,14 @@
 name: 'CodeQL Advanced'
 on:
   push:
-    branches: ['main', 'beta']
+    branches: [main, beta]
   pull_request:
-    branches: ['main', 'beta']
+    branches: [main, beta]
   schedule:
     - cron: '25 22 * * 5'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   analyze:
     # codeql is now a composite action, so the caller owns runs-on and MUST
