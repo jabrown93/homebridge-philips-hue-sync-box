@@ -1,8 +1,14 @@
 ---
 name: Build and Lint
 on:
-  - push
-  - pull_request
+  push:
+    # Release branches get the post-merge run. renovate/** is required: the
+    # shared preset automerges by BRANCH (:automergeBranch), so those updates
+    # never open a PR and would otherwise reach the ruleset with zero status
+    # checks, which :automergeRequireAllStatusChecks blocks indefinitely.
+    branches: [main, beta, 'renovate/**']
+  pull_request:
+    branches: [main, beta]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
