@@ -74,7 +74,7 @@
     "cross-env": "10.1.0",
     "eslint": "10.8.1",
     "homebridge": "2.4.0",
-    "homebridge-config-ui-x": "5.27.0",
+    "homebridge-config-ui-x": "5.28.0",
     "husky": "9.1.7",
     "lint-staged": "17.3.0",
     "nodemon": "3.1.14",
