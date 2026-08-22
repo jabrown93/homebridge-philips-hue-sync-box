@@ -3,5 +3,13 @@
   "extends": [
     "local>jabrown93/.github:renovate-config",
     "local>jabrown93/.github:renovate-semantic-release"
+  ],
+  "packageRules": [
+    {
+      "description": "This package is published to npm, so its runtime dependencies stay as ranges. The shared preset sets rangeStrategy=pin, which is correct for an application but wrong for a library: Homebridge installs every plugin into one shared node_modules, and an exact pin stops npm from deduping a dependency another plugin also uses -- two plugins pinning different axios versions each get their own copy. It also leaves a consumer no way to take a transitive patch without forking. devDependencies are still pinned via :pinDevDependencies, which is what makes our own builds reproducible; nothing here relaxes that.",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "rangeStrategy": "replace"
+    }
   ]
 }
