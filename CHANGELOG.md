@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.8-beta.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.8-beta.1...v3.0.8-beta.2) (2026-08-26)
+
+### Bug Fixes
+
+* **client:** retry Sync Box request timeouts instead of failing the poll ([#461](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/461)) ([3893a32](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/3893a32a61ec90f4487d7cc13fa87dd240b8b29a)), closes [#458](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/458)
+
 ## [3.0.8-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.0.7...v3.0.8-beta.1) (2026-07-18)
 
 ### Bug Fixes
