@@ -1,4 +1,4 @@
-import fetch, { RequestInit, Response } from 'node-fetch';
+import fetch, { RequestInit } from 'node-fetch';
 
 import { Execution, Hue, State } from '../state.js';
 import * as https from 'node:https';
@@ -30,6 +30,11 @@ export function createSyncBoxAgent(): https.Agent {
     keepAlive: true,
   });
 }
+
+// The Sync Box answered, it just answered badly - a bad status or a payload
+// that isn't a state. Retrying only repeats the same answer, so these skip
+// the retry loop while transport failures don't.
+class SyncBoxResponseError extends Error {}
 
 // Homebridge prints a full stack when handed an Error. These failures all
 // unwind through node-fetch internals, so the stack costs a screen of log
@@ -90,6 +95,52 @@ export class SyncBoxClient {
   }
 
   /**
+   * Runs one attempt end to end - headers, status, body, validation - under a
+   * single AbortSignal, so a Sync Box that sends headers and then stalls
+   * mid-body aborts inside the retry loop rather than after it.
+   */
+  private async attemptRequest<T>(
+    url: string,
+    options: RequestInit,
+    method: string,
+    deadline: number
+  ): Promise<T> {
+    const remaining = Math.max(deadline - Date.now(), 1);
+    const res = await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(
+        Math.min(SYNC_BOX_REQUEST_TIMEOUT_MS, remaining)
+      ),
+    });
+    if (!res.ok) {
+      // A stalled error body must not mask the status that explains it.
+      const detail = await res.text().catch(() => '<unreadable body>');
+      this.log.error(
+        `Error: ${res.status} - ${res.statusText}. ${detail.slice(0, 500)}`
+      );
+      throw new SyncBoxResponseError(
+        `Error: ${res.status} - ${res.statusText}`
+      );
+    }
+    if (method !== 'GET') {
+      return null as T;
+    }
+    const json = await res.json();
+    // Any host with a cert signed by Philips's Sync Box CA is accepted
+    // regardless of hostname (see createSyncBoxAgent), so a LAN-adjacent
+    // attacker with a genuine Sync Box's cert must not be able to hand every
+    // accessory's update() a shape it dereferences unconditionally - that
+    // already crashed the entire Homebridge process, not just this plugin's
+    // accessories.
+    if (!isValidState(json)) {
+      throw new SyncBoxResponseError(
+        'Sync Box returned a malformed state response.'
+      );
+    }
+    return json as T;
+  }
+
+  /**
    * Retries transport-level failures - this client's own request timeout
    * included - under a single wall-clock budget.
    *
@@ -97,34 +148,6 @@ export class SyncBoxClient {
    * once it fires, so a Sync Box that answered a hair too slowly used to
    * surface as an unretried AbortError even though the next poll succeeded.
    */
-  private async fetchWithRetry(
-    url: string,
-    options: RequestInit
-  ): Promise<Response> {
-    const deadline = Date.now() + SYNC_BOX_REQUEST_BUDGET_MS;
-    for (let attempt = 0; ; attempt++) {
-      const remaining = Math.max(deadline - Date.now(), 1);
-      try {
-        return await fetch(url, {
-          ...options,
-          signal: AbortSignal.timeout(
-            Math.min(SYNC_BOX_REQUEST_TIMEOUT_MS, remaining)
-          ),
-        });
-      } catch (e) {
-        const backoff = Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS;
-        if (attempt >= HTTP_RETRY_COUNT || Date.now() + backoff >= deadline) {
-          throw e;
-        }
-        this.log.debug(
-          `Sync Box request attempt ${attempt + 1} failed, retrying in ${backoff}ms:`,
-          e
-        );
-        await new Promise(resolve => setTimeout(resolve, backoff));
-      }
-    }
-  }
-
   private async sendRequest<T>(
     method: string,
     path: string,
@@ -154,26 +177,25 @@ export class SyncBoxClient {
       })
     );
 
-    const res = await this.fetchWithRetry(url, options);
-    if (!res.ok) {
-      this.log.error(
-        `Error: ${res.status} - ${res.statusText}. ${JSON.stringify(await res.json())}`
-      );
-      throw new Error(`Error: ${res.status} - ${res.statusText}`);
+    const deadline = Date.now() + SYNC_BOX_REQUEST_BUDGET_MS;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.attemptRequest<T>(url, options, method, deadline);
+      } catch (e) {
+        const backoff = Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS;
+        if (
+          e instanceof SyncBoxResponseError ||
+          attempt >= HTTP_RETRY_COUNT ||
+          Date.now() + backoff >= deadline
+        ) {
+          throw e;
+        }
+        this.log.debug(
+          `Sync Box request attempt ${attempt + 1} failed, retrying in ${backoff}ms:`,
+          e
+        );
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
     }
-    if (method !== 'GET') {
-      return null as T;
-    }
-    const json = await res.json();
-    // Any host with a cert signed by Philips's Sync Box CA is accepted
-    // regardless of hostname (see createSyncBoxAgent), so a LAN-adjacent
-    // attacker with a genuine Sync Box's cert must not be able to hand every
-    // accessory's update() a shape it dereferences unconditionally - that
-    // already crashed the entire Homebridge process, not just this plugin's
-    // accessories.
-    if (!isValidState(json)) {
-      throw new Error('Sync Box returned a malformed state response.');
-    }
-    return json as T;
   }
 }

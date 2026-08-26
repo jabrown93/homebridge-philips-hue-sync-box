@@ -76,8 +76,14 @@ function errorResponse(status: number, statusText: string, body: unknown) {
     ok: false,
     status,
     statusText,
-    json: async () => body,
+    text: async () => JSON.stringify(body),
   };
+}
+
+function abortError() {
+  const e = new Error('The operation was aborted.');
+  e.name = 'AbortError';
+  return e;
 }
 
 describe('SyncBoxClient', () => {
@@ -117,11 +123,9 @@ describe('SyncBoxClient', () => {
   it('retries after its own request timeout aborts an attempt', async () => {
     vi.useFakeTimers();
     try {
-      const abortError = new Error('The operation was aborted.');
-      abortError.name = 'AbortError';
       const validState = makeValidState();
       mockFetch
-        .mockRejectedValueOnce(abortError)
+        .mockRejectedValueOnce(abortError())
         .mockResolvedValueOnce(okResponse(validState));
       const log = makeLog();
       const client = new SyncBoxClient(log, makeConfig());
@@ -160,18 +164,48 @@ describe('SyncBoxClient', () => {
     }
   });
 
+  // The retry loop used to return as soon as headers arrived, leaving
+  // res.json() to reject outside it. A Sync Box that sent headers and then
+  // stalled mid-body still failed the poll outright.
+  it('retries when the response body stalls after headers arrive', async () => {
+    vi.useFakeTimers();
+    try {
+      const validState = makeValidState();
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => {
+            throw abortError();
+          },
+        })
+        .mockResolvedValueOnce(okResponse(validState));
+      const log = makeLog();
+      const client = new SyncBoxClient(log, makeConfig());
+
+      const resultPromise = client.getState();
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
+      const result = await resultPromise;
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result).toEqual(validState);
+      expect(log.warn).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('stops retrying once the wall-clock request budget is spent', async () => {
     vi.useFakeTimers();
     try {
-      const abortError = new Error('The operation was aborted.');
-      abortError.name = 'AbortError';
       // AbortSignal.timeout isn't driven by fake timers, so each attempt
       // simulates burning its full timeout by pushing the clock forward -
       // that's what the deadline is measured against. The budget, not
       // HTTP_RETRY_COUNT, is then what ends the loop.
       mockFetch.mockImplementation(async () => {
         vi.setSystemTime(Date.now() + SYNC_BOX_REQUEST_TIMEOUT_MS);
-        throw abortError;
+        throw abortError();
       });
       const log = makeLog();
       const client = new SyncBoxClient(log, makeConfig());
@@ -233,7 +267,7 @@ describe('SyncBoxClient', () => {
     }
   }, 3000);
 
-  it('does not retry an HTTP error status and logs then returns null', async () => {
+  it('does not retry an HTTP error status - the box answered, it just answered badly', async () => {
     mockFetch.mockResolvedValue(
       errorResponse(500, 'Internal Server Error', { error: 'boom' })
     );
@@ -250,7 +284,7 @@ describe('SyncBoxClient', () => {
     );
   });
 
-  it('rejects a malformed state response instead of forwarding it', async () => {
+  it('rejects a malformed state response without retrying it', async () => {
     mockFetch.mockResolvedValue(okResponse({ not: 'a valid state' }));
     const log = makeLog();
     const client = new SyncBoxClient(log, makeConfig());
