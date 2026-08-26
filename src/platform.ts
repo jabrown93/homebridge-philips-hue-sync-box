@@ -261,7 +261,8 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
   async update(state: State | null) {
     this.log.debug('Updating state called');
     if (!state) {
-      this.log.warn('Could not get state from sync box. Skipping update.');
+      // getState() already logged why; don't warn twice per failed poll.
+      this.log.debug('No state from sync box. Skipping update.');
       return;
     }
     for (const device of this.devices) {

@@ -1,5 +1,4 @@
-import originalFetch from 'node-fetch';
-import fetch_retry from 'fetch-retry';
+import fetch, { RequestInit, Response } from 'node-fetch';
 
 import { Execution, Hue, State } from '../state.js';
 import * as https from 'node:https';
@@ -11,31 +10,12 @@ import {
   HTTP_RETRY_BASE_DELAY_MS,
   MAX_SYNC_BOX_RESPONSE_BYTES,
   SYNC_BOX_REQUEST_TIMEOUT_MS,
+  SYNC_BOX_REQUEST_BUDGET_MS,
   SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS,
   SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
 } from './constants.js';
 import { isValidState } from './validation.js';
 import { HSB_CA_CERT } from './hsb-ca-cert.js';
-
-const fetch = fetch_retry(originalFetch, {
-  retries: HTTP_RETRY_COUNT,
-  retryDelay: attempt => {
-    return Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS; // 1000, 2000, 4000
-  },
-  // fetch-retry reuses the same request `init` - and so the same
-  // AbortSignal - across every retry attempt. Once our own request timeout
-  // fires, the signal is permanently aborted, so retrying just burns the
-  // full backoff delay on attempts that fail instantly for no benefit.
-  // Real network errors (connection refused/reset, DNS failure, etc.) still
-  // get retried normally.
-  //
-  // fetch-retry only enforces its own `retries` option when `retryOn` is an
-  // array; a function `retryOn` fully replaces that bound, so this has to
-  // check `attempt` itself or a persistent network error retries forever.
-  retryOn: (attempt: number, error: Error | null) => {
-    return !!error && error.name !== 'AbortError' && attempt < HTTP_RETRY_COUNT;
-  },
-});
 
 // Trusts only certs signed by Philips's Sync Box CA, but skips hostname
 // verification: each box's leaf cert has its uniqueId as the CN, not its IP,
@@ -49,6 +29,13 @@ export function createSyncBoxAgent(): https.Agent {
     checkServerIdentity: () => undefined,
     keepAlive: true,
   });
+}
+
+// Homebridge prints a full stack when handed an Error. These failures all
+// unwind through node-fetch internals, so the stack costs a screen of log
+// and says nothing the message doesn't.
+function describeError(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
 }
 
 export class SyncBoxClient {
@@ -77,7 +64,9 @@ export class SyncBoxClient {
     try {
       return await this.withLock(() => this.sendRequest<State>('GET', ''));
     } catch (e) {
-      this.log.error('Failed to get state from Sync Box:', e);
+      // Polling retries on its own schedule, so a failed read is recoverable
+      // on the next tick rather than an error the user has to act on.
+      this.log.warn('Failed to get state from Sync Box:', describeError(e));
       return null;
     }
   }
@@ -88,7 +77,7 @@ export class SyncBoxClient {
         this.sendRequest<void>('PUT', 'execution', execution)
       );
     } catch (e) {
-      this.log.error('Error updating execution:', e);
+      this.log.error('Error updating execution:', describeError(e));
     }
   }
 
@@ -96,7 +85,43 @@ export class SyncBoxClient {
     try {
       await this.withLock(() => this.sendRequest<void>('PUT', 'hue', hue));
     } catch (e) {
-      this.log.error('Error updating hue:', e);
+      this.log.error('Error updating hue:', describeError(e));
+    }
+  }
+
+  /**
+   * Retries transport-level failures - this client's own request timeout
+   * included - under a single wall-clock budget.
+   *
+   * Every attempt gets a fresh AbortSignal. A shared signal stays aborted
+   * once it fires, so a Sync Box that answered a hair too slowly used to
+   * surface as an unretried AbortError even though the next poll succeeded.
+   */
+  private async fetchWithRetry(
+    url: string,
+    options: RequestInit
+  ): Promise<Response> {
+    const deadline = Date.now() + SYNC_BOX_REQUEST_BUDGET_MS;
+    for (let attempt = 0; ; attempt++) {
+      const remaining = Math.max(deadline - Date.now(), 1);
+      try {
+        return await fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(
+            Math.min(SYNC_BOX_REQUEST_TIMEOUT_MS, remaining)
+          ),
+        });
+      } catch (e) {
+        const backoff = Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS;
+        if (attempt >= HTTP_RETRY_COUNT || Date.now() + backoff >= deadline) {
+          throw e;
+        }
+        this.log.debug(
+          `Sync Box request attempt ${attempt + 1} failed, retrying in ${backoff}ms:`,
+          e
+        );
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
     }
   }
 
@@ -106,7 +131,7 @@ export class SyncBoxClient {
     body?: Partial<Execution> | Partial<Hue> | null
   ): Promise<T> {
     const url = `https://${this.config.syncBoxIpAddress}/api/v1/${path}`;
-    const options = {
+    const options: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.config.syncBoxApiAccessToken}`,
@@ -118,10 +143,6 @@ export class SyncBoxClient {
       // spoofed oversized response can't be fully buffered by res.json()
       // before isValidState() gets a chance to reject it.
       size: MAX_SYNC_BOX_RESPONSE_BYTES,
-      // Bounds the whole request (all retries included - see the retryOn
-      // override above) in case the Sync Box accepts the connection but
-      // never sends a response; node-fetch applies no timeout on its own.
-      signal: AbortSignal.timeout(SYNC_BOX_REQUEST_TIMEOUT_MS),
     };
 
     this.log.debug(
@@ -133,7 +154,7 @@ export class SyncBoxClient {
       })
     );
 
-    const res = await fetch(url, options);
+    const res = await this.fetchWithRetry(url, options);
     if (!res.ok) {
       this.log.error(
         `Error: ${res.status} - ${res.statusText}. ${JSON.stringify(await res.json())}`

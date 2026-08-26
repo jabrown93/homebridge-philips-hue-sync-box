@@ -7,17 +7,20 @@ import { HSB_CA_CERT } from '../../../src/lib/hsb-ca-cert.js';
 // vi.hoisted to avoid a temporal-dead-zone reference inside the factory.
 const { mockFetch } = vi.hoisted(() => ({ mockFetch: vi.fn() }));
 
-// SyncBoxClient imports node-fetch as its default export and wraps it with
-// fetch-retry at module load time, so the mock has to be installed before
-// src/lib/client.js (and transitively node-fetch) is ever imported.
+// SyncBoxClient imports node-fetch as its default export at module load
+// time, so the mock has to be installed before src/lib/client.js (and
+// transitively node-fetch) is ever imported.
 vi.mock('node-fetch', () => ({
   default: mockFetch,
 }));
 
 const { SyncBoxClient, createSyncBoxAgent } =
   await import('../../../src/lib/client.js');
-const { HTTP_RETRY_BASE_DELAY_MS, MAX_SYNC_BOX_RESPONSE_BYTES } =
-  await import('../../../src/lib/constants.js');
+const {
+  HTTP_RETRY_BASE_DELAY_MS,
+  MAX_SYNC_BOX_RESPONSE_BYTES,
+  SYNC_BOX_REQUEST_TIMEOUT_MS,
+} = await import('../../../src/lib/constants.js');
 
 function makeLog() {
   return {
@@ -108,21 +111,84 @@ describe('SyncBoxClient', () => {
     expect(secondOptions.signal).not.toBe(firstOptions.signal);
   });
 
-  it('does not retry once its own request timeout aborts the request', async () => {
-    const abortError = new Error('The operation was aborted.');
-    abortError.name = 'AbortError';
-    mockFetch.mockRejectedValue(abortError);
-    const log = makeLog();
-    const client = new SyncBoxClient(log, makeConfig());
+  // Regression test for #458: a Sync Box that answers a hair too slowly used
+  // to abort with no retry, because fetch-retry reused one already-aborted
+  // signal across every attempt.
+  it('retries after its own request timeout aborts an attempt', async () => {
+    vi.useFakeTimers();
+    try {
+      const abortError = new Error('The operation was aborted.');
+      abortError.name = 'AbortError';
+      const validState = makeValidState();
+      mockFetch
+        .mockRejectedValueOnce(abortError)
+        .mockResolvedValueOnce(okResponse(validState));
+      const log = makeLog();
+      const client = new SyncBoxClient(log, makeConfig());
 
-    const result = await client.getState();
+      const resultPromise = client.getState();
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
+      const result = await resultPromise;
 
-    expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(log.error).toHaveBeenCalledWith(
-      'Failed to get state from Sync Box:',
-      abortError
-    );
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(result).toEqual(validState);
+      expect(log.warn).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives every attempt a fresh, un-aborted signal', async () => {
+    vi.useFakeTimers();
+    try {
+      mockFetch
+        .mockRejectedValueOnce(new Error('ECONNRESET'))
+        .mockResolvedValueOnce(okResponse(makeValidState()));
+      const client = new SyncBoxClient(makeLog(), makeConfig());
+
+      const resultPromise = client.getState();
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
+      await resultPromise;
+
+      const signals = mockFetch.mock.calls.map(
+        ([, options]) => (options as { signal: AbortSignal }).signal
+      );
+      expect(signals[1]).not.toBe(signals[0]);
+      expect(signals[1].aborted).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stops retrying once the wall-clock request budget is spent', async () => {
+    vi.useFakeTimers();
+    try {
+      const abortError = new Error('The operation was aborted.');
+      abortError.name = 'AbortError';
+      // AbortSignal.timeout isn't driven by fake timers, so each attempt
+      // simulates burning its full timeout by pushing the clock forward -
+      // that's what the deadline is measured against. The budget, not
+      // HTTP_RETRY_COUNT, is then what ends the loop.
+      mockFetch.mockImplementation(async () => {
+        vi.setSystemTime(Date.now() + SYNC_BOX_REQUEST_TIMEOUT_MS);
+        throw abortError;
+      });
+      const log = makeLog();
+      const client = new SyncBoxClient(log, makeConfig());
+
+      const resultPromise = client.getState();
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS * 4);
+      const result = await resultPromise;
+
+      expect(result).toBeNull();
+      expect(mockFetch.mock.calls.length).toBeLessThan(4);
+      expect(log.warn).toHaveBeenCalledWith(
+        'Failed to get state from Sync Box:',
+        'The operation was aborted.'
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('retries a real network error and succeeds once the retry resolves', async () => {
@@ -136,13 +202,13 @@ describe('SyncBoxClient', () => {
       const client = new SyncBoxClient(log, makeConfig());
 
       const resultPromise = client.getState();
-      // fetch-retry's first backoff delay is 2^0 * HTTP_RETRY_BASE_DELAY_MS.
+      // First backoff is 2^0 * HTTP_RETRY_BASE_DELAY_MS.
       await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS);
       const result = await resultPromise;
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result).not.toBeNull();
-      expect(log.error).not.toHaveBeenCalled();
+      expect(log.warn).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
@@ -178,9 +244,9 @@ describe('SyncBoxClient', () => {
 
     expect(result).toBeNull();
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(log.error).toHaveBeenCalledWith(
+    expect(log.warn).toHaveBeenCalledWith(
       'Failed to get state from Sync Box:',
-      expect.any(Error)
+      'Error: 500 - Internal Server Error'
     );
   });
 
@@ -193,11 +259,9 @@ describe('SyncBoxClient', () => {
 
     expect(result).toBeNull();
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(log.error).toHaveBeenCalledWith(
+    expect(log.warn).toHaveBeenCalledWith(
       'Failed to get state from Sync Box:',
-      expect.objectContaining({
-        message: 'Sync Box returned a malformed state response.',
-      })
+      'Sync Box returned a malformed state response.'
     );
   });
 
