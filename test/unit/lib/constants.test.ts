@@ -26,6 +26,8 @@ import {
   HTTP_STATUS_OK,
   HTTP_STATUS_UNAUTHORIZED,
   SYNC_BOX_REQUEST_TIMEOUT_MS,
+  SYNC_BOX_REQUEST_BUDGET_MS,
+  SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS,
   SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS,
 } from '../../../src/lib/constants.js';
 
@@ -131,21 +133,31 @@ describe('Constants', () => {
   });
 
   describe('Sync Box Client Timing Constants', () => {
-    it('should keep the lock max execution time comfortably above the worst-case request time', () => {
-      // Mirrors sendRequest()'s actual worst case: the bounded first
-      // attempt, plus every retry backing off at HTTP_RETRY_BASE_DELAY_MS *
-      // 2^attempt. If this ever regresses, async-lock can hand a request's
-      // slot to the next queued caller while the original is still running,
-      // letting two requests execute concurrently.
-      let worstCaseRetryDelay = 0;
-      for (let attempt = 0; attempt < HTTP_RETRY_COUNT; attempt++) {
-        worstCaseRetryDelay += Math.pow(2, attempt) * HTTP_RETRY_BASE_DELAY_MS;
-      }
-      const worstCaseRequestTime =
-        SYNC_BOX_REQUEST_TIMEOUT_MS + worstCaseRetryDelay;
+    // Every one of these bounds the same shared lock, and each inversion has
+    // its own failure mode:
+    //
+    // - budget <= attempt timeout: a timeout is terminal again (#458).
+    // - queue timeout <= budget: a HomeKit write queued behind a retrying
+    //   poll expires before its turn, and updateExecution() catches the
+    //   rejection and resolves - silently dropping the user's command.
+    // - lock max execution <= queue timeout: async-lock hands a slot to the
+    //   next caller while the original request is still in flight, so two
+    //   requests run concurrently.
+    it('should keep the lock timing constants strictly ordered', () => {
+      expect(SYNC_BOX_REQUEST_TIMEOUT_MS).toBeLessThan(
+        SYNC_BOX_REQUEST_BUDGET_MS
+      );
+      expect(SYNC_BOX_REQUEST_BUDGET_MS).toBeLessThan(
+        SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS
+      );
+      expect(SYNC_BOX_LOCK_QUEUE_TIMEOUT_MS).toBeLessThan(
+        SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS
+      );
+    });
 
-      expect(SYNC_BOX_LOCK_MAX_EXECUTION_TIME_MS).toBeGreaterThan(
-        worstCaseRequestTime
+    it('should leave the budget room for at least one retry after a timeout', () => {
+      expect(SYNC_BOX_REQUEST_BUDGET_MS).toBeGreaterThan(
+        SYNC_BOX_REQUEST_TIMEOUT_MS + HTTP_RETRY_BASE_DELAY_MS
       );
     });
   });

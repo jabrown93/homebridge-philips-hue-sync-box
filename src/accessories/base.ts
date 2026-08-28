@@ -102,10 +102,7 @@ export abstract class SyncBoxDevice {
     // Saves the changes
     if (newValue) {
       this.platform.log.debug('Switch state to ON');
-      mode = this.platform.config.defaultOnMode;
-      if (mode === MODE_LAST_SYNC) {
-        mode = this?.state?.execution?.lastSyncMode || MODE_VIDEO;
-      }
+      mode = this.getOnMode();
     } else {
       this.platform.log.debug('Switch state to OFF');
       mode = this.platform.config.defaultOffMode;
@@ -113,6 +110,16 @@ export abstract class SyncBoxDevice {
     return this.updateExecution({
       mode,
     });
+  }
+
+  // Resolves the configured default on-mode, falling back to video when
+  // 'lastSyncMode' is configured but the box has not synced yet.
+  protected getOnMode(): string {
+    const mode = this.platform.config.defaultOnMode;
+    if (mode !== MODE_LAST_SYNC) {
+      return mode;
+    }
+    return this.state.execution.lastSyncMode || MODE_VIDEO;
   }
 
   protected updateExecution(execution: Partial<Execution>) {
@@ -147,11 +154,17 @@ export abstract class SyncBoxDevice {
     );
   }
 
-  protected shouldBeOn(): boolean {
+  // True when the box is actively syncing (video/music/game), as opposed to
+  // sitting in passthrough or powersave.
+  protected isSyncActive(): boolean {
     return (
       this.state.execution.mode !== POWER_SAVE &&
       this.state.execution.mode !== PASSTHROUGH
     );
+  }
+
+  protected shouldBeOn(): boolean {
+    return this.isSyncActive();
   }
 
   protected getSuffix(): string {
