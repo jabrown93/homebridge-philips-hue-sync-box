@@ -92,7 +92,7 @@
   },
   "overrides": {
     "@nestjs/swagger": {
-      "js-yaml": "5.4.0"
+      "js-yaml": "5.4.1"
     },
     "homebridge-config-ui-x": {
       "tar": "7.5.22"
