@@ -1,0 +1,28 @@
+# Merge main back into the prerelease branches after every push to main, so
+# beta never falls behind the stable line — semantic-release otherwise computes
+# beta's next prerelease version from a stale base. Branches the repo does not
+# have are skipped by the action, so the default branch list needs no tuning.
+#
+# This fires a second time on the version-bump commit semantic-release pushes to
+# main: that push is authenticated as the App, and App-token pushes do trigger
+# workflows. beta therefore converges on the release commit too, with no
+# schedule trigger needed.
+name: Merge back
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+concurrency:
+  group: merge-back-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  merge-back:
+    runs-on: ubuntu-latest
+    # No GITHUB_TOKEN permissions are needed: the action authenticates as the
+    # release App, which is the only identity that bypasses beta's rulesets.
+    permissions: {}
+    steps:
+      - uses: jabrown93/ci/actions/merge-back@fb273aa5f814f837727167724c752a4ff1254172 # merge-back-v1.0.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
