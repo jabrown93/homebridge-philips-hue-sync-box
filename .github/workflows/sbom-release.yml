@@ -1,0 +1,14 @@
+---
+name: SBOM release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sbom:
+    uses: jabrown93/ci/.github/workflows/sbom-release.yml@961ef8052b3fe4906b0245c190639af19ed2073b # workflows-v2.1.0
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write

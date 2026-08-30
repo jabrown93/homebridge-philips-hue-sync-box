@@ -1,18 +1,31 @@
 ---
 name: Build and Lint
 on:
-  - push
-  - pull_request
+  push:
+    # Release branches (main/beta/alpha/next, per release.yml) get the
+    # post-merge run. renovate/** is required because the shared preset
+    # automerges MOST updates by branch (:automergeBranch) rather than by PR,
+    # so those branches would reach the ruleset with zero status checks and
+    # :automergeRequireAllStatusChecks would block them indefinitely. Majors
+    # and security bumps still open a PR, covered by pull_request below.
+    branches: [main, beta, alpha, next, 'renovate/**']
+  pull_request:
+    branches: [main, beta, alpha, next]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     # node-build is now a composite action, so the caller owns the matrix and
     # runs-on (a composite action cannot declare either).
+    # Always run pull_request: it builds GitHub's synthetic merge commit,
+    # which the push run (branch head only) cannot cover.
     strategy:
       fail-fast: false
       matrix:
         node-version: ['22.x', '24.x']
     runs-on: ubuntu-latest
     steps:
-      - uses: jabrown93/ci/actions/node-build@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # node-build-v1.0.0
+      - uses: jabrown93/ci/actions/node-build@cf1e9c9255bf4a7f9e868387d5a023c009224964 # node-build-v1.0.3
         with:
           node-version: ${{ matrix.node-version }}

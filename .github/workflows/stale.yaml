@@ -13,4 +13,4 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: jabrown93/ci/actions/stale@63fdb1321ea7e94b330b23d87a9c9961ed6b86b5 # stale-v1.0.0
+      - uses: jabrown93/ci/actions/stale@ac1c2c4ff034c904f3c313c28ac5946406116659 # stale-v1.0.1

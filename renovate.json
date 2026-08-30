@@ -1,11 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>jabrown93/.github//renovate-config.json"],
+  "extends": [
+    "local>jabrown93/.github:renovate-config",
+    "local>jabrown93/.github:renovate-semantic-release"
+  ],
   "packageRules": [
     {
-      "matchPackageNames": ["conventional-changelog-conventionalcommits"],
-      "allowedVersions": "<10.0.0",
-      "description": "Pinned to v9: v10 builds writerOpts from @conventional-changelog/template JS functions that require conventional-changelog-writer v9, but @semantic-release/release-notes-generator pins conventional-changelog-writer ^8 and silently ignores them, producing heading-only CHANGELOG entries with no commit bodies. Unpin once release-notes-generator supports writer v9."
+      "description": "This package is published to npm, so its runtime dependencies stay as ranges. The shared preset sets rangeStrategy=pin, which is correct for an application but wrong for a library: Homebridge installs every plugin into one shared node_modules, and an exact pin stops npm from deduping a dependency another plugin also uses -- two plugins pinning different axios versions each get their own copy. It also leaves a consumer no way to take a transitive patch without forking. devDependencies are still pinned via :pinDevDependencies, which is what makes our own builds reproducible; nothing here relaxes that.",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "rangeStrategy": "replace"
     }
   ]
 }

@@ -1,0 +1,45 @@
+---
+# FOSSA licence and dependency scan.
+#
+# Restores the advisory licence check this repo lost when the homelab
+# Dependency-Track instance was decommissioned (jabrown93/homelab#3167). DT's
+# policy engine held that role; FOSSA takes it back.
+#
+# Push-only, and never `pull_request`. FOSSA_API_KEY is a write-scoped push
+# token that identifies and updates the FOSSA project, so it must not be
+# exposed to PR-controlled code -- and a fork PR would not receive it anyway.
+# The practical cost is that the scan is now post-merge rather than pre-merge;
+# it was always advisory, so there is no gate being lost.
+#
+# main only: this answers "what licences ship", and the prerelease branches
+# would only add transient revisions to the same FOSSA project.
+name: FOSSA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: fossa-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Licence scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # run-tests stays off: the scan is advisory, and `fossa test` blocks on
+      # FOSSA finishing its server-side analysis.
+      - name: FOSSA scan
+        uses: jabrown93/ci/actions/fossa@27a3e412cf691a8d106bfb429584e8f8aebb2406 # fossa-v1.0.0
+        with:
+          api-key: ${{ secrets.FOSSA_API_KEY }}

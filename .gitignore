@@ -126,3 +126,4 @@ web_modules/
 homebridge.log
 
 **/.worktrees
+.pi/
