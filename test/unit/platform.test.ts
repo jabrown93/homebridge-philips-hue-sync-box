@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { HueSyncBoxPlatform } from '../../src/platform.js';
 import type { API, Logging, PlatformConfig } from 'homebridge';
+import type { State } from '../../src/state.js';
 
 function makeApi(): API {
   return {
@@ -39,6 +40,10 @@ function makeConfig(): PlatformConfig {
 }
 
 type PollingPlatform = HueSyncBoxPlatform & { schedulePolling(): void };
+
+function makeState(): State {
+  return { execution: { mode: 'video' } } as unknown as State;
+}
 
 describe('HueSyncBoxPlatform polling', () => {
   beforeEach(() => {
@@ -86,5 +91,35 @@ describe('HueSyncBoxPlatform polling', () => {
 
     expect(getState).toHaveBeenCalledTimes(2);
     expect(update).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps polling after a failed tick instead of rejecting into the process', async () => {
+    const platform = new HueSyncBoxPlatform(makeLog(), makeConfig(), makeApi());
+    const getState = vi
+      .spyOn(platform.client, 'getState')
+      .mockRejectedValueOnce(new Error('ECONNREFUSED'))
+      .mockResolvedValue(makeState());
+    const update = vi.spyOn(platform, 'update').mockResolvedValue(undefined);
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    try {
+      (platform as PollingPlatform).schedulePolling();
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(getState).toHaveBeenCalledTimes(1);
+      expect(update).not.toHaveBeenCalled();
+      expect(platform.log.warn).toHaveBeenCalledWith(
+        'Poll failed, retrying on the next tick:',
+        'ECONNREFUSED'
+      );
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(getState).toHaveBeenCalledTimes(2);
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
   });
 });

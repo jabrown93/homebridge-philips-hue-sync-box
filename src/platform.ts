@@ -7,7 +7,7 @@ import {
 } from 'homebridge';
 
 import type { HueSyncBoxPlatformConfig } from './config.js';
-import { SyncBoxClient } from './lib/client.js';
+import { describeError, SyncBoxClient } from './lib/client.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { State } from './state.js';
 import { SyncBoxDevice } from './accessories/base.js';
@@ -97,14 +97,17 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
     this.api.on('didFinishLaunching', async () => {
       this.log.debug('Executed didFinishLaunching callback');
-      // A rejection here would otherwise escape this async event listener as
-      // an unhandled rejection, which Homebridge treats as fatal to the
-      // entire process rather than just this plugin - the exact failure mode
-      // this class of fix is meant to close off.
+      // A rejection escaping this async event listener is an unhandled
+      // rejection, which Homebridge treats as fatal to the entire process
+      // rather than just this plugin.
       try {
         await this.discoverDevices();
       } catch (e) {
-        this.log.error('Failed to discover devices on startup.', e);
+        this.log.error(
+          'Failed to discover devices on startup. Ensure the Sync Box is online and the ' +
+            'API token is correct, then restart the plugin:',
+          describeError(e)
+        );
       }
     });
 
@@ -152,7 +155,7 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   // Omits WiFi SSID and LAN IP addresses from debug output, since debug logs are
   // routinely pasted into public support requests/issues.
-  private redactStateForLogging(state: State): unknown {
+  private redactStateForLogging(state: State): State {
     return {
       ...state,
       device: {
@@ -174,12 +177,6 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
 
   async discoverDevices() {
     const state = await this.client.getState();
-    if (!state) {
-      throw new Error(
-        'Could not get state from sync box on initialization. This error is not recoverable, ' +
-          'ensure the sync box is online and the API token is correct and restart the plugin.'
-      );
-    }
     this.log.debug('Discovered state:', this.redactStateForLogging(state));
     const accessories = this.discoverAccessories(state);
     const uuids = accessories.map(accessory => {
@@ -258,6 +255,14 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
       try {
         const state = await this.client.getState();
         await this.update(state);
+      } catch (e) {
+        // setInterval never observes this callback's promise, so an escaping
+        // rejection would take down the whole Homebridge process. A failed
+        // poll is recoverable on the next tick.
+        this.log.warn(
+          'Poll failed, retrying on the next tick:',
+          describeError(e)
+        );
       } finally {
         polling = false;
       }
