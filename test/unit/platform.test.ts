@@ -45,6 +45,20 @@ function makeState(): State {
   return { execution: { mode: 'video' } } as unknown as State;
 }
 
+describe('HueSyncBoxPlatform config defaults', () => {
+  it.each(['', '   '])(
+    'falls back to loopback when apiServerHost is blank (%j)',
+    blank => {
+      const platform = new HueSyncBoxPlatform(
+        makeLog(),
+        { ...makeConfig(), apiServerHost: blank } as PlatformConfig,
+        makeApi()
+      );
+      expect(platform.config.apiServerHost).toBe('127.0.0.1');
+    }
+  );
+});
+
 describe('HueSyncBoxPlatform polling', () => {
   beforeEach(() => {
     vi.useFakeTimers();
