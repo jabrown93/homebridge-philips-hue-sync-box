@@ -17,6 +17,7 @@ import {
   validateExecution,
   validateHue,
 } from './lib/validation.js';
+import { describeError } from './lib/client.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -95,17 +96,34 @@ export class ApiServer {
             if (rejected) {
               return;
             }
-            switch (request.method) {
-              case 'GET':
-                await this.handleGet(response);
-                break;
-              case 'POST':
-                await this.handlePost(payload, response);
-                break;
-              default:
-                this.platform.log.debug('No action matched.');
-                response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
-                response.end();
+            // This listener's promise is never observed, so an escaping
+            // rejection would be an unhandled rejection rather than a
+            // response the caller can act on.
+            try {
+              switch (request.method) {
+                case 'GET':
+                  await this.handleGet(response);
+                  break;
+                case 'POST':
+                  await this.handlePost(payload, response);
+                  break;
+                default:
+                  this.platform.log.debug('No action matched.');
+                  response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
+                  response.end();
+              }
+            } catch (e) {
+              this.platform.log.error(
+                'Error while handling an API request.',
+                describeError(e)
+              );
+              if (!response.headersSent) {
+                this.sendError(
+                  response,
+                  HTTP_STATUS_INTERNAL_ERROR,
+                  'An error occurred while processing your request.'
+                );
+              }
             }
           });
       });
