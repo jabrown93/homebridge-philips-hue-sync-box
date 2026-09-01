@@ -32,6 +32,8 @@ export interface HueSyncBoxPlatformConfig extends PlatformConfig {
   uuidSeed?: string;
   apiServerPort: number;
   apiServerHost: string;
+  apiServerTlsCertPath?: string;
+  apiServerTlsKeyPath?: string;
   apiServerToken: string;
   apiServerEnabled: boolean;
 }

@@ -106,6 +106,22 @@ describe('ApiServer.start', () => {
     }
   }, 10000);
 
+  it('refuses to start when only one of the TLS cert/key paths is set', () => {
+    const platform = makePlatform({
+      apiServerPort: 40295,
+      apiServerToken: VALID_TOKEN,
+      apiServerTlsCertPath: '/tmp/cert.pem',
+    });
+    const apiServer = new ApiServer(platform);
+
+    apiServer.start();
+
+    expect(platform.log.error).toHaveBeenCalledWith(
+      expect.stringContaining('apiServerTlsCertPath and apiServerTlsKeyPath')
+    );
+    expect(getServer(apiServer)).toBeUndefined();
+  });
+
   it('binds to the configured host so the token is not exposed on every interface', async () => {
     const platform = makePlatform({
       apiServerPort: 40297,
