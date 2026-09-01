@@ -40,6 +40,10 @@ export const DEFAULT_ON_MODE = MODE_VIDEO;
 export const DEFAULT_OFF_MODE = PASSTHROUGH;
 export const DEFAULT_UPDATE_INTERVAL_SECONDS = 5;
 export const DEFAULT_API_SERVER_PORT = 40220;
+// Loopback by default: the API authenticates with a long-lived bearer token
+// over plaintext HTTP, so binding every interface would expose that token to
+// anyone on the LAN. Widening it is an explicit opt-in.
+export const DEFAULT_API_SERVER_HOST = '127.0.0.1';
 export const DEFAULT_BASE_ACCESSORY = LIGHTBULB;
 export const DEFAULT_TV_ACCESSORY_TYPE = TV_TYPE_TV;
 

@@ -172,6 +172,9 @@ Each Sync Box needs its own plugin instance, added as a separate entry under `pl
 | `uuidSeed`                               | Unique identifier for this instance when running [multiple Sync Boxes](#running-multiple-sync-boxes). Leave empty for a single Sync Box.                                                                                            | string  |               | No       |                                               |
 | `apiServerEnabled`                       | Enables the [HTTP API](#http-api).                                                                                                                                                                                                  | boolean | `false`       | No       |                                               |
 | `apiServerPort`                          | Port the HTTP API listens on. Change this if the port is already in use.                                                                                                                                                            | integer | `40220`       | No       |                                               |
+| `apiServerHost`                          | Address the HTTP API binds to. Defaults to localhost because the API sends its token over plaintext HTTP. Set to `0.0.0.0` to accept requests from other hosts, ideally behind a TLS reverse proxy.                                 | string  | `127.0.0.1`   | No       |                                               |
+| `apiServerTlsCertPath`                   | Path to a PEM certificate. Set together with `apiServerTlsKeyPath` to serve the API over HTTPS instead of plaintext HTTP. Set both or neither.                                                                                      | string  |               | No       |                                               |
+| `apiServerTlsKeyPath`                    | Path to the PEM private key matching `apiServerTlsCertPath`. Set both or neither.                                                                                                                                                   | string  |               | No       |                                               |
 | `apiServerToken`                         | Token required in the `Authorization` header of every API request. Must be at least 32 characters long. Generate one with e.g. `openssl rand -hex 32` &mdash; do not reuse the example value below. Required if the API is enabled. | string  |               | No       |                                               |
 
 <details>
@@ -209,6 +212,7 @@ Each Sync Box needs its own plugin instance, added as a separate entry under `pl
       "uuidSeed": "livingroom",
       "apiServerEnabled": false,
       "apiServerPort": 40220,
+      "apiServerHost": "127.0.0.1",
       "apiServerToken": "<A-LONG-RANDOM-SECRET-AT-LEAST-32-CHARS>"
     }
   ]
@@ -232,8 +236,10 @@ Each TV accessory also supports the iOS remote widget:
 When `apiServerEnabled` is `true`, the plugin exposes a small local HTTP API for automating the Sync Box outside of HomeKit — handy for HomeKit Shortcuts, which can call arbitrary HTTP endpoints from an automation.
 
 ```
-http://<YOUR-HOST-IP-ADDRESS>:<apiServerPort>
+http://<apiServerHost>:<apiServerPort>
 ```
+
+The API binds to `127.0.0.1` by default, so it is reachable only from the Homebridge host. Because the token is sent over plaintext HTTP, set `apiServerHost` to `0.0.0.0` only when you need remote access. For remote access, serve HTTPS directly by setting `apiServerTlsCertPath` and `apiServerTlsKeyPath` to a PEM certificate and key, or put a TLS reverse proxy in front of it.
 
 Every request must include the configured token in the `Authorization` header:
 
