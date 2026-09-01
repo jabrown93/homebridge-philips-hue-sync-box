@@ -17,6 +17,7 @@ import {
   validateExecution,
   validateHue,
 } from './lib/validation.js';
+import { describeError } from './lib/client.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -27,7 +28,8 @@ export class ApiServer {
   }
 
   public start() {
-    const { apiServerPort, apiServerToken } = this.platform.config;
+    const { apiServerPort, apiServerToken, apiServerHost } =
+      this.platform.config;
     if (!apiServerPort) {
       this.platform.log.error(
         'API server cannot start due to missing configuration.'
@@ -95,17 +97,34 @@ export class ApiServer {
             if (rejected) {
               return;
             }
-            switch (request.method) {
-              case 'GET':
-                await this.handleGet(response);
-                break;
-              case 'POST':
-                await this.handlePost(payload, response);
-                break;
-              default:
-                this.platform.log.debug('No action matched.');
-                response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
-                response.end();
+            // This listener's promise is never observed, so an escaping
+            // rejection would be an unhandled rejection rather than a
+            // response the caller can act on.
+            try {
+              switch (request.method) {
+                case 'GET':
+                  await this.handleGet(response);
+                  break;
+                case 'POST':
+                  await this.handlePost(payload, response);
+                  break;
+                default:
+                  this.platform.log.debug('No action matched.');
+                  response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
+                  response.end();
+              }
+            } catch (e) {
+              this.platform.log.error(
+                'Error while handling an API request.',
+                describeError(e)
+              );
+              if (!response.headersSent) {
+                this.sendError(
+                  response,
+                  HTTP_STATUS_INTERNAL_ERROR,
+                  'An error occurred while processing your request.'
+                );
+              }
             }
           });
       });
@@ -122,7 +141,7 @@ export class ApiServer {
       this.server.on('listening', () => {
         this.platform.log.info('API server started.');
       });
-      this.server.listen(apiServerPort, '0.0.0.0');
+      this.server.listen(apiServerPort, apiServerHost);
       this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
       this.platform.log.error('API could not be started:', e);

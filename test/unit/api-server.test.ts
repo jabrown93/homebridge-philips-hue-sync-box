@@ -18,7 +18,26 @@ function makePlatform(config: Record<string, unknown>): HueSyncBoxPlatform {
 }
 
 function getServer(apiServer: ApiServer) {
-  return (apiServer as unknown as { server?: { close: () => void } }).server;
+  return (
+    apiServer as unknown as {
+      server?: import('http').Server;
+    }
+  ).server;
+}
+
+function apiServerInternals(apiServer: ApiServer) {
+  return apiServer as unknown as Record<string, unknown>;
+}
+
+function makeResponse() {
+  return {
+    statusCode: 200,
+    body: '',
+    setHeader: vi.fn(),
+    end(body?: string) {
+      this.body = body ?? '';
+    },
+  };
 }
 
 describe('ApiServer.start', () => {
@@ -86,4 +105,47 @@ describe('ApiServer.start', () => {
       getServer(serverB)?.close();
     }
   }, 10000);
+
+  it('binds to the configured host so the token is not exposed on every interface', async () => {
+    const platform = makePlatform({
+      apiServerPort: 40297,
+      apiServerHost: '127.0.0.1',
+      apiServerToken: VALID_TOKEN,
+    });
+    const apiServer = new ApiServer(platform);
+
+    try {
+      apiServer.start();
+      const server = getServer(apiServer);
+      await new Promise(resolve => server?.on('listening', resolve));
+
+      expect(server?.address()).toMatchObject({ address: '127.0.0.1' });
+    } finally {
+      getServer(apiServer)?.close();
+    }
+  }, 10000);
+});
+
+describe('ApiServer request handling', () => {
+  it('answers with an error status when the Sync Box read fails', async () => {
+    const platform = makePlatform({
+      apiServerPort: 40296,
+      apiServerToken: VALID_TOKEN,
+    });
+    platform.client.getState = vi
+      .fn()
+      .mockRejectedValue(new Error('ECONNREFUSED'));
+    const response = makeResponse();
+
+    await (
+      apiServerInternals(new ApiServer(platform)) as {
+        handleGet(response: unknown): Promise<void>;
+      }
+    ).handleGet(response);
+
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toEqual({
+      error: 'An error occurred while processing your request.',
+    });
+  });
 });

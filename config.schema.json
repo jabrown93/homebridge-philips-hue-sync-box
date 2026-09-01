@@ -295,6 +295,13 @@
         "required": false,
         "description": "The port that the API (if enabled) runs on"
       },
+      "apiServerHost": {
+        "title": "API Bind Address",
+        "type": "string",
+        "default": "127.0.0.1",
+        "required": false,
+        "description": "The address the API (if enabled) binds to. The API sends its token over plaintext HTTP, so it listens on localhost only by default. Use 0.0.0.0 to accept requests from other hosts, ideally behind a TLS reverse proxy."
+      },
       "apiServerToken": {
         "title": "API Token",
         "type": "string",

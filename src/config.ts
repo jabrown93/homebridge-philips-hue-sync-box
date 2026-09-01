@@ -31,6 +31,7 @@ export interface HueSyncBoxPlatformConfig extends PlatformConfig {
   treatPassthroughAsOffForTv: boolean;
   uuidSeed?: string;
   apiServerPort: number;
+  apiServerHost: string;
   apiServerToken: string;
   apiServerEnabled: boolean;
 }
