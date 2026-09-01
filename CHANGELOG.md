@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.2...v3.2.0-beta.1) (2026-09-01)
+
+### Features
+
+* surface Sync Box failures instead of reporting success ([#473](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/473)) ([440a62f](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/440a62fc922cc22eb7839a69c871a4bb1661421c))
+
 ## [3.1.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.1...v3.1.2) (2026-08-28)
 
 ### Bug Fixes
