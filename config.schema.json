@@ -300,7 +300,7 @@
         "type": "string",
         "default": "127.0.0.1",
         "required": false,
-        "description": "The address the API (if enabled) binds to. The API sends its token over plaintext HTTP, so it listens on localhost only by default. Use 0.0.0.0 to accept requests from other hosts, ideally behind a TLS reverse proxy."
+        "description": "The address the API (if enabled) binds to. When TLS is not configured, the API token is sent over plaintext HTTP, so it listens on localhost only by default. Use 0.0.0.0 to accept requests from other hosts; for remote access, prefer enabling TLS via apiServerTlsCertPath/apiServerTlsKeyPath or using a TLS reverse proxy."
       },
       "apiServerTlsCertPath": {
         "title": "API TLS Certificate Path",
