@@ -7,7 +7,7 @@ on:
 
 jobs:
   sbom:
-    uses: jabrown93/ci/.github/workflows/sbom-release.yml@961ef8052b3fe4906b0245c190639af19ed2073b # workflows-v2.1.0
+    uses: jabrown93/ci/.github/workflows/sbom-release.yml@84bcefb757c42d0d6fbe5fd96800e872734d2942 # workflows-v2.1.1
     permissions:
       contents: write
       id-token: write
