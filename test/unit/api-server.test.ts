@@ -1,6 +1,18 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, afterAll } from 'vitest';
+import http from 'node:http';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { ApiServer } from '../../src/api-server.js';
 import type { HueSyncBoxPlatform } from '../../src/platform.js';
+
+// A real TLS handshake would need a checked-in private key, which secret
+// scanners flag. Delegating to a plain http server keeps the listen/log path
+// real while letting the test assert on what was handed to https.
+const httpsCreateServer = vi.hoisted(() => vi.fn());
+vi.mock('node:https', () => ({
+  default: { createServer: httpsCreateServer },
+}));
 
 const VALID_TOKEN = 'a'.repeat(32);
 
@@ -105,6 +117,108 @@ describe('ApiServer.start', () => {
       getServer(serverB)?.close();
     }
   }, 10000);
+
+  it('refuses to start when only one of the TLS cert/key paths is set', () => {
+    const platform = makePlatform({
+      apiServerPort: 40295,
+      apiServerToken: VALID_TOKEN,
+      apiServerTlsCertPath: '/tmp/cert.pem',
+    });
+    const apiServer = new ApiServer(platform);
+
+    apiServer.start();
+
+    expect(platform.log.error).toHaveBeenCalledWith(
+      expect.stringContaining('apiServerTlsCertPath and apiServerTlsKeyPath')
+    );
+    expect(getServer(apiServer)).toBeUndefined();
+  });
+
+  it('binds to the configured host so the token is not exposed on every interface', async () => {
+    const platform = makePlatform({
+      apiServerPort: 40297,
+      apiServerHost: '127.0.0.1',
+      apiServerToken: VALID_TOKEN,
+    });
+    const apiServer = new ApiServer(platform);
+
+    try {
+      apiServer.start();
+      const server = getServer(apiServer);
+      await new Promise(resolve => server?.on('listening', resolve));
+
+      expect(server?.address()).toMatchObject({ address: '127.0.0.1' });
+    } finally {
+      getServer(apiServer)?.close();
+    }
+  }, 10000);
+
+  describe('with TLS configured', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hue-sync-box-tls-'));
+    const certPath = join(dir, 'cert.pem');
+    const keyPath = join(dir, 'key.pem');
+    writeFileSync(certPath, 'CERT');
+    writeFileSync(keyPath, 'KEY');
+
+    afterEach(() => {
+      httpsCreateServer.mockReset();
+    });
+
+    afterAll(() => {
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    it('serves HTTPS from the configured cert/key and reports it on startup', async () => {
+      httpsCreateServer.mockImplementation(
+        (_options: unknown, handler: http.RequestListener) =>
+          http.createServer(handler)
+      );
+      const platform = makePlatform({
+        apiServerPort: 40294,
+        apiServerHost: '127.0.0.1',
+        apiServerToken: VALID_TOKEN,
+        apiServerTlsCertPath: certPath,
+        apiServerTlsKeyPath: keyPath,
+      });
+      const apiServer = new ApiServer(platform);
+
+      try {
+        apiServer.start();
+        const server = getServer(apiServer);
+        await new Promise(resolve => server?.on('listening', resolve));
+
+        expect(httpsCreateServer).toHaveBeenCalledWith(
+          { cert: Buffer.from('CERT'), key: Buffer.from('KEY') },
+          expect.any(Function)
+        );
+        expect(platform.log.info).toHaveBeenCalledWith(
+          'API server started (https).'
+        );
+        expect(platform.log.error).not.toHaveBeenCalled();
+      } finally {
+        getServer(apiServer)?.close();
+      }
+    }, 10000);
+
+    it('refuses to start when the cert/key files cannot be read', () => {
+      const platform = makePlatform({
+        apiServerPort: 40293,
+        apiServerToken: VALID_TOKEN,
+        apiServerTlsCertPath: join(dir, 'missing-cert.pem'),
+        apiServerTlsKeyPath: keyPath,
+      });
+      const apiServer = new ApiServer(platform);
+
+      apiServer.start();
+
+      expect(httpsCreateServer).not.toHaveBeenCalled();
+      expect(platform.log.error).toHaveBeenCalledWith(
+        expect.stringContaining('failed to read TLS cert/key'),
+        expect.anything()
+      );
+      expect(getServer(apiServer)).toBeUndefined();
+    });
+  });
 });
 
 describe('ApiServer request handling', () => {

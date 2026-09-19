@@ -24,6 +24,7 @@ import {
   DEFAULT_ON_MODE,
   DEFAULT_OFF_MODE,
   DEFAULT_UPDATE_INTERVAL_SECONDS,
+  DEFAULT_API_SERVER_HOST,
   DEFAULT_API_SERVER_PORT,
   DEFAULT_BASE_ACCESSORY,
   DEFAULT_TV_ACCESSORY_TYPE,
@@ -123,6 +124,10 @@ export class HueSyncBoxPlatform implements DynamicPlatformPlugin {
     this.config.apiServerEnabled = this.config.apiServerEnabled ?? false;
     this.config.apiServerPort =
       this.config.apiServerPort ?? DEFAULT_API_SERVER_PORT;
+    // Blank/whitespace must fall back too: server.listen(port, '') binds every
+    // interface, silently exposing the plaintext token API.
+    this.config.apiServerHost =
+      this.config.apiServerHost?.trim() || DEFAULT_API_SERVER_HOST;
     this.config.defaultOnMode = this.config.defaultOnMode ?? DEFAULT_ON_MODE;
     this.config.defaultOffMode = this.config.defaultOffMode ?? DEFAULT_OFF_MODE;
     this.config.baseAccessory =
