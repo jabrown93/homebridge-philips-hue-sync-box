@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.2.0-beta.1...v4.0.0-beta.1) (2026-09-19)
+
+### ⚠ BREAKING CHANGES
+
+* the HTTP API now listens on 127.0.0.1 by default. Set
+apiServerHost to 0.0.0.0 to reach it from another host, ideally with
+apiServerTlsCertPath/apiServerTlsKeyPath or a TLS reverse proxy.
+
+* Potential fix for pull request finding
+
+Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
+
+* test: cover the HTTPS success path; align docs with direct TLS
+
+Copilot review asked for positive-path TLS coverage and for the README to
+stop implying a reverse proxy is the only HTTPS option. The test mocks
+node:https rather than checking in a PEM key that secret scanners would flag.
+
+### Features
+
+* bind the HTTP API to loopback and support HTTPS ([#474](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/474)) ([2e79065](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/2e790655311ddd608db58d78c717268c98b643e4))
+
 ## [3.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.2...v3.2.0-beta.1) (2026-09-01)
 
 ### Features
