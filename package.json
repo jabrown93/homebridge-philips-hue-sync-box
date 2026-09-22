@@ -68,7 +68,7 @@
     "@commitlint/cli": "21.2.2",
     "@jabrown93/dev-config": "1.2.3",
     "@types/async-lock": "1.4.2",
-    "@types/node": "24.13.5",
+    "@types/node": "24.13.6",
     "@vitest/coverage-v8": "5.0.1",
     "cross-env": "10.1.0",
     "eslint": "10.11.0",
