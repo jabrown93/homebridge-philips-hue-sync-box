@@ -10,6 +10,12 @@
       "matchManagers": ["npm"],
       "matchDepTypes": ["dependencies"],
       "rangeStrategy": "replace"
+    },
+    {
+      "description": "Hold TypeScript below 7: typescript-eslint 8.x peers typescript <6.1.0 and refuses to run on TS 7. Lift once https://github.com/typescript-eslint/typescript-eslint/issues/10940 ships.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
     }
   ]
 }
