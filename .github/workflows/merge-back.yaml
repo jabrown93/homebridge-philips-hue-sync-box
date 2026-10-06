@@ -22,7 +22,7 @@ jobs:
     # release App, which is the only identity that bypasses beta's rulesets.
     permissions: {}
     steps:
-      - uses: jabrown93/ci/actions/merge-back@fb273aa5f814f837727167724c752a4ff1254172 # merge-back-v1.0.0
+      - uses: jabrown93/ci/actions/merge-back@be05dac97d4c0823ebba45b94ff756e99a2b5d61 # merge-back-v1.1.0
         with:
           app-id: ${{ secrets.APP_ID }}
           app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
