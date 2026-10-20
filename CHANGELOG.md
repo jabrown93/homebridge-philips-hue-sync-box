@@ -31,6 +31,8 @@ node:https rather than checking in a PEM key that secret scanners would flag.
 
 * surface Sync Box failures instead of reporting success ([#473](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/473)) ([440a62f](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/440a62fc922cc22eb7839a69c871a4bb1661421c))
 
+## [3.1.3](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.2...v3.1.3) (2026-10-19)
+
 ## [3.1.2](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.1...v3.1.2) (2026-08-28)
 
 ### Bug Fixes
