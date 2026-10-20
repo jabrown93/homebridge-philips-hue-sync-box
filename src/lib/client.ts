@@ -39,7 +39,7 @@ class SyncBoxResponseError extends Error {}
 // Homebridge prints a full stack when handed an Error. These failures all
 // unwind through node-fetch internals, so the stack costs a screen of log
 // and says nothing the message doesn't.
-function describeError(e: unknown): string {
+export function describeError(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
@@ -65,33 +65,22 @@ export class SyncBoxClient {
     return this.lock.acquire(this.LOCK_KEY, task, this.LOCK_OPTIONS);
   }
 
-  public async getState(): Promise<State | null> {
-    try {
-      return await this.withLock(() => this.sendRequest<State>('GET', ''));
-    } catch (e) {
-      // Polling retries on its own schedule, so a failed read is recoverable
-      // on the next tick rather than an error the user has to act on.
-      this.log.warn('Failed to get state from Sync Box:', describeError(e));
-      return null;
-    }
+  // These reject on failure. Callers decide what a failure means: polling
+  // logs and waits for the next tick, HomeKit surfaces it to the Home app,
+  // and the HTTP API answers with an error status. Resolving anyway would
+  // report a command as applied that the Sync Box never received.
+  public getState(): Promise<State> {
+    return this.withLock(() => this.sendRequest<State>('GET', ''));
   }
 
   public async updateExecution(execution: Partial<Execution>): Promise<void> {
-    try {
-      await this.withLock(() =>
-        this.sendRequest<void>('PUT', 'execution', execution)
-      );
-    } catch (e) {
-      this.log.error('Error updating execution:', describeError(e));
-    }
+    await this.withLock(() =>
+      this.sendRequest<void>('PUT', 'execution', execution)
+    );
   }
 
   public async updateHue(hue: Partial<Hue>): Promise<void> {
-    try {
-      await this.withLock(() => this.sendRequest<void>('PUT', 'hue', hue));
-    } catch (e) {
-      this.log.error('Error updating hue:', describeError(e));
-    }
+    await this.withLock(() => this.sendRequest<void>('PUT', 'hue', hue));
   }
 
   /**

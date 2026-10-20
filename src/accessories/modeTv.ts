@@ -20,7 +20,7 @@ export class ModeTvDevice extends BaseTvDevice {
       .onSet((value: CharacteristicValue) => {
         const mode = this.numberToMode.get(value as number);
         this.platform.log.debug('Switch mode to ' + mode);
-        this.updateExecution({
+        return this.updateExecution({
           mode,
         });
       });

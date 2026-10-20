@@ -1,4 +1,6 @@
 import http from 'http';
+import https from 'node:https';
+import { readFileSync } from 'node:fs';
 import crypto from 'node:crypto';
 import { HueSyncBoxPlatform } from './platform.js';
 import {
@@ -17,6 +19,7 @@ import {
   validateExecution,
   validateHue,
 } from './lib/validation.js';
+import { describeError } from './lib/client.js';
 
 export class ApiServer {
   private readonly platform: HueSyncBoxPlatform;
@@ -27,7 +30,13 @@ export class ApiServer {
   }
 
   public start() {
-    const { apiServerPort, apiServerToken } = this.platform.config;
+    const {
+      apiServerPort,
+      apiServerToken,
+      apiServerHost,
+      apiServerTlsCertPath,
+      apiServerTlsKeyPath,
+    } = this.platform.config;
     if (!apiServerPort) {
       this.platform.log.error(
         'API server cannot start due to missing configuration.'
@@ -43,9 +52,35 @@ export class ApiServer {
       );
       return;
     }
+    // Fail closed: a half-configured cert must not silently serve the token
+    // over plaintext.
+    if (Boolean(apiServerTlsCertPath) !== Boolean(apiServerTlsKeyPath)) {
+      this.platform.log.error(
+        'API server cannot start: set both apiServerTlsCertPath and apiServerTlsKeyPath, or neither.'
+      );
+      return;
+    }
+    let tls: https.ServerOptions | undefined;
+    if (apiServerTlsCertPath && apiServerTlsKeyPath) {
+      try {
+        tls = {
+          cert: readFileSync(apiServerTlsCertPath),
+          key: readFileSync(apiServerTlsKeyPath),
+        };
+      } catch (e) {
+        this.platform.log.error(
+          'API server cannot start: failed to read TLS cert/key.',
+          describeError(e)
+        );
+        return;
+      }
+    }
 
     try {
-      this.server = http.createServer((request, response) => {
+      const handler = (
+        request: http.IncomingMessage,
+        response: http.ServerResponse
+      ) => {
         request.on('error', e =>
           this.platform.log.error('API - Error received.', e)
         );
@@ -95,20 +130,40 @@ export class ApiServer {
             if (rejected) {
               return;
             }
-            switch (request.method) {
-              case 'GET':
-                await this.handleGet(response);
-                break;
-              case 'POST':
-                await this.handlePost(payload, response);
-                break;
-              default:
-                this.platform.log.debug('No action matched.');
-                response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
-                response.end();
+            // This listener's promise is never observed, so an escaping
+            // rejection would be an unhandled rejection rather than a
+            // response the caller can act on.
+            try {
+              switch (request.method) {
+                case 'GET':
+                  await this.handleGet(response);
+                  break;
+                case 'POST':
+                  await this.handlePost(payload, response);
+                  break;
+                default:
+                  this.platform.log.debug('No action matched.');
+                  response.statusCode = HTTP_STATUS_METHOD_NOT_ALLOWED;
+                  response.end();
+              }
+            } catch (e) {
+              this.platform.log.error(
+                'Error while handling an API request.',
+                describeError(e)
+              );
+              if (!response.headersSent) {
+                this.sendError(
+                  response,
+                  HTTP_STATUS_INTERNAL_ERROR,
+                  'An error occurred while processing your request.'
+                );
+              }
             }
           });
-      });
+      };
+      this.server = tls
+        ? https.createServer(tls, handler)
+        : http.createServer(handler);
       // Without this listener, an async server error (e.g. EADDRINUSE from a
       // second Sync Box instance defaulting to the same port) is rethrown by
       // Node as an uncaught exception, which Homebridge treats as fatal to
@@ -120,9 +175,11 @@ export class ApiServer {
       // success here (rather than from 'listening') would claim the server
       // is up even when it fails to bind, e.g. EADDRINUSE.
       this.server.on('listening', () => {
-        this.platform.log.info('API server started.');
+        this.platform.log.info(
+          `API server started (${tls ? 'https' : 'http'}).`
+        );
       });
-      this.server.listen(apiServerPort, '0.0.0.0');
+      this.server.listen(apiServerPort, apiServerHost);
       this.server.requestTimeout = API_REQUEST_TIMEOUT_MS;
     } catch (e) {
       this.platform.log.error('API could not be started:', e);

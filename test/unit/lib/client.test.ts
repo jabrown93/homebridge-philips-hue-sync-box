@@ -210,16 +210,13 @@ describe('SyncBoxClient', () => {
       const log = makeLog();
       const client = new SyncBoxClient(log, makeConfig());
 
-      const resultPromise = client.getState();
-      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS * 4);
-      const result = await resultPromise;
-
-      expect(result).toBeNull();
-      expect(mockFetch.mock.calls.length).toBeLessThan(4);
-      expect(log.warn).toHaveBeenCalledWith(
-        'Failed to get state from Sync Box:',
+      const rejects = expect(client.getState()).rejects.toThrow(
         'The operation was aborted.'
       );
+      await vi.advanceTimersByTimeAsync(HTTP_RETRY_BASE_DELAY_MS * 4);
+      await rejects;
+
+      expect(mockFetch.mock.calls.length).toBeLessThan(4);
     } finally {
       vi.useRealTimers();
     }
@@ -255,12 +252,11 @@ describe('SyncBoxClient', () => {
       const log = makeLog();
       const client = new SyncBoxClient(log, makeConfig());
 
-      const resultPromise = client.getState();
+      const rejects = expect(client.getState()).rejects.toThrow('ECONNREFUSED');
       // Cumulative backoff for HTTP_RETRY_COUNT retries: 1000+2000+4000=7000ms.
       await vi.advanceTimersByTimeAsync(7000);
-      const result = await resultPromise;
+      await rejects;
 
-      expect(result).toBeNull();
       expect(mockFetch).toHaveBeenCalledTimes(4);
     } finally {
       vi.useRealTimers();
@@ -274,14 +270,11 @@ describe('SyncBoxClient', () => {
     const log = makeLog();
     const client = new SyncBoxClient(log, makeConfig());
 
-    const result = await client.getState();
-
-    expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(log.warn).toHaveBeenCalledWith(
-      'Failed to get state from Sync Box:',
+    await expect(client.getState()).rejects.toThrow(
       'Error: 500 - Internal Server Error'
     );
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('rejects a malformed state response without retrying it', async () => {
@@ -289,14 +282,11 @@ describe('SyncBoxClient', () => {
     const log = makeLog();
     const client = new SyncBoxClient(log, makeConfig());
 
-    const result = await client.getState();
-
-    expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(log.warn).toHaveBeenCalledWith(
-      'Failed to get state from Sync Box:',
+    await expect(client.getState()).rejects.toThrow(
       'Sync Box returned a malformed state response.'
     );
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('returns the parsed state on success', async () => {

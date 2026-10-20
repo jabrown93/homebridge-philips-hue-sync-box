@@ -22,7 +22,7 @@ export class IntensityTvDevice extends BaseTvDevice {
         body[mode] = {
           intensity,
         };
-        this.updateExecution(body);
+        return this.updateExecution(body);
       });
   }
 
