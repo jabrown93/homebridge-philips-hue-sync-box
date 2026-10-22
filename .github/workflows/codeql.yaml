@@ -22,4 +22,4 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: jabrown93/ci/actions/codeql@314102bde560c2db0269702a8ccdcd3085f2f5b0 # codeql-v1.0.14
+      - uses: jabrown93/ci/actions/codeql@6075543e05fff2f0b270cb7aaf9823d1c498a122 # codeql-v1.0.15
