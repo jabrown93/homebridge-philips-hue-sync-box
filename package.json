@@ -70,7 +70,7 @@
     "@types/async-lock": "1.4.2",
     "@types/node": "26.6.6",
     "@vitest/coverage-v8": "5.0.5",
-    "eslint": "10.13.0",
+    "eslint": "10.14.0",
     "homebridge": "2.4.0",
     "homebridge-config-ui-x": "5.29.0",
     "husky": "9.1.7",
