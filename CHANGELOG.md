@@ -24,12 +24,9 @@ node:https rather than checking in a PEM key that secret scanners would flag.
 ### Features
 
 * bind the HTTP API to loopback and support HTTPS ([#474](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/474)) ([2e79065](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/2e790655311ddd608db58d78c717268c98b643e4))
-
-## [3.2.0-beta.1](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.2...v3.2.0-beta.1) (2026-09-01)
-
-### Features
-
 * surface Sync Box failures instead of reporting success ([#473](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/473)) ([440a62f](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/440a62fc922cc22eb7839a69c871a4bb1661421c))
+
+## [3.1.4](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.3...v3.1.4) (2026-10-26)
 
 ## [3.1.3](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.2...v3.1.3) (2026-10-19)
 
