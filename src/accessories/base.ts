@@ -15,6 +15,7 @@ import {
   MODE_VIDEO,
 } from '../lib/constants.js';
 import { convertHomekitToSyncBox } from '../lib/brightness.js';
+import { describeError } from '../lib/client.js';
 
 export abstract class SyncBoxDevice {
   protected readonly platform: HueSyncBoxPlatform;
@@ -122,15 +123,21 @@ export abstract class SyncBoxDevice {
     return this.state.execution.lastSyncMode || MODE_VIDEO;
   }
 
-  protected updateExecution(execution: Partial<Execution>) {
-    this.platform.client.updateExecution(execution).catch(e => {
-      this.platform.log.error('Failed to update execution', e);
+  // Rejects so the onSet handler that called it rejects too: HomeKit then
+  // shows the command as failed instead of reporting a state the Sync Box
+  // never accepted.
+  protected updateExecution(execution: Partial<Execution>): Promise<void> {
+    return this.platform.client.updateExecution(execution).catch(e => {
+      this.platform.log.error('Failed to update execution:', describeError(e));
+      throw new this.platform.api.hap.HapStatusError(
+        HAPStatus.SERVICE_COMMUNICATION_FAILURE
+      );
     });
   }
 
   protected setBrightness(value: CharacteristicValue) {
     this.platform.log.debug('Switch brightness to ' + value);
-    this.updateExecution({
+    return this.updateExecution({
       brightness: convertHomekitToSyncBox(value as number),
     });
   }

@@ -1,4 +1,5 @@
-import type { PlatformAccessory } from 'homebridge';
+import { HAPStatus, type PlatformAccessory } from 'homebridge';
+import { describeError } from '../lib/client.js';
 import type { HueSyncBoxPlatform } from '../platform.js';
 import type { State } from '../state.js';
 import { BaseTvDevice } from './baseTv.js';
@@ -24,14 +25,17 @@ export class EntertainmentTvDevice extends BaseTvDevice {
         }
         // Saves the changes
         this.platform.log.debug('Switch entertainment area to ' + group.name);
-        this.platform.client
+        return this.platform.client
           .updateHue({
             groupId: groupId,
           })
           .catch(e => {
             this.platform.log.error(
               'Failed to switch entertainment area to ' + group.name,
-              e
+              describeError(e)
+            );
+            throw new this.platform.api.hap.HapStatusError(
+              HAPStatus.SERVICE_COMMUNICATION_FAILURE
             );
           });
       });

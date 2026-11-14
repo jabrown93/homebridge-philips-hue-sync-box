@@ -156,71 +156,60 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     switch (value) {
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_UP:
         this.platform.log.debug('Increase brightness by 25%');
-        this.updateExecution({
+        return this.updateExecution({
           brightness: Math.min(
             BRIGHTNESS_MAX_SYNCBOX,
             this.state.execution.brightness + BRIGHTNESS_STEP_SYNCBOX
           ),
         });
-        break;
 
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_DOWN:
         this.platform.log.debug('Decrease brightness by 25%');
-        this.updateExecution({
+        return this.updateExecution({
           brightness: Math.max(
             BRIGHTNESS_MIN,
             this.state.execution.brightness - BRIGHTNESS_STEP_SYNCBOX
           ),
         });
-        break;
 
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_LEFT:
-        this.stepIntensity(-1);
-        break;
+        return this.stepIntensity(-1);
 
       case this.platform.api.hap.Characteristic.RemoteKey.ARROW_RIGHT:
-        this.stepIntensity(1);
-        break;
+        return this.stepIntensity(1);
 
       case this.platform.api.hap.Characteristic.RemoteKey.SELECT: {
         this.platform.log.debug('Toggle mode');
         const currentMode = this.state.execution.mode;
         const nextMode = ((this.modeToNumber.get(currentMode) ?? 4) % 4) + 1;
-        this.updateExecution({
+        return this.updateExecution({
           mode: this.numberToMode.get(nextMode),
         });
-        break;
       }
 
       case this.platform.api.hap.Characteristic.RemoteKey.PLAY_PAUSE:
         this.platform.log.debug('Toggle switch state');
-        if (this.isSyncActive()) {
-          this.updateExecution({
-            mode: this.platform.config.defaultOffMode,
-          });
-        } else {
-          this.updateExecution({
-            mode: this.getOnMode(),
-          });
-        }
-        break;
+        return this.updateExecution({
+          mode: this.isSyncActive()
+            ? this.platform.config.defaultOffMode
+            : this.getOnMode(),
+        });
 
       case this.platform.api.hap.Characteristic.RemoteKey.INFORMATION: {
         this.platform.log.debug('Toggle hdmi source');
         const hdmiSource = this.state.execution.hdmiSource;
         const currentSourcePosition = parseInt(hdmiSource.replace('input', ''));
         const nextSourcePosition = (currentSourcePosition % 4) + 1;
-        this.updateExecution({
+        return this.updateExecution({
           hdmiSource: 'input' + nextSourcePosition,
         });
-        break;
       }
     }
   }
 
   // An unknown current intensity falls back so the step still lands on a
   // valid value: stepping down assumes 'intense' (4), stepping up 'subtle' (1).
-  private stepIntensity(direction: -1 | 1): void {
+  private stepIntensity(direction: -1 | 1): Promise<void> | undefined {
     // Gets the current mode or the last sync mode to set the intensity
     const mode = this.getMode();
 
@@ -239,7 +228,7 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
     if (!nextIntensity) {
       return;
     }
-    this.updateExecution({ [mode]: { intensity: nextIntensity } });
+    return this.updateExecution({ [mode]: { intensity: nextIntensity } });
   }
 
   protected updateSources(services: Service[]) {
