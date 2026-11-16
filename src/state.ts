@@ -67,7 +67,7 @@ export interface Execution {
   mode: string;
   syncActive: boolean;
   hdmiActive: boolean;
-  hdmiSource: string;
+  hdmiSource: HdmiSource;
   hueTarget: string;
   brightness: number;
   intensity: string;

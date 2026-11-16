@@ -8,14 +8,14 @@ import {
 import type { HueSyncBoxPlatform } from '../platform.js';
 import type { State } from '../state.js';
 import {
+  BRIGHTNESS_MAX_SYNCBOX,
+  BRIGHTNESS_MIN,
+  BRIGHTNESS_STEP_SYNCBOX,
+  MODE_GAME,
+  MODE_MUSIC,
+  MODE_VIDEO,
   PASSTHROUGH,
   POWER_SAVE,
-  MODE_VIDEO,
-  MODE_MUSIC,
-  MODE_GAME,
-  BRIGHTNESS_MAX_SYNCBOX,
-  BRIGHTNESS_STEP_SYNCBOX,
-  BRIGHTNESS_MIN,
 } from '../lib/constants.js';
 import { convertSyncBoxToHomekit } from '../lib/brightness.js';
 import { getHdmiSources } from '../lib/hdmi.js';
@@ -209,8 +209,8 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
       case this.platform.api.hap.Characteristic.RemoteKey.INFORMATION: {
         this.platform.log.debug('Toggle hdmi source');
         const sources = getHdmiSources(this.state.hdmi);
-        const currentSourcePosition = sources.findIndex(
-          source => source === this.state.execution.hdmiSource
+        const currentSourcePosition = sources.indexOf(
+          this.state.execution.hdmiSource
         );
         this.updateExecution({
           hdmiSource: sources[(currentSourcePosition + 1) % sources.length],

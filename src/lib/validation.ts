@@ -1,4 +1,4 @@
-import { Execution, Hue, State } from '../state.js';
+import { Execution, HdmiSource, Hue, State } from '../state.js';
 import {
   MODE_VIDEO,
   MODE_MUSIC,
@@ -178,7 +178,7 @@ function validateHdmiSourceField(value: unknown): ValidationResult<Execution> {
       error: `execution.hdmiSource must match input${HDMI_INPUT_MIN} through input${HDMI_INPUT_MAX}.`,
     };
   }
-  return { ok: true, value: { hdmiSource: value } };
+  return { ok: true, value: { hdmiSource: value as HdmiSource } };
 }
 
 function validateExecutionField(

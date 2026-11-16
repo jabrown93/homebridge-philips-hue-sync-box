@@ -16,11 +16,10 @@ export class TvDevice extends BaseTvDevice {
       .getCharacteristic(this.platform.api.hap.Characteristic.ActiveIdentifier)
       .onSet(value => {
         const identifier = value as number;
+        const hdmiSource = `input${identifier}` as HdmiSource;
         if (
           !Number.isInteger(identifier) ||
-          !getHdmiSources(this.state.hdmi).includes(
-            `input${identifier}` as HdmiSource
-          )
+          !getHdmiSources(this.state.hdmi).includes(hdmiSource)
         ) {
           this.platform.log.warn(
             'Ignoring unavailable HDMI input identifier: ' + identifier
@@ -28,7 +27,7 @@ export class TvDevice extends BaseTvDevice {
           return;
         }
         return this.updateExecution({
-          hdmiSource: 'input' + identifier,
+          hdmiSource,
         });
       });
   }
