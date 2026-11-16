@@ -212,8 +212,9 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
         const currentSourcePosition = sources.indexOf(
           this.state.execution.hdmiSource
         );
+        const nextSourcePosition = (currentSourcePosition + 1) % sources.length;
         this.updateExecution({
-          hdmiSource: sources[(currentSourcePosition + 1) % sources.length],
+          hdmiSource: sources[nextSourcePosition],
         });
         break;
       }

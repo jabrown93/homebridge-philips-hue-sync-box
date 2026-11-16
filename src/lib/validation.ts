@@ -29,7 +29,7 @@ const HDMI_SOURCE_PATTERN = new RegExp(
 export function isPlainObject(
   value: unknown
 ): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && !!value && !Array.isArray(value);
 }
 
 // Matches BaseTvDevice.getInputService()'s `if (!name) throw` guard, so a
@@ -66,10 +66,8 @@ function isValidHdmiState(value: unknown): boolean {
   }
   for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
     const input = value[`input${i}`];
-    if (
-      (i === HDMI_INPUT_MIN || input !== undefined) &&
-      !isValidHdmiInput(input)
-    ) {
+    const required = i === HDMI_INPUT_MIN || input !== undefined;
+    if (required && !isValidHdmiInput(input)) {
       return false;
     }
   }
