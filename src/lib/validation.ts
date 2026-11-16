@@ -1,4 +1,5 @@
 import { Execution, HdmiSource, Hue, State } from '../state.js';
+import { getHdmiSources } from './hdmi.js';
 import {
   MODE_VIDEO,
   MODE_MUSIC,
@@ -29,7 +30,7 @@ const HDMI_SOURCE_PATTERN = new RegExp(
 export function isPlainObject(
   value: unknown
 ): value is Record<string, unknown> {
-  return typeof value === 'object' && !!value && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // Matches BaseTvDevice.getInputService()'s `if (!name) throw` guard, so a
@@ -60,7 +61,7 @@ function isValidBrightness(value: unknown): boolean {
  * Single-input boxes omit ports 2-4. Require input1 and validate every
  * reported port's name before exposing it as a HomeKit input.
  */
-function isValidHdmiState(value: unknown): boolean {
+function isValidHdmiState(value: unknown): value is Record<string, unknown> {
   if (!isPlainObject(value)) {
     return false;
   }
@@ -113,7 +114,6 @@ export function isValidState(value: unknown): value is State {
     isValidBrightness(execution.brightness) &&
     isValidHueState(hue) &&
     isValidHdmiState(hdmi) &&
-    isPlainObject(hdmi) &&
     isValidHdmiInput(hdmi[execution.hdmiSource])
   );
 }
@@ -209,12 +209,15 @@ function validateExecutionField(
  * before calling SyncBoxClient.updateExecution, so the API server can't be used to send
  * values no legitimate code path would ever produce.
  */
-export function validateExecution(input: unknown): ValidationResult<Execution> {
+export function validateExecution(
+  input: unknown,
+  state: State | null = null
+): ValidationResult<Execution> {
   if (!isPlainObject(input)) {
     return { ok: false, error: 'execution must be an object.' };
   }
 
-  const value: Record<string, unknown> = {};
+  const value: Partial<Execution> = {};
 
   for (const key of Object.keys(input)) {
     const result = validateExecutionField(key, input[key]);
@@ -231,7 +234,17 @@ export function validateExecution(input: unknown): ValidationResult<Execution> {
     };
   }
 
-  return { ok: true, value: value as Partial<Execution> };
+  if (
+    value.hdmiSource &&
+    (!state?.hdmi || !getHdmiSources(state.hdmi).includes(value.hdmiSource))
+  ) {
+    return {
+      ok: false,
+      error: 'execution.hdmiSource does not match a known HDMI input.',
+    };
+  }
+
+  return { ok: true, value };
 }
 
 /**

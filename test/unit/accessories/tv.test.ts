@@ -19,8 +19,8 @@ function makeTv(inputs: number[], active = inputs[0]) {
   const accessory = {
     displayName: 'Sync Box',
     getService: vi.fn(() => service),
-    getServiceById: vi.fn((_type: unknown, subType: string) =>
-      subType === 'TV' ? service : undefined
+    getServiceById: vi.fn((type: unknown, subType: string) =>
+      type === 'Television' && subType === 'TV' ? service : undefined
     ),
     addService: vi.fn(makeService),
   };
@@ -35,7 +35,12 @@ function makeTv(inputs: number[], active = inputs[0]) {
     Identifier: 'Identifier',
   };
   const platform = {
-    api: { hap: { Characteristic, Service: {} } },
+    api: {
+      hap: {
+        Characteristic,
+        Service: { Television: 'Television', InputSource: 'InputSource' },
+      },
+    },
     config: {},
     log: { debug: vi.fn(), warn: vi.fn() },
     client: { updateExecution: vi.fn().mockResolvedValue(undefined) },
@@ -72,7 +77,8 @@ describe('TV HDMI inputs', () => {
       const { accessory, service } = makeTv(inputs);
       expect(service.addLinkedService).toHaveBeenCalledTimes(inputs.length);
       inputs.forEach((input, index) => {
-        expect(accessory.addService.mock.calls[index].slice(1)).toEqual([
+        expect(accessory.addService.mock.calls[index]).toEqual([
+          'InputSource',
           `hdmi${input}`,
           `HDMI ${input}`,
         ]);

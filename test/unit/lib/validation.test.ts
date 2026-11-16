@@ -255,8 +255,26 @@ describe('validateExecution', () => {
   });
 
   it('accepts a well-formed hdmiSource', () => {
-    const result = validateExecution({ hdmiSource: 'input2' });
+    const result = validateExecution({ hdmiSource: 'input2' }, makeFullState());
     expect(result).toEqual({ ok: true, value: { hdmiSource: 'input2' } });
+  });
+
+  it('rejects HDMI ports absent from current state', () => {
+    const state = makeFullState();
+    state.hdmi = {
+      ...state.hdmi,
+      input2: undefined,
+      input3: undefined,
+      input4: undefined,
+    };
+    expect(validateExecution({ hdmiSource: 'input1' }, state).ok).toBe(true);
+    expect(validateExecution({ hdmiSource: 'input3' }, state).ok).toBe(false);
+  });
+
+  it('rejects HDMI selection when current state is unavailable', () => {
+    expect(validateExecution({ hdmiSource: 'input1' }, null).ok).toBe(false);
+    expect(validateExecution({ hdmiSource: 'input1' }).ok).toBe(false);
+    expect(validateExecution({ brightness: 100 }, null).ok).toBe(true);
   });
 
   it('rejects an out-of-range or malformed hdmiSource', () => {

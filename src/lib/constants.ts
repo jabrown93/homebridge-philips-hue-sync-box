@@ -32,7 +32,8 @@ export const BRIGHTNESS_STEP_PERCENT = 25; // Percentage step for remote up/down
 export const BRIGHTNESS_STEP_SYNCBOX = 50; // Actual value to add/subtract (25% of 200)
 
 // ===== HDMI Constants =====
-export const HDMI_INPUT_MAX = 4;
+export const HDMI_SOURCES = ['input1', 'input2', 'input3', 'input4'] as const;
+export const HDMI_INPUT_MAX = HDMI_SOURCES.length;
 export const HDMI_INPUT_MIN = 1;
 
 // ===== Default Configuration Values =====

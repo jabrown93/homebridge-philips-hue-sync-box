@@ -1,3 +1,5 @@
+import type { HDMI_SOURCES } from './lib/constants.js';
+
 export interface Device {
   name: string;
   deviceType: string;
@@ -85,7 +87,7 @@ export interface HdmiInput {
   lastSyncMode: string;
 }
 
-export type HdmiSource = 'input1' | 'input2' | 'input3' | 'input4';
+export type HdmiSource = (typeof HDMI_SOURCES)[number];
 
 export interface Hdmi {
   input1: HdmiInput;
