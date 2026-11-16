@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.0](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.6...v3.2.0) (2026-11-16)
+
+### Features
+
+* Support 2026 Hue Sync Box 4K (single input) ([#498](https://github.com/jabrown93/homebridge-philips-hue-sync-box/issues/498)) ([990daf9](https://github.com/jabrown93/homebridge-philips-hue-sync-box/commit/990daf959ded3cba44868031273c0f07bc813866))
+
 ## [3.1.6](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.5...v3.1.6) (2026-11-09)
 
 ## [3.1.5](https://github.com/jabrown93/homebridge-philips-hue-sync-box/compare/v3.1.4...v3.1.5) (2026-11-02)
