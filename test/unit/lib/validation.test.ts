@@ -130,13 +130,45 @@ describe('isValidState', () => {
     expect(isValidState(state)).toBe(false);
   });
 
-  it('rejects a response missing an HDMI input slot', () => {
+  it('accepts a single-input Sync Box state', () => {
     const state = {
       ...makeFullState(),
-      hdmi: omit(makeHdmi(), 'input4'),
+      hdmi: { input1: makeHdmi().input1 },
+    };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('accepts reported inputs without requiring all four slots', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: omit(makeHdmi(), 'input2'),
+    };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('rejects a response without input1', () => {
+    expect(isValidState({ ...makeFullState(), hdmi: {} })).toBe(false);
+  });
+
+  it('rejects an active HDMI source absent from the reported inputs', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, hdmiSource: 'input2' },
+      hdmi: { input1: makeHdmi().input1 },
     };
     expect(isValidState(state)).toBe(false);
   });
+
+  it.each([null, {}, { name: '' }])(
+    'rejects malformed optional HDMI inputs: %j',
+    input2 => {
+      const state = {
+        ...makeFullState(),
+        hdmi: { input1: makeHdmi().input1, input2 },
+      };
+      expect(isValidState(state)).toBe(false);
+    }
+  );
 
   it('rejects a response where an HDMI input is missing a name', () => {
     const state = {

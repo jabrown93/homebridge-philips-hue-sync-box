@@ -1,8 +1,8 @@
 import { PlatformAccessory, Service } from 'homebridge';
 import type { HueSyncBoxPlatform } from '../platform.js';
-import type { HdmiInput, State } from '../state.js';
+import type { HdmiSource, State } from '../state.js';
 import { BaseTvDevice } from './baseTv.js';
-import { HDMI_INPUT_MAX, HDMI_INPUT_MIN } from '../lib/constants.js';
+import { getHdmiSources } from '../lib/hdmi.js';
 
 export class TvDevice extends BaseTvDevice {
   constructor(
@@ -18,11 +18,12 @@ export class TvDevice extends BaseTvDevice {
         const identifier = value as number;
         if (
           !Number.isInteger(identifier) ||
-          identifier < HDMI_INPUT_MIN ||
-          identifier > HDMI_INPUT_MAX
+          !getHdmiSources(this.state.hdmi).includes(
+            `input${identifier}` as HdmiSource
+          )
         ) {
           this.platform.log.warn(
-            'Ignoring out-of-range HDMI input identifier: ' + identifier
+            'Ignoring unavailable HDMI input identifier: ' + identifier
           );
           return;
         }
@@ -64,11 +65,11 @@ export class TvDevice extends BaseTvDevice {
 
   protected createInputServices(): void {
     const services: Service[] = [];
-    for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
-      const hdmiState: HdmiInput = this.state.hdmi[`input${i}`];
-      const hdmiPosition = 'HDMI ' + i;
+    for (const source of getHdmiSources(this.state.hdmi)) {
+      const hdmiState = this.state.hdmi[source];
+      const hdmiPosition = 'HDMI ' + source.replace('input', '');
 
-      const hdmiName = hdmiState.name ?? hdmiPosition;
+      const hdmiName = hdmiState?.name ?? hdmiPosition;
       const hdmiInputService = this.getInputService(hdmiName, hdmiPosition);
       // Adds the input as a linked service, which is important so that the input is properly displayed in the Home app
       this.service.addLinkedService(hdmiInputService);

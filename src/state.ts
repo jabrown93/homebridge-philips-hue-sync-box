@@ -85,11 +85,13 @@ export interface HdmiInput {
   lastSyncMode: string;
 }
 
+export type HdmiSource = 'input1' | 'input2' | 'input3' | 'input4';
+
 export interface Hdmi {
   input1: HdmiInput;
-  input2: HdmiInput;
-  input3: HdmiInput;
-  input4: HdmiInput;
+  input2?: HdmiInput;
+  input3?: HdmiInput;
+  input4?: HdmiInput;
   output: HdmiInput;
   contentSpecs: string;
   videoSyncSupported: boolean;
@@ -110,9 +112,9 @@ export interface Behavior {
   hpdOutputEnableMs: number;
   arcBypassMode: number;
   input1: BehaviorInput;
-  input2: BehaviorInput;
-  input3: BehaviorInput;
-  input4: BehaviorInput;
+  input2?: BehaviorInput;
+  input3?: BehaviorInput;
+  input4?: BehaviorInput;
 }
 
 export interface IrScan {

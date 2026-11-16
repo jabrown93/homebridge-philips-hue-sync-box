@@ -18,6 +18,7 @@ import {
   BRIGHTNESS_MIN,
 } from '../lib/constants.js';
 import { convertSyncBoxToHomekit } from '../lib/brightness.js';
+import { getHdmiSources } from '../lib/hdmi.js';
 
 export abstract class BaseTvDevice extends SyncBoxDevice {
   protected lightbulbService?: Service;
@@ -207,11 +208,12 @@ export abstract class BaseTvDevice extends SyncBoxDevice {
 
       case this.platform.api.hap.Characteristic.RemoteKey.INFORMATION: {
         this.platform.log.debug('Toggle hdmi source');
-        const hdmiSource = this.state.execution.hdmiSource;
-        const currentSourcePosition = parseInt(hdmiSource.replace('input', ''));
-        const nextSourcePosition = (currentSourcePosition % 4) + 1;
+        const sources = getHdmiSources(this.state.hdmi);
+        const currentSourcePosition = sources.findIndex(
+          source => source === this.state.execution.hdmiSource
+        );
         this.updateExecution({
-          hdmiSource: 'input' + nextSourcePosition,
+          hdmiSource: sources[(currentSourcePosition + 1) % sources.length],
         });
         break;
       }

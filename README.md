@@ -26,7 +26,7 @@ A [Homebridge](https://homebridge.io) plugin that exposes the [Philips Hue Sync 
 - **Base accessory** — expose the Sync Box as a lightbulb (on/off + brightness) or a plain switch (on/off).
 - **Power switch** — an optional, separate switch that toggles the box between passthrough and powersave.
 - **TV accessories** (opt-in, one per behavior) — each appears in the Apple TV remote widget and iOS Control Center:
-  - **HDMI TV** — switch inputs.
+  - **HDMI TV** — switch between the HDMI inputs reported by the box, including single-input models.
   - **Mode TV** — switch between `video`, `music`, and `game`.
   - **Intensity TV** — switch between `subtle`, `moderate`, `high`, and `intense`.
   - **Entertainment TV** — switch the active Hue entertainment area.

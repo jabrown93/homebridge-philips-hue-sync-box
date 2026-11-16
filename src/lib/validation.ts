@@ -57,16 +57,19 @@ function isValidBrightness(value: unknown): boolean {
 }
 
 /**
- * TvDevice.createInputServices() unconditionally dereferences
- * hdmi.input1 through input4 (state.hdmi[`input${i}`].name) when the TV
- * accessory is enabled, so every input slot must be present with a name.
+ * Single-input boxes omit ports 2-4. Require input1 and validate every
+ * reported port's name before exposing it as a HomeKit input.
  */
 function isValidHdmiState(value: unknown): boolean {
   if (!isPlainObject(value)) {
     return false;
   }
   for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
-    if (!isValidHdmiInput(value[`input${i}`])) {
+    const input = value[`input${i}`];
+    if (
+      (i === HDMI_INPUT_MIN || input !== undefined) &&
+      !isValidHdmiInput(input)
+    ) {
       return false;
     }
   }
@@ -90,7 +93,7 @@ function isValidHueState(value: unknown): boolean {
 /**
  * Confirms the shape every accessory unconditionally dereferences
  * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource/
- * brightness, hue.groups[*].name, hdmi.input1-4.name) is actually present,
+ * brightness, hue.groups[*].name, reported hdmi inputs' names) is present,
  * so a malformed or spoofed Sync Box response fails here instead of
  * throwing a TypeError - or forwarding NaN/empty values to HomeKit - deep
  * inside an accessory's update().
@@ -111,7 +114,9 @@ export function isValidState(value: unknown): value is State {
     HDMI_SOURCE_PATTERN.test(execution.hdmiSource) &&
     isValidBrightness(execution.brightness) &&
     isValidHueState(hue) &&
-    isValidHdmiState(hdmi)
+    isValidHdmiState(hdmi) &&
+    isPlainObject(hdmi) &&
+    isValidHdmiInput(hdmi[execution.hdmiSource])
   );
 }
 
