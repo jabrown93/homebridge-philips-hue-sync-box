@@ -1,3 +1,5 @@
+import type { HDMI_SOURCES } from './lib/constants.js';
+
 export interface Device {
   name: string;
   deviceType: string;
@@ -67,7 +69,7 @@ export interface Execution {
   mode: string;
   syncActive: boolean;
   hdmiActive: boolean;
-  hdmiSource: string;
+  hdmiSource: HdmiSource;
   hueTarget: string;
   brightness: number;
   intensity: string;
@@ -85,11 +87,13 @@ export interface HdmiInput {
   lastSyncMode: string;
 }
 
+export type HdmiSource = (typeof HDMI_SOURCES)[number];
+
 export interface Hdmi {
   input1: HdmiInput;
-  input2: HdmiInput;
-  input3: HdmiInput;
-  input4: HdmiInput;
+  input2?: HdmiInput;
+  input3?: HdmiInput;
+  input4?: HdmiInput;
   output: HdmiInput;
   contentSpecs: string;
   videoSyncSupported: boolean;
@@ -110,9 +114,9 @@ export interface Behavior {
   hpdOutputEnableMs: number;
   arcBypassMode: number;
   input1: BehaviorInput;
-  input2: BehaviorInput;
-  input3: BehaviorInput;
-  input4: BehaviorInput;
+  input2?: BehaviorInput;
+  input3?: BehaviorInput;
+  input4?: BehaviorInput;
 }
 
 export interface IrScan {

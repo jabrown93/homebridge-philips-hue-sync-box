@@ -130,13 +130,45 @@ describe('isValidState', () => {
     expect(isValidState(state)).toBe(false);
   });
 
-  it('rejects a response missing an HDMI input slot', () => {
+  it('accepts a single-input Sync Box state', () => {
     const state = {
       ...makeFullState(),
-      hdmi: omit(makeHdmi(), 'input4'),
+      hdmi: { input1: makeHdmi().input1 },
+    };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('accepts reported inputs without requiring all four slots', () => {
+    const state = {
+      ...makeFullState(),
+      hdmi: omit(makeHdmi(), 'input2'),
+    };
+    expect(isValidState(state)).toBe(true);
+  });
+
+  it('rejects a response without input1', () => {
+    expect(isValidState({ ...makeFullState(), hdmi: {} })).toBe(false);
+  });
+
+  it('rejects an active HDMI source absent from the reported inputs', () => {
+    const state = {
+      ...makeFullState(),
+      execution: { ...makeFullState().execution, hdmiSource: 'input2' },
+      hdmi: { input1: makeHdmi().input1 },
     };
     expect(isValidState(state)).toBe(false);
   });
+
+  it.each([null, {}, { name: '' }])(
+    'rejects malformed optional HDMI inputs: %j',
+    input2 => {
+      const state = {
+        ...makeFullState(),
+        hdmi: { input1: makeHdmi().input1, input2 },
+      };
+      expect(isValidState(state)).toBe(false);
+    }
+  );
 
   it('rejects a response where an HDMI input is missing a name', () => {
     const state = {
@@ -223,8 +255,26 @@ describe('validateExecution', () => {
   });
 
   it('accepts a well-formed hdmiSource', () => {
-    const result = validateExecution({ hdmiSource: 'input2' });
+    const result = validateExecution({ hdmiSource: 'input2' }, makeFullState());
     expect(result).toEqual({ ok: true, value: { hdmiSource: 'input2' } });
+  });
+
+  it('rejects HDMI ports absent from current state', () => {
+    const state = makeFullState();
+    state.hdmi = {
+      ...state.hdmi,
+      input2: undefined,
+      input3: undefined,
+      input4: undefined,
+    };
+    expect(validateExecution({ hdmiSource: 'input1' }, state).ok).toBe(true);
+    expect(validateExecution({ hdmiSource: 'input3' }, state).ok).toBe(false);
+  });
+
+  it('rejects HDMI selection when current state is unavailable', () => {
+    expect(validateExecution({ hdmiSource: 'input1' }, null).ok).toBe(false);
+    expect(validateExecution({ hdmiSource: 'input1' }).ok).toBe(false);
+    expect(validateExecution({ brightness: 100 }, null).ok).toBe(true);
   });
 
   it('rejects an out-of-range or malformed hdmiSource', () => {

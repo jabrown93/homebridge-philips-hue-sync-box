@@ -202,9 +202,17 @@ export class ApiServer {
       return;
     }
 
+    const needsState =
+      Object.hasOwn(body, 'hue') ||
+      (isPlainObject(body.execution) &&
+        Object.hasOwn(body.execution, 'hdmiSource'));
+    const currentState = needsState
+      ? await this.platform.client.getState()
+      : null;
+
     let execution;
     if (Object.hasOwn(body, 'execution')) {
-      const result = validateExecution(body.execution);
+      const result = validateExecution(body.execution, currentState);
       if (!result.ok) {
         this.sendError(response, HTTP_STATUS_BAD_REQUEST, result.error);
         return;
@@ -214,9 +222,6 @@ export class ApiServer {
 
     let hue;
     if (Object.hasOwn(body, 'hue')) {
-      // Validated against live device state so only a groupId that actually
-      // exists can be forwarded.
-      const currentState = await this.platform.client.getState();
       const result = validateHue(body.hue, currentState);
       if (!result.ok) {
         this.sendError(response, HTTP_STATUS_BAD_REQUEST, result.error);

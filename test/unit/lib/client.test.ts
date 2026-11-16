@@ -299,6 +299,19 @@ describe('SyncBoxClient', () => {
     );
   });
 
+  it('accepts a single-input HSB3 state without reporting it as malformed', async () => {
+    const validState = {
+      ...makeValidState(),
+      hdmi: { input1: makeValidState().hdmi.input1 },
+    };
+    mockFetch.mockResolvedValue(okResponse(validState));
+    const log = makeLog();
+    const client = new SyncBoxClient(log, makeConfig());
+
+    expect(await client.getState()).toEqual(validState);
+    expect(log.warn).not.toHaveBeenCalled();
+  });
+
   it('returns the parsed state on success', async () => {
     const validState = makeValidState();
     mockFetch.mockResolvedValue(okResponse(validState));

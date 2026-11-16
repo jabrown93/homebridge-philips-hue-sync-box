@@ -1,4 +1,5 @@
-import { Execution, Hue, State } from '../state.js';
+import { Execution, HdmiSource, Hue, State } from '../state.js';
+import { getHdmiSources } from './hdmi.js';
 import {
   MODE_VIDEO,
   MODE_MUSIC,
@@ -57,16 +58,17 @@ function isValidBrightness(value: unknown): boolean {
 }
 
 /**
- * TvDevice.createInputServices() unconditionally dereferences
- * hdmi.input1 through input4 (state.hdmi[`input${i}`].name) when the TV
- * accessory is enabled, so every input slot must be present with a name.
+ * Single-input boxes omit ports 2-4. Require input1 and validate every
+ * reported port's name before exposing it as a HomeKit input.
  */
-function isValidHdmiState(value: unknown): boolean {
+function isValidHdmiState(value: unknown): value is Record<string, unknown> {
   if (!isPlainObject(value)) {
     return false;
   }
   for (let i = HDMI_INPUT_MIN; i <= HDMI_INPUT_MAX; i++) {
-    if (!isValidHdmiInput(value[`input${i}`])) {
+    const input = value[`input${i}`];
+    const required = i === HDMI_INPUT_MIN || input !== undefined;
+    if (required && !isValidHdmiInput(input)) {
       return false;
     }
   }
@@ -90,7 +92,7 @@ function isValidHueState(value: unknown): boolean {
 /**
  * Confirms the shape every accessory unconditionally dereferences
  * (device.name/firmwareVersion/uniqueId, execution.mode/hdmiSource/
- * brightness, hue.groups[*].name, hdmi.input1-4.name) is actually present,
+ * brightness, hue.groups[*].name, reported hdmi inputs' names) is present,
  * so a malformed or spoofed Sync Box response fails here instead of
  * throwing a TypeError - or forwarding NaN/empty values to HomeKit - deep
  * inside an accessory's update().
@@ -111,7 +113,8 @@ export function isValidState(value: unknown): value is State {
     HDMI_SOURCE_PATTERN.test(execution.hdmiSource) &&
     isValidBrightness(execution.brightness) &&
     isValidHueState(hue) &&
-    isValidHdmiState(hdmi)
+    isValidHdmiState(hdmi) &&
+    isValidHdmiInput(hdmi[execution.hdmiSource])
   );
 }
 
@@ -173,7 +176,7 @@ function validateHdmiSourceField(value: unknown): ValidationResult<Execution> {
       error: `execution.hdmiSource must match input${HDMI_INPUT_MIN} through input${HDMI_INPUT_MAX}.`,
     };
   }
-  return { ok: true, value: { hdmiSource: value } };
+  return { ok: true, value: { hdmiSource: value as HdmiSource } };
 }
 
 function validateExecutionField(
@@ -206,12 +209,15 @@ function validateExecutionField(
  * before calling SyncBoxClient.updateExecution, so the API server can't be used to send
  * values no legitimate code path would ever produce.
  */
-export function validateExecution(input: unknown): ValidationResult<Execution> {
+export function validateExecution(
+  input: unknown,
+  state: State | null = null
+): ValidationResult<Execution> {
   if (!isPlainObject(input)) {
     return { ok: false, error: 'execution must be an object.' };
   }
 
-  const value: Record<string, unknown> = {};
+  const value: Partial<Execution> = {};
 
   for (const key of Object.keys(input)) {
     const result = validateExecutionField(key, input[key]);
@@ -228,7 +234,17 @@ export function validateExecution(input: unknown): ValidationResult<Execution> {
     };
   }
 
-  return { ok: true, value: value as Partial<Execution> };
+  if (
+    value.hdmiSource &&
+    (!state?.hdmi || !getHdmiSources(state.hdmi).includes(value.hdmiSource))
+  ) {
+    return {
+      ok: false,
+      error: 'execution.hdmiSource does not match a known HDMI input.',
+    };
+  }
+
+  return { ok: true, value };
 }
 
 /**
