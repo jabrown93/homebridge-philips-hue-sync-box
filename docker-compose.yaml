@@ -1,6 +1,6 @@
 services:
   mockServer:
-    image: mockserver/mockserver:9.2.0@sha256:016f7d16bc88d2e1aa52d5a177f1aafee758cf70bea5e0624b0ab2c32f394df1
+    image: mockserver/mockserver:9.3.0@sha256:6cc3ca2bef67e04e618fc2732e6c9569b39651ce2a194fce4f239b398c232437
     ports:
       - 1080:1080
     environment:
