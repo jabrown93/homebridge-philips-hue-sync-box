@@ -69,7 +69,7 @@
     "@jabrown93/dev-config": "1.2.11",
     "@types/async-lock": "1.4.2",
     "@types/node": "26.6.6",
-    "@vitest/coverage-v8": "5.1.0",
+    "@vitest/coverage-v8": "5.1.1",
     "eslint": "10.15.0",
     "homebridge": "2.5.0",
     "homebridge-config-ui-x": "5.30.1",
@@ -80,7 +80,7 @@
     "prettier": "3.10.1",
     "rimraf": "6.1.4",
     "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "vitest": "5.1.1"
   },
   "engines": {
     "homebridge": "^1.8.0 || ^2.0.0-beta.0",
