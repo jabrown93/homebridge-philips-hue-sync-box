@@ -68,7 +68,7 @@
     "@commitlint/cli": "21.2.4",
     "@jabrown93/dev-config": "1.2.11",
     "@types/async-lock": "1.4.2",
-    "@types/node": "26.6.6",
+    "@types/node": "26.6.7",
     "@vitest/coverage-v8": "5.1.1",
     "eslint": "10.15.0",
     "homebridge": "2.5.0",
